@@ -43,7 +43,7 @@ export function TablePagination ({ data }: TablePaginationProps) {
     const visiblePages = getVisiblePages(data.links, data.current_page, data.last_page, 1);
 
     return (        
-        <div className="flex justify-between absolute bottom-6 right-0 pr-8 space-x-10">
+        <div className="flex justify-between gap-2">
             {/* I don't know why but pr-8 works ------------------------^ */}
             <div>
                 <Link href={data.prev_page_url ?? ""}>
