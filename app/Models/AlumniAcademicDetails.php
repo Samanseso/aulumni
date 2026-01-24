@@ -1,0 +1,27 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class AlumniAcademicDetails extends Model
+{
+    protected $table = 'alumni_academic_details';
+    protected $primaryKey = 'id';
+    public $timestamps = true;
+
+    protected $fillable = [
+        'alumni_id',
+        'student_number',
+        'school_level',
+        'batch',
+        'campus',
+        'course',
+    ];
+
+    public function alumni(): BelongsTo
+    {
+        return $this->belongsTo(Alumni::class, 'alumni_id', 'alumni_id');
+    }
+}
