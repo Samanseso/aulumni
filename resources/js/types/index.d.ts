@@ -199,8 +199,16 @@ export interface Course {
 	course_id: number
 	department_id: number
 	name: string;
-	degree?: string | null;
+	code: string;
 	created_at?: string;
 	updated_at?: string;
 	department?: Department
+}
+
+
+export interface Batch {
+	year: string;
+	name: string;
+	created_at: string;
+	updated_at: string;
 }

@@ -7,12 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 class Batch extends Model
 {
     protected $table = 'batch';
-    protected $primaryKey = 'Id';
-    public $timestamps = false;
+    protected $primaryKey = 'year';
+    public $timestamps = true;
 
     protected $fillable = [
-        'Name',
-        'Description',
-        'AddedDate'
+        'year',
+        'name',
     ];
 }

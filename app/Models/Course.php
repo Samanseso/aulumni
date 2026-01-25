@@ -16,7 +16,7 @@ class Course extends Model
     protected $fillable = [
         'department_id',
         'name',
-        'degree',
+        'code',
     ];
 
     public function department(): BelongsTo

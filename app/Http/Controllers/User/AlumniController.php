@@ -15,9 +15,10 @@ use App\Models\AlumniAcademicDetails;
 use App\Models\AlumniContactDetails;
 use App\Models\AlumniEmploymentDetails;
 use App\Models\AlumniPersonalDetails;
+use App\Models\Batch;
+use App\Models\Course;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Illuminate\Database\QueryException;
 use Maatwebsite\Excel\Facades\Excel;
@@ -26,31 +27,60 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 class AlumniController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
-        $alumni = Alumni::with([
+        $query = Alumni::with([
             'personal_details',
             'academic_details',
             'contact_details',
             'employment_details',
         ])
-        ->leftJoin('users', 'alumni.user_id', '=', 'users.user_id')
-        ->select('alumni.*', 'users.status', 'users.user_name', 'users.name')                   
-        ->whereNotNull('alumni.alumni_id')        
-        ->orderBy('alumni.created_at', 'desc')    
-        ->paginate(15)
-        ->withQueryString();
+            ->leftJoin('users', 'alumni.user_id', '=', 'users.user_id')
+            ->select('alumni.*', 'users.status', 'users.user_name', 'users.name')
+            ->whereNotNull('alumni.alumni_id');
+
+        // filter by school_level
+        if ($request->filled('school_level')) {
+            $schoolLevel = $request->input('school_level');
+            $query->whereHas('academic_details', function ($q) use ($schoolLevel) {
+                $q->where('school_level', $schoolLevel);
+            });
+        }
+
+        // filter by course
+        if ($request->filled('course')) {
+            $course = $request->input('course');
+            $query->whereHas('academic_details', function ($q) use ($course) {
+                $q->where('course', $course);
+            });
+        }
+
+
+        if ($request->filled('batch')) {
+            $batch = $request->input('batch');
+            $query->whereHas('academic_details', function ($q) use ($batch) {
+                $q->where('batch', $batch);
+            });
+        }
+
+        $alumni = $query->orderBy('alumni.created_at', 'desc')
+            ->paginate(15)
+            ->withQueryString();
 
         return Inertia::render('admin/alumni', [
             'alumni' => $alumni,
+            'filters' => $request->only(['school_level']),
+            'courses' => Course::all(),
+            'batches' => Batch::all(),
         ]);
     }
+
 
 
     public function step($step)
     {
         if (!session('current_step')) {
-           session(['current_step' => 1]);
+            session(['current_step' => 1]);
         }
         if ((int)$step > 1 && (int)$step > session('current_step')) {
             return redirect()
@@ -136,7 +166,7 @@ class AlumniController extends Controller
 
     public function process_employment_details(EmploymentDetailsRequest $request): RedirectResponse
     {
-       
+
         $attempt = 0;
         do {
             $attempt++;
@@ -145,7 +175,6 @@ class AlumniController extends Controller
             if (Alumni::where('alumni_id', $alumni_id)->count() == 0) {
                 break;
             }
-          
         } while ($attempt < 99999);
 
         $password = (
@@ -239,7 +268,7 @@ class AlumniController extends Controller
 
 
     public function update_profile(UserRequest $request, User $user)
-    {  
+    {
 
         try {
             $user->update($request->all());
@@ -264,10 +293,10 @@ class AlumniController extends Controller
     }
 
     public function update_personal(PersonalDetailsRequest $request, Alumni $alumni)
-    {  
-        
+    {
+
         $alumni->update($request->all());
-        
+
         return back()->with([
             'modal_status' => "success",
             'modal_action' => "update",
@@ -277,10 +306,10 @@ class AlumniController extends Controller
     }
 
     public function update_academic(AcademicDetailsRequest $request, Alumni $alumni)
-    {  
+    {
 
         $alumni->update($request->all());
-        
+
         return back()->with([
             'modal_status' => "success",
             'modal_action' => "update",
@@ -290,10 +319,10 @@ class AlumniController extends Controller
     }
 
     public function update_contact(ContactDetailsRequest $request, Alumni $alumni)
-    {  
+    {
 
         $alumni->update($request->all());
-        
+
         return back()->with([
             'modal_status' => "success",
             'modal_action' => "update",
@@ -303,10 +332,10 @@ class AlumniController extends Controller
     }
 
     public function update_employment(EmploymentDetailsRequest $request, Alumni $alumni)
-    {  
+    {
 
         $alumni->update($request->all());
-        
+
         return back()->with([
             'modal_status' => "success",
             'modal_action' => "update",
@@ -314,11 +343,4 @@ class AlumniController extends Controller
             'modal_message' => "Alumni employment details was updated successfully.",
         ]);
     }
-
-
-
-    
-
-
-    
 }
