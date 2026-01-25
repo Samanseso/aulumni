@@ -1,7 +1,7 @@
 import { Checkbox } from "./ui/checkbox";
 import { Button } from "./ui/button";
-import { Trash2, Eye, EllipsisVertical, Check, Ban, Trash, PenBox, CircleCheck, BadgeCheck } from "lucide-react";
-import { useState } from "react";
+import { Eye, EllipsisVertical, Ban, Trash, BadgeCheck } from "lucide-react";
+import { SetStateAction, useState } from "react";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { Alumni } from "@/types";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent } from "./ui/dropdown-menu";
@@ -11,18 +11,16 @@ import { Link } from "@inertiajs/react";
 import { activate, deactivate } from "@/routes/user";
 import { AlumniModal } from "./alumni-modal";
 import { destroy } from "@/routes/user";
-import ActionConfirmation from "./action-confirmation";
 import { useConfirmAction } from "./context/confirm-action-context";
 
 interface AlumniTableProps {
     alumni: Alumni[],
     columns: string[],
+    selectedData: number[],
+    setSelectedData: React.Dispatch<SetStateAction<number[]>>,
 }
 
-export function AlumniTable({ alumni, columns }: AlumniTableProps) {
-
-    const [filteredData, setFilteredData] = useState<Alumni[]>(alumni);
-    const [selectedData, setSelectedData] = useState<number[]>([]);
+export function AlumniTable({ alumni, columns, selectedData, setSelectedData }: AlumniTableProps) {
 
     const [viewAlumni, setViewAlumni] = useState<Alumni | null>(null);
     
@@ -38,18 +36,18 @@ export function AlumniTable({ alumni, columns }: AlumniTableProps) {
     // 	setFilteredData(newFilteredData);
     // }, [data, searchInput]);
 
-    const updatedSelectedData = (index: number) => {
-        if (selectedData.includes(index)) {
-            setSelectedData(selectedData => selectedData.filter(data => data !== index));
+    const updatedSelectedData = (user_id: number) => {
+        if (selectedData.includes(user_id)) {
+            setSelectedData(selectedData => selectedData.filter(data => data !== user_id));
         }
         else {
-            setSelectedData([...selectedData, index]);
+            setSelectedData([...selectedData, user_id]);
         }
     }
 
     const selectAllData = (checked: CheckedState) => {
         if (checked === true) {
-            //setSelectedData(Array.from({ length: filteredData.length }, (_, i) => filteredData[i]));
+            setSelectedData(alumni.map(alum => alum.user_id));
         }
         else {
             setSelectedData([]);
@@ -75,7 +73,7 @@ export function AlumniTable({ alumni, columns }: AlumniTableProps) {
                     </tr>
                 </thead>
                 <tbody>
-                    {filteredData.map((alum, idx) => {
+                    {alumni.map((alum, idx) => {
                         return (
                             <tr
                                 key={idx}
@@ -83,7 +81,7 @@ export function AlumniTable({ alumni, columns }: AlumniTableProps) {
                             >
                                 <td className="ps-7 pe-2">
                                     <div className="flex items-center justify-center">
-                                        <Checkbox />
+                                        <Checkbox checked={selectedData.includes(alum.user_id)} onCheckedChange={() => updatedSelectedData(alum.user_id)} />
                                     </div>
                                 </td>
                                 <td className="px-4 py-2 text-sm">{alum.alumni_id}</td>

@@ -3,7 +3,7 @@ import { BreadcrumbItem, Pagination, Alumni, AlumniRow, ModalType, Course, Batch
 import { router, usePage } from "@inertiajs/react";
 import { Button } from "./ui/button";
 import { useEffect, useRef, useState } from "react";
-import { Download, Plus, Upload, ChevronDown, ListFilter } from "lucide-react";
+import { Download, Plus, Upload, ChevronDown, ListFilter, Search, BadgeCheck, Ban, Trash } from "lucide-react";
 import { Link } from "@inertiajs/react";
 import { TablePagination } from "./table-pagination";
 import SearchBar from "./search-bar";
@@ -12,6 +12,7 @@ import { index, step } from "@/routes/alumni";
 import { Import } from "./import";
 import { Modal } from "./modal";
 import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from "./ui/select";
+import { Input } from "./ui/input";
 
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -42,8 +43,7 @@ export default function AlumniList() {
 
     const [alumni, setAlumni] = useState<Alumni[]>(props.alumni.data);
     const [searchInput, setSearchInput] = useState('');
-    const [selectedStudent, setSelectedStudent] = useState<string>('');
-    const [isOpenDeleteModal, setIsOpenDeleteModal] = useState<boolean>(false);
+    const [selectedData, setSelectedData] = useState<number[]>([]);
     const [filter, setFilter] = useState<Filter[]>(() => {
         const stored = sessionStorage.getItem("filters");
         try {
@@ -59,10 +59,6 @@ export default function AlumniList() {
 
     const [open, setOpen] = useState(false);
 
-    const doDelete = (id: string) => {
-        setIsOpenDeleteModal(true);
-        setSelectedStudent(id)
-    }
 
     useEffect(() => {
         setOpen(false);
@@ -111,6 +107,19 @@ export default function AlumniList() {
         }
     }
 
+    const handleSearchInputChange = () => {
+        if (!searchInput) {
+            setFilter(f => f.filter(item => item.property !== "search"));
+        } else {
+            setFilter(f => [
+                ...f.filter(item => item.property !== "search"),
+                { property: "search", value: searchInput }
+            ]);
+        }
+    }
+
+
+
 
     useEffect(() => {
         sessionStorage.setItem("filters", JSON.stringify(filter))
@@ -124,6 +133,8 @@ export default function AlumniList() {
             preserveScroll: true,
         });
     }, [filter]);
+
+
 
 
 
@@ -154,8 +165,8 @@ export default function AlumniList() {
                             <SelectContent>
                                 {
                                     filter.find(f => f.property === "school_level")?.value ?
-                                    <SelectItem value="none">Reset</SelectItem> : 
-                                    <SelectItem value="none" className="hidden">School Level</SelectItem>
+                                        <SelectItem value="none" className="text-red focus:text-red">Reset</SelectItem> :
+                                        <SelectItem value="none" className="hidden">School Level</SelectItem>
                                 }
                                 <SelectItem value="Elementary">Elementary</SelectItem>
                                 <SelectItem value="High School">High School</SelectItem>
@@ -170,8 +181,8 @@ export default function AlumniList() {
                             <SelectContent>
                                 {
                                     filter.find(f => f.property === "course")?.value ?
-                                    <SelectItem value="none">Reset</SelectItem> : 
-                                    <SelectItem value="none" className="hidden">Course</SelectItem>
+                                        <SelectItem value="none" className="text-red">Reset</SelectItem> :
+                                        <SelectItem value="none" className="hidden">Course</SelectItem>
                                 }
                                 {props.courses.map(course => (
                                     <SelectItem key={course.code} value={course.code}>{course.code}</SelectItem>
@@ -186,8 +197,8 @@ export default function AlumniList() {
                             <SelectContent>
                                 {
                                     filter.find(f => f.property === "batch")?.value ?
-                                    <SelectItem value="none">Reset</SelectItem> : 
-                                    <SelectItem value="none" className="hidden">Batch</SelectItem>
+                                        <SelectItem value="none" className="text-red">Reset</SelectItem> :
+                                        <SelectItem value="none" className="hidden">Batch</SelectItem>
                                 }
                                 {props.batches.map(batch => (
                                     <SelectItem key={batch.year} value={batch.year}>{batch.year}</SelectItem>
@@ -199,21 +210,54 @@ export default function AlumniList() {
                 </div>
 
                 <div className="flex gap-2">
-                    <SearchBar />
+                    <Input
+                        endIcon={<Search size={20} color='gray' />}
+                        type="text"
+                        placeholder="Search here"
+                        onChange={e => setSearchInput(e.target.value)}
+                        onEndIconClick={handleSearchInputChange}
+                        onKeyDown={e => e.key == "Enter" && handleSearchInputChange()}
+                        className="shadow-none focus-within:ring-0" />
                 </div>
 
             </div>
 
-            {alumni.length > 0 && <AlumniTable key={tableVersion} alumni={alumni} columns={columns} />}
+            {alumni.length > 0 && <AlumniTable selectedData={selectedData} setSelectedData={setSelectedData} key={tableVersion} alumni={alumni} columns={columns} />}
 
             <Import open={open} table="alumni" setOpen={setOpen} />
 
             {props.modal && props.modal.status && <Modal key={tableVersion + 1} content={props.modal} />}
 
-            <div className="flex w-full justify-between items-end px-6 absolute bottom-6 right-0 space-x-10">
-                <p className="text-sm">Showing {props.alumni.data.length} out of {props.alumni.total} entries</p>
+            <div className="flex w-full justify-between items-end px-6 absolute bottom-7 right-0 space-x-10">
+                <div className="flex items-end gap-10">
+                    <p className="text-sm">Showing {props.alumni.data.length} out of {props.alumni.total} entries</p>
+
+                    {
+                        selectedData.length > 0 &&
+                        <div className="flex items-end gap-3">
+                            <p className="text-sm italic">With selected:</p>
+                            <div className="flex gap-3">
+                                <Button size="sm" className="translate-y-1.5" variant="outline">
+                                    <BadgeCheck className="text-green-500" />Activate
+                                </Button>
+                                <Button size="sm" className="translate-y-1.5" variant="outline">
+                                    <Ban  className="text-red-500" />Deactivate
+                                </Button>
+                                <Button size="sm" className="translate-y-1.5" variant="outline">
+                                    <Upload />Export
+                                </Button>
+                                <Button size="sm" className="translate-y-1.5 bg-rose-100 text-red">
+                                    <Trash />Delete
+                                </Button>
+                            </div>
+
+                        </div>
+                    }
+                </div>
                 <TablePagination data={props.alumni} />
             </div>
+
+
 
 
         </div>
