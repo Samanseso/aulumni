@@ -1,25 +1,19 @@
 import { RouteDefinition } from '@/wayfinder';
 import React, { createContext, useState, useContext, SetStateAction } from 'react';
-
-interface ContentType {
-    url: RouteDefinition<"delete"> | RouteDefinition<"patch"> |RouteDefinition<"post">;
-    message: string;
-    data?: any;
-    promptPassword?: boolean;
-}
+import { ActionModalContentType } from '@/types';
 
 interface ConfirmDeleteContextProps {
-    confirmActionContent: ContentType | undefined;
-    setConfirmActionContent: React.Dispatch<SetStateAction<ContentType | undefined>>;
-    confirmActionContentCreateModal: (data: ContentType | undefined) => void;
+    confirmActionContent: ActionModalContentType | undefined;
+    setConfirmActionContent: React.Dispatch<SetStateAction<ActionModalContentType | undefined>>;
+    confirmActionContentCreateModal: (data: ActionModalContentType | undefined) => void;
 }
 
 const ConfirmActionContext = createContext<ConfirmDeleteContextProps | undefined>(undefined);
 
 export const ConfirmActionProvider = ({ children }: { children: React.ReactNode }) => {
-    const [confirmActionContent, setConfirmActionContent] = useState<ContentType | undefined>(undefined);
+    const [confirmActionContent, setConfirmActionContent] = useState<ActionModalContentType | undefined>(undefined);
 
-    const confirmActionContentCreateModal = (data: ContentType | undefined) => {
+    const confirmActionContentCreateModal = (data: ActionModalContentType | undefined) => {
         console.log(data)
         setConfirmActionContent(data);
     }

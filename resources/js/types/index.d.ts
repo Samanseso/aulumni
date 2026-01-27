@@ -217,3 +217,12 @@ export interface Filter {
     property: string;
     value: string;
 }
+
+
+export interface ActionModalContentType {
+	url: RouteDefinition<"delete"> | RouteDefinition<"patch"> | RouteDefinition<"post">;
+	message: string;
+	action: string;
+	data?: any;
+	promptPassword?: boolean;
+}

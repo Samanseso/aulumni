@@ -44,6 +44,7 @@ const Alumni = () => {
                 <ActionConfirmation
                     url={confirmActionContent.url}
                     message={confirmActionContent.message}
+                    action={confirmActionContent.action}
                     data={confirmActionContent.data}
                     promptPassword={confirmActionContent.promptPassword}
                     setConfirmActionContent={setConfimActionContent}

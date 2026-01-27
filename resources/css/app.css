@@ -67,6 +67,7 @@
 :root {
     --blue: #014ea8;
     --red: #da281c;
+    --orange: #da7b1c;
     --background: #eff4fa;
     --foreground: oklch(0.145 0 0);
     --card: oklch(1 0 0);

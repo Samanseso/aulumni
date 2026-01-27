@@ -233,7 +233,8 @@ export default function AlumniList() {
 
                                 <Button size="sm" className="translate-y-1.5" variant="outline" onClick={() => confirmActionContentCreateModal({
                                     url: bulk_activate(),
-                                    message: "Are you sure to activate this accounts",
+                                    message: "Are you sure you want to activate this accounts",
+                                    action: "Activate",
                                     data: { user_ids: selectedData }
 
                                 })}>
@@ -242,7 +243,8 @@ export default function AlumniList() {
 
                                 <Button size="sm" className="translate-y-1.5" variant="outline" onClick={() => confirmActionContentCreateModal({
                                     url: bulk_deactivate(),
-                                    message: "Are you sure to deactivate this accounts",
+                                    message: "Are you sure you want to deactivate this accounts",
+                                    action: "Deactivate",
                                     data: { user_ids: selectedData }
 
                                 })}>
@@ -255,7 +257,8 @@ export default function AlumniList() {
 
                                 <Button size="sm" className="translate-y-1.5 bg-rose-100 text-red" onClick={() => confirmActionContentCreateModal({
                                     url: bulk_delete(),
-                                    message: "Are you sure to delete this accounts?",
+                                    message: "Are you sure you want to delete this accounts?",
+                                    action: "Delete",
                                     data: { user_ids: selectedData },
                                     promptPassword: true,
                                 })}>

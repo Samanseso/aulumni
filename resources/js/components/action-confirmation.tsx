@@ -7,31 +7,25 @@ import { Link, usePage } from '@inertiajs/react';
 import { RouteDefinition } from '@/wayfinder';
 import { Input } from './ui/input';
 import InputError from './input-error';
+import { ActionModalContentType } from '@/types';
 
-interface ContentType {
-    url: RouteDefinition<"delete"> | RouteDefinition<"patch"> | RouteDefinition<"post">;
-    message: string;
-    data?: any;
+
+interface ActionConfirmationProps extends ActionModalContentType{
+    setConfirmActionContent: React.Dispatch<SetStateAction<ActionModalContentType | undefined>>;
 }
 
-interface ActionConfirmationProps {
-    url: RouteDefinition<"delete"> | RouteDefinition<"patch"> | RouteDefinition<"post">;
-    message: string;
-    data?: any;
-    promptPassword?: boolean;
-    setConfirmActionContent: React.Dispatch<SetStateAction<ContentType | undefined>>;
-}
-
-const ActionConfirmation = ({ url, message, data, promptPassword = false, setConfirmActionContent }: ActionConfirmationProps) => {
+const ActionConfirmation = ({ url, message, action, data, promptPassword = false, setConfirmActionContent }: ActionConfirmationProps) => {
     const { props } = usePage<{ errors: { password: string | undefined } | undefined }>();
 
     const [password, setPassword] = useState("");
+
+    console.log(url);
 
     return (
         <Dialog open={true} onOpenChange={() => setConfirmActionContent(undefined)}>
             <DialogContent className='lg:max-w-md'>
                 <DialogTitle className='flex gap-2 items-center'>
-                    <TriangleAlert className='text-red' />
+                    <TriangleAlert className={action === "Delete" ? "text-red" : "text-blue"} />
                     Caution!
                 </DialogTitle>
                 <DialogDescription>
@@ -53,7 +47,7 @@ const ActionConfirmation = ({ url, message, data, promptPassword = false, setCon
                 <DialogFooter>
                     <Button variant="secondary" onClick={() => setConfirmActionContent(undefined)}>No, keep it</Button>
                     <Link href={url} onSuccess={() => setConfirmActionContent(undefined)} data={{ ...data || undefined, password: password }} as="div">
-                        <Button variant='destructive'><Trash />Yes, Delete!</Button>
+                        <Button variant={action == "Delete" ? "destructive" : "default"}><Trash />Yes, {action}!</Button>
                     </Link>
                 </DialogFooter>
             </DialogContent>
