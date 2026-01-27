@@ -2,28 +2,29 @@ import { RouteDefinition } from '@/wayfinder';
 import React, { createContext, useState, useContext, SetStateAction } from 'react';
 
 interface ContentType {
-    url: RouteDefinition<"delete"> | RouteDefinition<"patch">;
-    message: string
+    url: RouteDefinition<"delete"> | RouteDefinition<"patch"> |RouteDefinition<"post">;
+    message: string;
+    data?: any;
 }
 
 interface ConfirmDeleteContextProps {
     confimActionContent: ContentType | undefined;
-    setConfimACtionContent: React.Dispatch<SetStateAction<ContentType | undefined>>;
+    setConfimActionContent: React.Dispatch<SetStateAction<ContentType | undefined>>;
     confirmActionContentCreateModal: (data: ContentType | undefined) => void;
 }
 
 const ConfirmActionContext = createContext<ConfirmDeleteContextProps | undefined>(undefined);
 
 export const ConfirmActionProvider = ({ children }: { children: React.ReactNode }) => {
-    const [confimDeleteContent, setConfimDeleteContent] = useState<ContentType | undefined>(undefined);
+    const [confimActionContent, setConfimActionContent] = useState<ContentType | undefined>(undefined);
 
-    const confimDeleteContentCreateModal = (data: ContentType | undefined) => {
+    const confirmActionContentCreateModal = (data: ContentType | undefined) => {
         console.log(data)
-        setConfimDeleteContent(data);
+        setConfimActionContent(data);
     }
 
     return (
-        <ConfirmActionContext.Provider value={{ confimActionContent: confimDeleteContent, setConfimACtionContent: setConfimDeleteContent, confirmActionContentCreateModal: confimDeleteContentCreateModal}}>
+        <ConfirmActionContext.Provider value={{ confimActionContent , setConfimActionContent, confirmActionContentCreateModal}}>
             {children}
         </ConfirmActionContext.Provider>
     );

@@ -62,7 +62,7 @@ export function AlumniTable({ alumni, columns, selectedData, setSelectedData }: 
                 <thead>
                     <tr className="border-t">
                         <th className="rounded-l-md ps-7 pe-2">
-                            <Checkbox onCheckedChange={(checked) => selectAllData(checked)} />
+                            <Checkbox checked={selectedData.length == alumni.length} onCheckedChange={(checked) => selectAllData(checked)} />
                         </th>
                         {columns.map((col) => (
                             <th key={col} className="px-4 py-2 text-left text-xs text-gray-500 font-semibold whitespace-nowrap uppercase">

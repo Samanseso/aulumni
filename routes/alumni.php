@@ -37,5 +37,4 @@ Route::middleware(['auth'])->prefix('user')->group(function () {
     // Edit alumni employment details
     Route::patch('/alumni/update/employment/{alumni}', [AlumniController::class, 'update_employment'])->name('alumni.update_employment');
 
-    
 });

@@ -28,7 +28,9 @@ const Alumni = () => {
     const props = usePage<{ alumni: Pagination<Alumni[]>}>().props;
     console.log(props);
 
-    const { confimActionContent: confimDeleteContent, setConfimACtionContent: setConfimDeleteContent } = useConfirmAction();
+    const { confimActionContent, setConfimActionContent } = useConfirmAction();
+
+    console.log(confimActionContent);
 
 
     return (
@@ -37,7 +39,7 @@ const Alumni = () => {
         
             <AlumniList />
 
-            {confimDeleteContent && <ActionConfirmation url={confimDeleteContent.url} message={confimDeleteContent.message} setConfimDeleteContent={setConfimDeleteContent}/>}
+            {confimActionContent && <ActionConfirmation url={confimActionContent.url} message={confimActionContent.message} data={confimActionContent.data} setConfimActionContent={setConfimActionContent}/>}
 
 
 

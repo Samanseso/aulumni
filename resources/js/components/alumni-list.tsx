@@ -13,6 +13,8 @@ import { Import } from "./import";
 import { Modal } from "./modal";
 import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from "./ui/select";
 import { Input } from "./ui/input";
+import { bulk_activate, bulk_deactivate, bulk_delete } from "@/routes/user";
+import { useConfirmAction } from "./context/confirm-action-context";
 
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -44,14 +46,7 @@ export default function AlumniList() {
     const [alumni, setAlumni] = useState<Alumni[]>(props.alumni.data);
     const [searchInput, setSearchInput] = useState('');
     const [selectedData, setSelectedData] = useState<number[]>([]);
-    const [filter, setFilter] = useState<Filter[]>(() => {
-        const stored = sessionStorage.getItem("filters");
-        try {
-            return stored ? JSON.parse(stored) as Filter[] : [];
-        } catch {
-            return [];
-        }
-    });
+    const [filter, setFilter] = useState<Filter[]>([]);
 
 
     const [tableVersion, setTableVersion] = useState(0);
@@ -59,6 +54,7 @@ export default function AlumniList() {
 
     const [open, setOpen] = useState(false);
 
+    const { confirmActionContentCreateModal } = useConfirmAction();
 
     useEffect(() => {
         setOpen(false);
@@ -235,20 +231,35 @@ export default function AlumniList() {
                     {
                         selectedData.length > 0 &&
                         <div className="flex items-end gap-3">
-                            <p className="text-sm italic">With selected:</p>
+                            <p className="text-sm">With selected:</p>
                             <div className="flex gap-3">
-                                <Button size="sm" className="translate-y-1.5" variant="outline">
+
+                                <Button size="sm" className="translate-y-1.5" variant="outline" onClick={() => confirmActionContentCreateModal({
+                                    url: bulk_activate(),
+                                    message: "Are you sure to activate this accounts",
+                                    data: { user_ids: selectedData }
+
+                                })}>
                                     <BadgeCheck className="text-green-500" />Activate
                                 </Button>
-                                <Button size="sm" className="translate-y-1.5" variant="outline">
-                                    <Ban  className="text-red-500" />Deactivate
+
+                                <Button size="sm" className="translate-y-1.5" variant="outline" onClick={() => confirmActionContentCreateModal({
+                                    url: bulk_deactivate(),
+                                    message: "Are you sure to deactivate this accounts",
+                                    data: { user_ids: selectedData }
+
+                                })}>
+                                    <Ban className="text-red-500" />Deactivate
                                 </Button>
+
                                 <Button size="sm" className="translate-y-1.5" variant="outline">
                                     <Upload />Export
                                 </Button>
-                                <Button size="sm" className="translate-y-1.5 bg-rose-100 text-red">
-                                    <Trash />Delete
-                                </Button>
+                                <Link href={bulk_delete()} method="post" data={ {user_ids: selectedData} }>
+                                    <Button size="sm" className="translate-y-1.5 bg-rose-100 text-red">
+                                        <Trash />Delete
+                                    </Button>
+                                </Link>
                             </div>
 
                         </div>

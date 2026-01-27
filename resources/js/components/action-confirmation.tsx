@@ -6,17 +6,24 @@ import { Trash, TriangleAlert } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import { RouteDefinition } from '@/wayfinder';
 
-interface DeleteConfirmationProps {
-    url: RouteDefinition<"delete">;
+interface ContentType {
+    url: RouteDefinition<"delete"> | RouteDefinition<"patch"> |RouteDefinition<"post">;
     message: string;
-    setConfimDeleteContent: React.Dispatch<SetStateAction<{url: RouteDefinition<"delete">, message:string} | undefined>>;
+    data?: any;
 }
 
-const ActionConfirmation = ({ url, message, setConfimDeleteContent }: DeleteConfirmationProps) => {
+interface DeleteConfirmationProps {
+    url: RouteDefinition<"delete"> | RouteDefinition<"patch"> | RouteDefinition<"post">;
+    message: string;
+    data?: any;
+    setConfimActionContent: React.Dispatch<SetStateAction<ContentType | undefined>>;
+}
 
+const ActionConfirmation = ({ url, message, data, setConfimActionContent }: DeleteConfirmationProps) => {
+    console.log(data);
 
     return (
-        <Dialog open={true} onOpenChange={() => setConfimDeleteContent(undefined)}>
+        <Dialog open={true} onOpenChange={() => setConfimActionContent(undefined)}>
             <DialogContent className='lg:max-w-md'>
                 <DialogTitle className='flex gap-2 items-center'>
                     <TriangleAlert className='text-red' />
@@ -26,8 +33,8 @@ const ActionConfirmation = ({ url, message, setConfimDeleteContent }: DeleteConf
                     {message}
                 </DialogDescription>
                 <DialogFooter>
-                    <Button variant="secondary" onClick={() => setConfimDeleteContent(undefined)}>No, keep it</Button>
-                    <Link href={url} onSuccess={() => setConfimDeleteContent(undefined)} as="div">
+                    <Button variant="secondary" onClick={() => setConfimActionContent(undefined)}>No, keep it</Button>
+                    <Link href={url} onSuccess={() => setConfimActionContent(undefined)} data={ data || undefined} as="div">
                         <Button variant='destructive'><Trash />Yes, Delete!</Button>
                     </Link>
                 </DialogFooter>
