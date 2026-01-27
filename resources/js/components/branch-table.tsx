@@ -21,8 +21,6 @@ export default function BranchTable({ branch, columns, onDelete, onEdit, onView 
     const [filteredData, setFilteredData] = useState<Branch[]>(branch);
     const [selectedData, setSelectedData] = useState<number[]>([]);
 
-    
-
     useEffect(() => {
         setFilteredData(branch);
     }, [branch]);

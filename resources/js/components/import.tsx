@@ -17,6 +17,7 @@ export function Import({ open, setOpen, table }: AlumniImportProps) {
 
     const onModalClose = (open: boolean) => {
         if (!open) {
+            setFile(null);
             setOpen(false);
         }
     };

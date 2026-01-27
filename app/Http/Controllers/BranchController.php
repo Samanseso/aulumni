@@ -5,16 +5,29 @@ namespace App\Http\Controllers;
 use App\Http\Requests\BranchRequest;
 use App\Models\Branch;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\View\View;
 
 class BranchController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $branches = Branch::orderBy('branch_id', 'asc')->paginate(15)->withQueryString();
-        return Inertia::render('admin/branch-list', ['branches' => $branches]);
+        $branches = Branch::orderBy('branch_id', 'asc');
+
+        // Address filter
+        if ($request->filled('address')) {
+            $branches->where('address', $request->address);
+        }
+
+        $addresses = Branch::distinct()->pluck('address');
+
+        return Inertia::render('admin/branches', [
+            'branches' => $branches->get(),
+            'addresses' => $addresses,
+        ]);
     }
+
 
 
     public function store(BranchRequest $request): RedirectResponse

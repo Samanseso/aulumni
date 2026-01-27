@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from ".
 import { Input } from "./ui/input";
 import { bulk_activate, bulk_deactivate, bulk_delete } from "@/routes/user";
 import { useConfirmAction } from "./context/confirm-action-context";
+import { Filter } from "@/types";
 
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -35,10 +36,6 @@ const columns = [
     'Status',
 ];
 
-interface Filter {
-    property: string;
-    value: string;
-}
 
 export default function AlumniList() {
     const { props } = usePage<{ alumni: Pagination<Alumni[]>, modal: ModalType, courses: Course[], batches: Batch[] }>();
