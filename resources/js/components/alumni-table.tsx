@@ -156,15 +156,6 @@ export function AlumniTable({ alumni, columns, selectedData, setSelectedData }: 
                                                 </Button>
                                             </DropdownMenuContent>
                                         </DropdownMenu >
-
-
-                                        {/* <Button variant="ghost" size="sm" className="text-xs">
-                                            <Eye className="size-4 hover:text-white" color="#014EA8" />
-                                        </Button>
-                                        <Button variant="ghost" size="icon">
-                                            <Trash2 className="size-4 text-rose-500" />
-
-                                        </Button> */}
                                     </div>
                                 </td>
                             </tr>

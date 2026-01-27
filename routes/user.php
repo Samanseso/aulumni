@@ -11,6 +11,10 @@ Route::middleware(['auth'])->prefix('user')->group(function () {
     Route::patch('activate/{user}', [UserController::class, 'activate'])->name('user.activate');
     Route::patch('deactivate/{user}', [UserController::class, 'deactivate'])->name('user.deactivate');
 
+    // Delete user
+    Route::delete('delete/{user}', [UserController::class, 'destroy'])->name('user.destroy');
+
+
     // Bulk activate
     Route::post('bulk_activate', [UserController::class, 'bulk_activate'])->name('user.bulk_activate');
 
@@ -19,11 +23,6 @@ Route::middleware(['auth'])->prefix('user')->group(function () {
     Route::post('bulk_deactivate', [UserController::class, 'bulk_deactivate'])->name('user.bulk_deactivate');
 
 
-    // Delete user
-    Route::delete('delete/{user}', [UserController::class, 'destroy'])->name('user.destroy');
-
-    // Bulk deactivate
+    // Bulk delete
     Route::post('bulk_delete', [UserController::class, 'bulk_delete'])->name('user.bulk_delete');
-
-
 });

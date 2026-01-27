@@ -255,11 +255,15 @@ export default function AlumniList() {
                                 <Button size="sm" className="translate-y-1.5" variant="outline">
                                     <Upload />Export
                                 </Button>
-                                <Link href={bulk_delete()} method="post" data={ {user_ids: selectedData} }>
-                                    <Button size="sm" className="translate-y-1.5 bg-rose-100 text-red">
-                                        <Trash />Delete
-                                    </Button>
-                                </Link>
+
+                                <Button size="sm" className="translate-y-1.5 bg-rose-100 text-red" onClick={() => confirmActionContentCreateModal({
+                                    url: bulk_delete(),
+                                    message: "Are you sure to delete this accounts?",
+                                    data: { user_ids: selectedData },
+                                    promptPassword: true,
+                                })}>
+                                    <Trash />Delete
+                                </Button>
                             </div>
 
                         </div>

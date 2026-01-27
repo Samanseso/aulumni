@@ -5,26 +5,27 @@ interface ContentType {
     url: RouteDefinition<"delete"> | RouteDefinition<"patch"> |RouteDefinition<"post">;
     message: string;
     data?: any;
+    promptPassword?: boolean;
 }
 
 interface ConfirmDeleteContextProps {
-    confimActionContent: ContentType | undefined;
-    setConfimActionContent: React.Dispatch<SetStateAction<ContentType | undefined>>;
+    confirmActionContent: ContentType | undefined;
+    setConfirmActionContent: React.Dispatch<SetStateAction<ContentType | undefined>>;
     confirmActionContentCreateModal: (data: ContentType | undefined) => void;
 }
 
 const ConfirmActionContext = createContext<ConfirmDeleteContextProps | undefined>(undefined);
 
 export const ConfirmActionProvider = ({ children }: { children: React.ReactNode }) => {
-    const [confimActionContent, setConfimActionContent] = useState<ContentType | undefined>(undefined);
+    const [confirmActionContent, setConfirmActionContent] = useState<ContentType | undefined>(undefined);
 
     const confirmActionContentCreateModal = (data: ContentType | undefined) => {
         console.log(data)
-        setConfimActionContent(data);
+        setConfirmActionContent(data);
     }
 
     return (
-        <ConfirmActionContext.Provider value={{ confimActionContent , setConfimActionContent, confirmActionContentCreateModal}}>
+        <ConfirmActionContext.Provider value={{ confirmActionContent , setConfirmActionContent, confirmActionContentCreateModal}}>
             {children}
         </ConfirmActionContext.Provider>
     );

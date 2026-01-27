@@ -25,21 +25,30 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const Alumni = () => {
 
-    const props = usePage<{ alumni: Pagination<Alumni[]>}>().props;
+    const props = usePage<{ alumni: Pagination<Alumni[]> }>().props;
     console.log(props);
 
-    const { confimActionContent, setConfimActionContent } = useConfirmAction();
+    const { confirmActionContent, setConfirmActionContent: setConfimActionContent } = useConfirmAction();
 
-    console.log(confimActionContent);
 
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
-        
+
             <AlumniList />
 
-            {confimActionContent && <ActionConfirmation url={confimActionContent.url} message={confimActionContent.message} data={confimActionContent.data} setConfimActionContent={setConfimActionContent}/>}
+            {
+                confirmActionContent &&
+
+                <ActionConfirmation
+                    url={confirmActionContent.url}
+                    message={confirmActionContent.message}
+                    data={confirmActionContent.data}
+                    promptPassword={confirmActionContent.promptPassword}
+                    setConfirmActionContent={setConfimActionContent}
+                />
+            }
 
 
 

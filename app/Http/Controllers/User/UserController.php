@@ -7,9 +7,12 @@ use App\Http\Requests\UserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use App\Concerns\PasswordValidationRules;
 
 class UserController extends Controller
 {
+    use PasswordValidationRules;
+
     public function activate(User $user): RedirectResponse
     {
         $user->status = 'active';
@@ -97,10 +100,16 @@ class UserController extends Controller
     }
 
     public function bulk_delete(Request $request) {
+
+        //dd($request->all());
+        $request->validate([
+            'password' => $this->currentPasswordRules()
+        ]);
+
         foreach ($request->all()["user_ids"] as $user_id) {
             $user = User::find($user_id);
             if ($user) {
-                $user->destroy();
+                User::destroy($user->user_id);
             }
         }
 
