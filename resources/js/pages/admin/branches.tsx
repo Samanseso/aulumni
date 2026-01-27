@@ -40,7 +40,7 @@ export default function Branches() {
 
     const [tableVersion, setTableVersion] = useState(0);
 
-    const [filter, setFilter] = useState<Filter[]>([]);
+    const [filter, setFilter] = useState<string | undefined>(undefined);
 
 
     const [open, setOpen] = useState(false);
@@ -66,8 +66,10 @@ export default function Branches() {
     const handleAddressChange = (e: string) => {
         console.log(e)
         if (e === "none") {
-            setBranches(props.branches)
+            setFilter(undefined);
+            setBranches(props.branches);
         } else {
+            setFilter(e);
             setBranches(props.branches.filter(branch => branch.address === e));
         }
     }
@@ -82,13 +84,13 @@ export default function Branches() {
                     <div className="flex gap-2">
                         <div className="flex items-center gap-2">
                             <ListFilter size={15} className="" />
-                            <Select defaultValue={filter.find(f => f.property === "address")?.value || ""} onValueChange={handleAddressChange}>
+                            <Select defaultValue={filter} onValueChange={handleAddressChange}>
                                 <SelectTrigger className="text-black gap-2 !text-black">
-                                    <SelectValue placeholder="Course" />
+                                    <SelectValue placeholder="Address" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {
-                                        filter.find(f => f.property === "course")?.value ?
+                                        filter ?
                                             <SelectItem value="none" className="text-red">Reset</SelectItem> :
                                             <SelectItem value="none" className="hidden">Address</SelectItem>
                                     }
