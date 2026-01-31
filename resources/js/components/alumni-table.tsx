@@ -26,15 +26,6 @@ export function AlumniTable({ alumni, columns, selectedData, setSelectedData }: 
     
     const { confirmActionContentCreateModal: confimDeleteContentCreateModal } = useConfirmAction();
     
-    // useEffect(() => {
-    // 	const lowerSearchInput = searchInput.toLowerCase();
-    // 	const newFilteredData = data.filter(row => {
-    // 		return row.some(item =>
-    // 			item.toString().toLowerCase().includes(lowerSearchInput)
-    // 		);
-    // 	});
-    // 	setFilteredData(newFilteredData);
-    // }, [data, searchInput]);
 
     const updatedSelectedData = (user_id: number) => {
         if (selectedData.includes(user_id)) {

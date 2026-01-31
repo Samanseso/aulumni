@@ -18,7 +18,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 
-const Employee = () => {
+const Employees = () => {
 
     const props = usePage<{ employee: Pagination<Employee[]>}>().props;
     console.log(props);
@@ -33,4 +33,4 @@ const Employee = () => {
     )
 }
 
-export default Employee
+export default Employees

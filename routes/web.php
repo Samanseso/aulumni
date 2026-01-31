@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -10,9 +11,21 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
+        $user = Auth::user();
+
+        switch ($user->user_type) {
+            case 'admin':   
+                return Inertia::render('admin/dashboard');
+            case 'employee':
+                return Inertia::render('employee/dashboard');
+            case 'alumni':
+                return Inertia::render('alumni/dashboard');
+            default:
+                abort(403, 'Unauthorized');
+        }
     })->name('dashboard');
 });
 

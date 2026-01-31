@@ -8,9 +8,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class AlumniEmploymentDetails extends Model
 {
     protected $table = 'alumni_employment_details';
-    protected $primaryKey = 'id';
+    protected $primaryKey = 'alumni_id';
+    protected $keyType = 'string';
     public $timestamps = true;
-
+    
     protected $fillable = [
         'alumni_id',
         'first_work_position',

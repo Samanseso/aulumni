@@ -21,6 +21,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
@@ -55,13 +56,21 @@ class AlumniController extends Controller
             });
         }
 
-
+        
+        // filter by batch
         if ($request->filled('batch')) {
             $batch = $request->input('batch');
             $query->whereHas('academic_details', function ($q) use ($batch) {
                 $q->where('batch', $batch);
             });
         }
+
+        // filter by search
+        if ($request->filled('search')) {
+            $search = Str::lower(trim($request->input('search')));
+            $query->where('user_name', 'like', "%{$search}%");
+        }
+
 
 
         $rows = $request->input('rows', 15);
@@ -72,7 +81,6 @@ class AlumniController extends Controller
 
         return Inertia::render('admin/alumni', [
             'alumni' => $alumni,
-            'filters' => $request->only(['school_level']),
             'courses' => Course::all(),
             'batches' => Batch::all(),
         ]);
@@ -296,7 +304,6 @@ class AlumniController extends Controller
     public function update_personal(PersonalDetailsRequest $request, Alumni $alumni)
     {
         $personalDetails = AlumniPersonalDetails::findOrFail($alumni->alumni_id);
-
         $personalDetails->update($request->all());
 
         return back()->with([
@@ -310,7 +317,9 @@ class AlumniController extends Controller
 
     public function update_academic(AcademicDetailsRequest $request, Alumni $alumni)
     {
-        $alumni->update($request->all());
+
+        $academicDetails = AlumniAcademicDetails::findOrFail($alumni->alumni_id);
+        $academicDetails->update($request->all());
 
         return back()->with([
             'modal_status' => "success",
@@ -323,7 +332,8 @@ class AlumniController extends Controller
     public function update_contact(ContactDetailsRequest $request, Alumni $alumni)
     {
 
-        $alumni->update($request->all());
+        $contactDetails = AlumniContactDetails::findOrFail($alumni->alumni_id);
+        $contactDetails->update($request->all());
 
         return back()->with([
             'modal_status' => "success",
@@ -336,7 +346,8 @@ class AlumniController extends Controller
     public function update_employment(EmploymentDetailsRequest $request, Alumni $alumni)
     {
 
-        $alumni->update($request->all());
+        $employmentDetails = AlumniEmploymentDetails::findOrFail($alumni->alumni_id);
+        $employmentDetails->update($request->all());
 
         return back()->with([
             'modal_status' => "success",

@@ -39,7 +39,7 @@ const columns = [
 
 
 export default function AlumniList() {
-    const { props } = usePage<{ alumni: Pagination<Alumni[]>, modal: ModalType, courses: Course[], batches: Batch[] }>();
+    const { props } = usePage<{ alumni: Pagination<Alumni[]>, courses: Course[], batches: Batch[] }>();
 
     const [alumni, setAlumni] = useState<Alumni[]>(props.alumni.data);
     const [rowsInput, setRowsInput] = useState(props.alumni.per_page.toString() ?? 10);
@@ -112,10 +112,8 @@ export default function AlumniList() {
     const updateTable = (newReservation: Pagination<Alumni[]>) => setAlumni(newReservation.data);
 
     useEffect(() => {
+        console.log(123);
         setTableVersion(v => v + 1)
-        if (props.modal && props.modal.status) {
-            createModal(props.modal);
-        }
     }, [alumni]);
 
 

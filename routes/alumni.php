@@ -1,11 +1,9 @@
 <?php
 
 use App\Http\Controllers\User\AlumniController;
-use App\Http\Controllers\User\EmployeeController;
-use App\Http\Controllers\User\UserController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth'])->prefix('user')->group(function () {
+Route::middleware(['auth', 'role:admin'])->prefix('user')->group(function () {
 
     // Render alumni table
     Route::get('alumni', [AlumniController::class, 'index'])->name('alumni.index');

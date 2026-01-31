@@ -63,16 +63,6 @@ export default function Branches() {
         setTableVersion(v => v + 1);
     }, [branches])
 
-    const handleAddressChange = (e: string) => {
-        console.log(e)
-        if (e === "none") {
-            setFilter(undefined);
-            setBranches(props.branches);
-        } else {
-            setFilter(e);
-            setBranches(props.branches.filter(branch => branch.address === e));
-        }
-    }
 
 
 
@@ -82,24 +72,6 @@ export default function Branches() {
                 <div className="flex p-5 pb-2 justify-between mb-6">
                     <p className="font-bold text-xl text-gray-600">List of Branches</p>
                     <div className="flex gap-2">
-                        <div className="flex items-center gap-2">
-                            <ListFilter size={15} className="" />
-                            <Select defaultValue={filter} onValueChange={handleAddressChange}>
-                                <SelectTrigger className="text-black gap-2 !text-black">
-                                    <SelectValue placeholder="Address" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {
-                                        filter ?
-                                            <SelectItem value="none" className="text-red">Reset</SelectItem> :
-                                            <SelectItem value="none" className="hidden">Address</SelectItem>
-                                    }
-                                    {props.addresses.map(address => (
-                                        <SelectItem key={address} value={address}>{address}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
                         <SearchBar />
                         <Link href={''} as="div">
                             <Button variant="outline" size="default" className="text-xs text-white bg-blue hover:bg-red hover:text-white"><Plus />Add Branch</Button>
@@ -119,9 +91,6 @@ export default function Branches() {
                 <BranchTable columns={columns} branch={branches} />
 
 
-
-
-                {props.modal && props.modal.status && <Modal key={tableVersion + 1} content={props.modal} />}
 
             </div>
         </AppLayout>

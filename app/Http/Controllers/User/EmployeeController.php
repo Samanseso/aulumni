@@ -8,24 +8,26 @@ use App\Http\Requests\CreateEmployee\EmployeeDetailsRequest;
 use App\Imports\EmployeeImport;
 use App\Models\Employee;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class EmployeeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $employee = Employee::query()
-            ->leftJoin('users', 'employee.user_id', '=', 'users.user_id')
-            ->select('employee.*', 'users.email', 'users.status')
-            ->orderBy('employee.created_at', 'desc')
-            ->paginate(15)
+        $query = Employee::query()
+            ->leftJoin('users', 'employees.user_id', '=', 'users.user_id')
+            ->select('employees.*', 'users.name', 'users.user_name', 'users.email', 'users.status')
+            ->whereNotNull('employees.employee_id');
+
+        $rows = $request->input('rows', 15);
+
+         $employees = $query->orderBy('employees.created_at', 'desc')
+            ->paginate($rows)
             ->withQueryString();
 
-        return Inertia::render('admin/employee', [
-            'employee' => $employee,
+        return Inertia::render('admin/employees', [
+            'employees' => $employees,
         ]);
     }
 

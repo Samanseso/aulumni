@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Employee extends Model
 {
-    protected $table = 'employee';
+    protected $table = 'employees';
     protected $primaryKey = 'employee_id';
     public $incrementing = false;
     protected $keyType = 'string';
