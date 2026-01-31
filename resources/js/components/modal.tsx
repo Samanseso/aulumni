@@ -2,18 +2,20 @@
 import { ModalType } from "@/types";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "./ui/dialog";
-import { useState, useEffect } from "react";
+import { useState, SetStateAction } from "react";
 
 interface ModalProps {
     content: ModalType;
+    setModalContent: React.Dispatch<SetStateAction<ModalType | undefined>>;
 }
 
-export function Modal({ content }: ModalProps) {
+export function Modal({ content, setModalContent }: ModalProps) {
     const [open, setOpen] = useState(true);
 
     const onModalClose = (open: boolean) => {
         if (!open) {
-            setOpen(false)
+            setModalContent(undefined);
+            setOpen(false);
         }
     }
 

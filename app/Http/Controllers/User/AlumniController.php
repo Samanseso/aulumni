@@ -63,8 +63,11 @@ class AlumniController extends Controller
             });
         }
 
+
+        $rows = $request->input('rows', 15);
+
         $alumni = $query->orderBy('alumni.created_at', 'desc')
-            ->paginate(15)
+            ->paginate($rows)
             ->withQueryString();
 
         return Inertia::render('admin/alumni', [
@@ -250,7 +253,6 @@ class AlumniController extends Controller
 
     public function import(Request $request): RedirectResponse
     {
-
         // Get row count
         $collection = Excel::toCollection(new AlumniImport, $request->file('file'));
         $rowCount = $collection->first()->count();
@@ -262,14 +264,13 @@ class AlumniController extends Controller
             'modal_status' => "success",
             'modal_action' => "create",
             'modal_title' => "Import successful!",
-            'modal_message' => "$rowCount alumni accounts was created successfully.",
+            'modal_message' => $this->num_to_words($rowCount) . " alumni accounts was created successfully.",
         ]);
     }
 
 
     public function update_profile(UserRequest $request, User $user)
     {
-
         try {
             $user->update($request->all());
 
@@ -294,20 +295,21 @@ class AlumniController extends Controller
 
     public function update_personal(PersonalDetailsRequest $request, Alumni $alumni)
     {
+        $personalDetails = AlumniPersonalDetails::findOrFail($alumni->alumni_id);
 
-        $alumni->update($request->all());
+        $personalDetails->update($request->all());
 
         return back()->with([
-            'modal_status' => "success",
-            'modal_action' => "update",
-            'modal_title' => "Update successful!",
-            'modal_message' => "Alumni persoanl details was updated successfully.",
+            'modal_status'  => "success",
+            'modal_action'  => "update",
+            'modal_title'   => "Update successful!",
+            'modal_message' => "Alumni personal details were updated successfully.",
         ]);
     }
 
+
     public function update_academic(AcademicDetailsRequest $request, Alumni $alumni)
     {
-
         $alumni->update($request->all());
 
         return back()->with([
@@ -342,5 +344,63 @@ class AlumniController extends Controller
             'modal_title' => "Update successful!",
             'modal_message' => "Alumni employment details was updated successfully.",
         ]);
+    }
+
+
+
+    function num_to_words($number)
+    {
+        $words = array(
+            0 => 'zero',
+            1 => 'one',
+            2 => 'two',
+            3 => 'three',
+            4 => 'four',
+            5 => 'five',
+            6 => 'six',
+            7 => 'seven',
+            8 => 'eight',
+            9 => 'nine',
+            10 => 'ten',
+            11 => 'eleven',
+            12 => 'twelve',
+            13 => 'thirteen',
+            14 => 'fourteen',
+            15 => 'fifteen',
+            16 => 'sixteen',
+            17 => 'seventeen',
+            18 => 'eighteen',
+            19 => 'nineteen',
+            20 => 'twenty',
+            30 => 'thirty',
+            40 => 'forty',
+            50 => 'fifty',
+            60 => 'sixty',
+            70 => 'seventy',
+            80 => 'eighty',
+            90 => 'ninety'
+        );
+
+        if ($number < 20) {
+            return $words[$number];
+        }
+
+        if ($number < 100) {
+            return $words[10 * floor($number / 10)] .
+                ' ' . $words[$number % 10];
+        }
+
+        if ($number < 1000) {
+            return $words[floor($number / 100)] . ' hundred '
+                . $this->num_to_words($number % 100);
+        }
+
+        if ($number < 1000000) {
+            return $this->num_to_words(floor($number / 1000)) .
+                ' thousand ' . $this->num_to_words($number % 1000);
+        }
+
+        return $this->num_to_words(floor($number / 1000000)) .
+            ' million ' . $this->num_to_words($number % 1000000);
     }
 }

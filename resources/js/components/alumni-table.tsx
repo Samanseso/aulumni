@@ -55,7 +55,7 @@ export function AlumniTable({ alumni, columns, selectedData, setSelectedData }: 
     }
 
     return (
-        <div className="table-fixed w-full h-full">
+        <div className="table-fixed w-full h-full mb-20">
             {viewAlumni && <AlumniModal alumni={viewAlumni} setViewAlumni={setViewAlumni} />}
 
             <table className="w-full">
@@ -150,6 +150,7 @@ export function AlumniTable({ alumni, columns, selectedData, setSelectedData }: 
                                                     onClick={() => confimDeleteContentCreateModal({
                                                         url: destroy(alum.user_id),
                                                         message: "Are you sure you want to delete this user?",
+                                                        action: "Delete"
                                                     })}
                                                 >
                                                     <Trash className="size-4 text-rose-500" />Delete

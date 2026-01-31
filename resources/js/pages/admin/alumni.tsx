@@ -2,12 +2,12 @@ import { Head, usePage } from '@inertiajs/react'
 import type { Alumni, BreadcrumbItem, ModalType, Pagination } from '@/types'
 import AppLayout from '@/layouts/app-layout';
 import { index } from '@/routes/alumni';
-import SearchBar from '@/components/search-bar';
 import AlumniList from '@/components/alumni-list';
 import { Modal } from '@/components/modal';
 import { useConfirmAction } from '@/components/context/confirm-action-context';
 import ActionConfirmation from '@/components/action-confirmation';
-import { useState } from 'react';
+import { useEffect } from 'react';
+import { useModal } from '@/components/context/modal-context';
 
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -25,12 +25,12 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const Alumni = () => {
 
-    const props = usePage<{ alumni: Pagination<Alumni[]> }>().props;
+    const props = usePage<{ alumni: Pagination<Alumni[]> }>().props;    
+
     console.log(props);
 
     const { confirmActionContent, setConfirmActionContent: setConfimActionContent } = useConfirmAction();
-
-
+    const { modalContent, setModalContent } = useModal();
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -50,6 +50,9 @@ const Alumni = () => {
                     setConfirmActionContent={setConfimActionContent}
                 />
             }
+
+            {modalContent && <Modal content={modalContent} setModalContent={setModalContent} />}
+
 
 
 

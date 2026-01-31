@@ -3,17 +3,15 @@
 namespace App\Imports;
 
 use App\Actions\Fortify\CreateNewUser;
-use App\Models\Account;
 use App\Models\Alumni;
 use App\Models\AlumniPersonalDetails;
 use App\Models\AlumniAcademicDetails;
 use App\Models\AlumniContactDetails;
 use App\Models\AlumniEmploymentDetails;
-use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 
 class AlumniImport implements ToCollection, WithHeadingRow
 {
@@ -78,7 +76,7 @@ class AlumniImport implements ToCollection, WithHeadingRow
                 'password'              => $password,
                 'password_confirmation' => $password,
                 'status'                => $status,
-                'created_by'            => Auth::id() ?? 1,
+                'created_by'            => Auth::user()->user_id,
             ]);
 
             // 1. Create alumni record

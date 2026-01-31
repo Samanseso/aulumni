@@ -23,18 +23,18 @@ Route::middleware(['auth'])->prefix('user')->group(function () {
     Route::post('alumni/import', [AlumniController::class, 'import'])->name('alumni.import');
 
     // Edit alumni profile
-    Route::patch('/alumni/update/profile/{user}', [AlumniController::class, 'update_profile'])->name('alumni.update_profile');
+    Route::patch('/alumni/update_profile/{user}', [AlumniController::class, 'update_profile'])->name('alumni.update_profile');
 
     // Edit alumni personal details
-    Route::patch('/alumni/update/personal/{alumni}', [AlumniController::class, 'update_personal'])->name('alumni.update_personal');
+    Route::patch('/alumni/update_personal/{alumni}', [AlumniController::class, 'update_personal'])->name('alumni.update_personal');
 
     // Edit alumni academic details
-    Route::patch('/alumni/update/academic/{alumni}', [AlumniController::class, 'update_academic'])->name('alumni.update_academic');
+    Route::patch('/alumni/update_academic/{alumni}', [AlumniController::class, 'update_academic'])->name('alumni.update_academic');
 
     // Edit alumni contact details
-    Route::patch('/alumni/update/contact/{alumni}', [AlumniController::class, 'update_contact'])->name('alumni.update_contact');
+    Route::patch('/alumni/update_contact/{alumni}', [AlumniController::class, 'update_contact'])->name('alumni.update_contact');
 
     // Edit alumni employment details
-    Route::patch('/alumni/update/employment/{alumni}', [AlumniController::class, 'update_employment'])->name('alumni.update_employment');
+    Route::patch('/alumni/update_employment/{alumni}', [AlumniController::class, 'update_employment'])->name('alumni.update_employment');
 
 });

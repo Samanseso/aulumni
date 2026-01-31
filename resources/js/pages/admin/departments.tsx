@@ -38,45 +38,16 @@ export default function Departments() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Departments" />
             <div className="m-4 bg-white shadow rounded-lg h-[100%] overflow-hidden">
-                <div className="flex p-5 pb-2 justify-between">
+                <div className="flex p-5 pb-2 justify-between mb-6">
                     <p className="font-bold text-xl text-gray-600">List of Departments</p>
                     <div className="flex gap-2">
-                        <Button variant="outline" size="default" className="hidden md:flex text-xs">
-                            <Download />Export
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="default"
-                            className="hidden md:flex text-xs"
-                            onClick={() => setOpenImport(true)}
-                        >
-                            <Upload />Import
-                        </Button>
+                        <SearchBar />
 
                         <Link href={''}>
                             <Button variant="outline" size="default" className="text-xs text-white bg-blue hover:bg-red hover:text-white">
                                 <Plus />Add Department
                             </Button>
                         </Link>
-                    </div>
-                </div>
-
-                <div className="justify-between flex items-center py-3 px-0 rounded-t-lg mb-6 px-5">
-                    <div className="flex items-center gap-2">
-                        <ListFilter size={15} className="" />
-                        <Button variant="outline" size="default" className="hidden text-xs md:flex">
-                            School Level<ChevronDown />
-                        </Button>
-                        <Button variant="outline" size="default" className="hidden text-xs md:flex">
-                            Course<ChevronDown />
-                        </Button>
-                        <Button variant="outline" size="default" className="hidden text-xs md:flex">
-                            Batch<ChevronDown />
-                        </Button>
-                    </div>
-
-                    <div className="flex gap-2">
-                        <SearchBar />
                     </div>
                 </div>
 

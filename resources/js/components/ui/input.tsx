@@ -79,7 +79,7 @@ export function Input({
           </button>
         ) : (
           <span
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm flex items-center pointer-events-none"
+            className="pointer-events-none text-muted-foreground text-sm"
             aria-hidden="true"
           >
             {suffix}
