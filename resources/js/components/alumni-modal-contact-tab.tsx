@@ -7,11 +7,7 @@ const AlumniModalContactTab = ({ alumni }: { alumni: Alumni }) => {
         <div className="h-40">
             <div
                 className="flex flex-col gap-5 h-40 overflow-x-hidden overflo-y-scroll 
-                pe-2 [&::-webkit-scrollbar]:w-2
-                [&::-webkit-scrollbar-track]:bg-gray-100
-                [&::-webkit-scrollbar-thumb]:bg-gray-300
-                dark:[&::-webkit-scrollbar-track]:bg-neutral-700
-                dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500"
+                pe-2 custom-scrollbar"
             >
                 {/* Email */}
                 <div className="flex items-center w-full">

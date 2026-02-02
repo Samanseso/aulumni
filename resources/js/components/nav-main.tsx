@@ -6,7 +6,10 @@ import {
     Wrench,
     FileClock,
     ChevronDown,
-} from "lucide-react";
+    Megaphone,
+    AppWindow,
+    FileText,
+} from "lucide-react";  
 import {
     SidebarGroup,
     SidebarGroupLabel,
@@ -15,16 +18,28 @@ import {
     SidebarMenuButton,
     SidebarMenuAction,
 } from "@/components/ui/sidebar";
+import { dashboard } from "@/routes";
+import { index } from "@/routes/post";
 
 export function NavMain() {
+
+    const [contentToggle, setContentToggle] = useState<boolean>(() => { 
+        const v = localStorage.getItem("nav-content-toggle"); 
+        return v === "true"; 
+    });
+
+
     const [userToggle, setUserToggle] = useState<boolean>(() => {
         const v = localStorage.getItem("nav-user-toggle");
         return v === "true";
     });
+
     const [utilityToggle, setUtilityToggle] = useState<boolean>(() => {
         const v = localStorage.getItem("nav-utility-toggle");
         return v === "true";
     });
+
+    const [contentHover, setContentHover] = useState<boolean>(false);
     const [userHover, setUserHover] = useState<boolean>(false);
     const [utilityHover, setUtilityHover] = useState<boolean>(false);
 
@@ -35,7 +50,6 @@ export function NavMain() {
         return currentUrl === href || currentUrl.startsWith(href);
     };
 
-    const dashboardHref = "/dashboard";
 
     return (
         <SidebarGroup className="px-2 py-0">
@@ -45,15 +59,66 @@ export function NavMain() {
                 <SidebarMenuItem key="Dashboard">
                     <SidebarMenuButton
                         asChild
-                        isActive={urlIsActive(dashboardHref)}
+                        isActive={urlIsActive(dashboard().url)}
                         tooltip={{ children: "Dashboard" }}
                     >
-                        <Link href={dashboardHref} prefetch>
+                        <Link href={dashboard().url} prefetch>
                             <LayoutGrid />
                             <span>Dashboard</span>
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
+
+                <SidebarMenuItem key="ContentManagement">
+                    <div>
+                        <div>
+                            <SidebarMenuButton
+                                onClick={() => {
+                                    localStorage.setItem("nav-content-toggle", (!contentToggle).toString());
+                                    setContentToggle(!contentToggle);
+                                }}
+                            >
+                                <FileText />
+                                <span>Content Management</span>
+
+                                <SidebarMenuAction
+                                    asChild
+                                    className={`ml-auto mt-2 ${contentToggle ? "rotate-180" : "rotate-0"} transition-transform`}
+                                    onMouseEnter={() => setContentHover(true)}
+                                    onMouseLeave={() => setContentHover(false)}
+                                >
+                                    <ChevronDown className={contentHover ? "black" : "white"} />
+                                </SidebarMenuAction>
+                            </SidebarMenuButton>
+
+                            <div className={`${contentToggle ? "max-h-100" : "max-h-0"} overflow-hidden transition-all duration-300 ease-in-out ms-8`}>
+                                <SidebarMenuButton
+                                    key="Announcements"
+                                    asChild
+                                    isActive={urlIsActive("/content/announcements") || currentUrl.includes("/content/announcements")}
+                                    tooltip={{ children: "Announcements" }}
+                                >
+                                    <Link href="/content/announcements" prefetch>
+                                        <span>Announcements</span>
+                                    </Link>
+                                </SidebarMenuButton>
+
+                                <SidebarMenuButton
+                                    key="JobPostings"
+                                    asChild
+                                    isActive={urlIsActive("/content/job-postings") || currentUrl.includes("/content/job-postings")}
+                                    tooltip={{ children: "Job Postings" }}
+                                >
+                                    <Link href={index()} prefetch>
+                                        <span>Job Postings</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </div>
+                        </div>
+                    </div>
+                </SidebarMenuItem>
+
+
 
                 <SidebarMenuItem key="User">
                     <div>

@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -69,6 +70,26 @@ class User extends Authenticatable
     public function employeeDetail(): HasOne
     {
         return $this->hasOne(Employee::class, 'user_id', 'user_id');
+    }
+
+    public function posts(): HasMany
+    {
+        return $this->hasMany(Post::class, 'user_id', 'user_id');
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class, 'user_id', 'user_id');
+    }
+
+    public function reactions(): HasMany
+    {
+        return $this->hasMany(Reaction::class, 'user_id', 'user_id');
+    }
+
+    public function shares(): HasMany
+    {
+        return $this->hasMany(Share::class, 'user_id', 'user_id');
     }
 
     

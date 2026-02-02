@@ -105,8 +105,8 @@ export interface AlumniEmploymentDetails {
 
 interface User {
 	user_id: int;
-	user_name: string;
 	name: string;
+	user_name: string;
 	email: string;
 	user_type: string;
 	password: string;
@@ -161,13 +161,19 @@ export interface Pagination<T> {
 }
 
 export interface AlumniRow {
-	id: string,
-	student_number: string,
-	school_level: string,
-	full_name: string,
-	course: string,
-	branch_graduated: string,
+	alumni_id: string;
+	user_id: number;
+	user_name: string;
+	status: string;
+	first_name: string;
+	last_name: string;
+	email: string;
+	student_number: string;
+	school_level: string;
+	course: string;
+	campus: string;
 	batch: string;
+	created_at: string;
 }
 
 export interface ModalType {
@@ -213,8 +219,8 @@ export interface Batch {
 }
 
 export interface Filter {
-    property: string;
-    value: string;
+	property: string;
+	value: string;
 }
 
 
@@ -224,4 +230,107 @@ export interface ActionModalContentType {
 	action: string;
 	data?: any;
 	promptPassword?: boolean;
+}
+
+
+interface ColumnType {
+	name: string;
+	db_name: string;
+}
+
+
+
+export interface Post {
+	post_id: number;
+	post_uuid: string;
+	user_id: number;
+	content: string;
+	place: string | null;
+	privacy: 'public' | 'friends' | 'only_me';
+	comments_count: number;
+	reactions_count: number;
+	status: string;
+	created_at: string;
+	updated_at: string;
+}
+
+export type PostRow = { post_id: ID;
+	post_uuid: string;
+	user_id: number;
+	user: User;
+	content: string;
+	attachments?: Attachment[];
+	privacy: 'public' | 'friends' | 'only_me';
+	comments_count: number;
+	reactions_count: number;
+	status: string;
+	created_at: string;
+	updated_at: string;
+};
+
+
+
+export interface Attachment {
+	attachment_id: number;
+	post_id: number;
+	url: string;
+	type: 'image' | 'video' | 'file';
+	created_at: string;
+	updated_at: string;
+}
+
+export interface Comment {
+	comment_id: number;
+	post_id: number;
+	user_id: number;
+	content: string;
+	created_at: string;
+	updated_at: string;
+}
+
+export interface Reaction {
+	reaction_id: number;
+	post_id: number;
+	user_id: number;
+	type: 'like' | 'love' | 'haha' | 'wow' | 'sad' | 'angry';
+	created_at: string;
+}
+
+export interface Share {
+	share_id: number;
+	post_id: number;
+	user_id: number;
+	comment: string | null;
+	created_at: string;
+}
+
+export interface CreatePostDTO {
+	user_id: number;
+	content: string;
+	place?: string | null;
+	privacy?: 'public' | 'friends' | 'only_me';
+}
+
+export interface CreateAttachmentDTO {
+	post_id: number;
+	url: string;
+	type?: 'image' | 'video' | 'file';
+}
+
+export interface CreateCommentDTO {
+	post_id: number;
+	user_id: number;
+	content: string;
+}
+
+export interface CreateReactionDTO {
+	post_id: number;
+	user_id: number;
+	type?: 'like' | 'love' | 'haha' | 'wow' | 'sad' | 'angry';
+}
+
+export interface CreateShareDTO {
+	post_id: number;
+	user_id: number;
+	comment?: string | null;
 }

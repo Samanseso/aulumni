@@ -8,6 +8,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('user')->group(function () {
     // Render alumni table
     Route::get('alumni', [AlumniController::class, 'index'])->name('alumni.index');
 
+    
+    Route::get('alumni/{alumni}', [AlumniController::class, 'show'])->name('alumni.show');
+
     // Render multi-step alumni form
     Route::get('alumni/create/{step}', [AlumniController::class, 'step'])->name('alumni.step');
 

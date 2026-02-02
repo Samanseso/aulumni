@@ -175,3 +175,38 @@ input[type=number] {
   -moz-appearance: textfield;
 }
 
+/* Container class to apply custom scrollbar styles */
+.custom-scrollbar {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #d1d5db transparent; /* thumb color, track color for Firefox */
+}
+
+/* WebKit browsers */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 0.5rem; /* equivalent to w-2 */
+  height: 0.5rem;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent; /* tailwind gray-100 */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #d1d5db61; /* tailwind gray-300 */
+  border-radius: 9999px;
+  border: 2px solid transparent; /* optional: gives a gap effect */
+  background-clip: padding-box;
+}
+
+/* Dark mode overrides */
+.dark .custom-scrollbar {
+  scrollbar-color: #6b7280 #374151; /* thumb, track -> neutral-500, neutral-700 */
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-track {
+  background: #374151; /* neutral-700 */
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #6b7280; /* neutral-500 */
+}

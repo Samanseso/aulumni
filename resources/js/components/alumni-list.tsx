@@ -1,9 +1,9 @@
 import AppLayout from "@/layouts/app-layout";
-import { BreadcrumbItem, Pagination, Alumni, AlumniRow, ModalType, Course, Batch } from "@/types";
+import { BreadcrumbItem, Pagination, Alumni, AlumniRow, Course, Batch, ColumnType } from "@/types";
 import { router, usePage } from "@inertiajs/react";
 import { Button } from "./ui/button";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Download, Plus, Upload, ChevronDown, ListFilter, Search, BadgeCheck, Ban, Trash } from "lucide-react";
+import { Download, Plus, Upload, ChevronDown, ListFilter, Search, BadgeCheck, Ban, Trash, ArrowDownWideNarrow } from "lucide-react";
 import { Link } from "@inertiajs/react";
 import { TablePagination } from "./table-pagination";
 import SearchBar from "./search-bar";
@@ -17,31 +17,32 @@ import { bulk_activate, bulk_deactivate, bulk_delete } from "@/routes/user";
 import { useConfirmAction } from "./context/confirm-action-context";
 import { Filter } from "@/types";
 import { useModal } from "./context/modal-context";
+import SortCollapsible from "./sort-collapsible";
 
-
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'User Management',
-        href: '/user-management/students',
-    },
-];
 
 const columns = [
     'Alumni ID',
     'Name',
-    'Student Number',
+    'Student #',
     'School Level',
     'Course',
-    'Branch Graduated',
+    'Branch',
     'Batch',
     'Status',
 ];
 
+const sortableColuns: ColumnType[] = [
+    {name: 'Alumni ID', db_name: 'alumni_id'},
+    {name: 'Name', db_name: 'name'},
+    {name: 'Student #', db_name: 'student_number'},
+    {name: 'Batch', db_name: 'batch'},
+]
+
 
 export default function AlumniList() {
-    const { props } = usePage<{ alumni: Pagination<Alumni[]>, courses: Course[], batches: Batch[] }>();
+    const { props } = usePage<{ alumni: Pagination<AlumniRow[]>, courses: Course[], batches: Batch[] }>();
 
-    const [alumni, setAlumni] = useState<Alumni[]>(props.alumni.data);
+    const [alumni, setAlumni] = useState<AlumniRow[]>(props.alumni.data);
     const [rowsInput, setRowsInput] = useState(props.alumni.per_page.toString() ?? 10);
     const [searchInput, setSearchInput] = useState('');
     const [selectedData, setSelectedData] = useState<number[]>([]);
@@ -75,7 +76,7 @@ export default function AlumniList() {
         });
     }, []);
 
-    const setOrRemoveFilter = (property: string, value?: string) => {
+    const setOrRemoveParameters = (property: string, value?: string) => {
         const next = value === undefined || value === "none"
             ? filter.filter(f => f.property !== property)
             : [...filter.filter(f => f.property !== property), { property, value }];
@@ -87,10 +88,10 @@ export default function AlumniList() {
     };
 
     // handlers (shortened)
-    const handleSchoolLevelChange = (e: string) => setOrRemoveFilter("school_level", e);
-    const handleCourseChange = (e: string) => setOrRemoveFilter("course", e);
-    const handleBatchChange = (e: string) => setOrRemoveFilter("batch", e);
-    const handleSearchInputChange = () => setOrRemoveFilter("search", searchInput || undefined);
+    const handleSchoolLevelChange = (e: string) => setOrRemoveParameters("school_level", e);
+    const handleCourseChange = (e: string) => setOrRemoveParameters("course", e);
+    const handleBatchChange = (e: string) => setOrRemoveParameters("batch", e);
+    const handleSearchInputChange = () => setOrRemoveParameters("search", searchInput || undefined);
     const handleRowsInputChange = () => {
         const n = parseInt(rowsInput);
         if (Number.isNaN(n) || n < 1 || n > 99) {
@@ -102,17 +103,14 @@ export default function AlumniList() {
             });
             return;
         } 
-        setOrRemoveFilter("rows", n.toString());
+        setOrRemoveParameters("rows", n.toString());
 
     };
 
 
 
 
-    const updateTable = (newReservation: Pagination<Alumni[]>) => setAlumni(newReservation.data);
-
     useEffect(() => {
-        console.log(123);
         setTableVersion(v => v + 1)
     }, [alumni]);
 
@@ -187,13 +185,14 @@ export default function AlumniList() {
                     </div>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
+                    <SortCollapsible columns={sortableColuns} setOrRemoveParameters={setOrRemoveParameters}/>
                     <Input
                         prefix="Show"
                         suffix="rows"
                         id="rows"
                         type="number"
-                        className="w-45 gap-2"
+                        className="w-32 gap-2"
                         defaultValue={props.alumni.per_page}
                         onChange={(e) => setRowsInput(e.target.value)}
                         onKeyDown={e => {
@@ -202,7 +201,7 @@ export default function AlumniList() {
                                 handleRowsInputChange();
                             }
                         }}
-                    />
+                    />  
 
                     <Input
                         endIcon={<Search size={20} color='gray' />}
@@ -216,7 +215,7 @@ export default function AlumniList() {
                                 handleSearchInputChange();
                             }
                         }}
-                        className="shadow-none focus-within:ring-0" />
+                        className="w-45 shadow-none focus-within:ring-0" />
                 </div>
             </div>
 
@@ -228,8 +227,7 @@ export default function AlumniList() {
                 {
                     props.alumni.data.length > 0 &&
                     <p className="text-sm">{`Showing
-                        ${(props.alumni.current_page - 1) * props.alumni.per_page + 1} to
-                        ${(props.alumni.current_page - 1) * props.alumni.per_page + props.alumni.data.length} out of
+                        ${props.alumni.from} to ${props.alumni.to} out of
                         ${props.alumni.total} entries`}
                     </p>
                 }

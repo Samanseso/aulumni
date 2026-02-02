@@ -128,7 +128,7 @@ export default function EmployeeList() {
                         suffix="rows"
                         id="rows"
                         type="number"
-                        className="w-45 gap-2"
+                        className="w-32 gap-2"
                         defaultValue={props.employees.per_page}
                         onChange={(e) => setRowsInput(e.target.value)}
                         onKeyDown={e => {
@@ -151,7 +151,7 @@ export default function EmployeeList() {
                                 handleSearchInputChange();
                             }
                         }}
-                        className="shadow-none focus-within:ring-0" />
+                        className="w-50 shadow-none focus-within:ring-0" />
                 </div>
 
             </div>

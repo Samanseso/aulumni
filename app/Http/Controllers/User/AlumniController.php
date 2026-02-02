@@ -24,67 +24,128 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 
 class AlumniController extends Controller
 {
-
     public function index(Request $request)
     {
-        $query = Alumni::with([
-            'personal_details',
-            'academic_details',
-            'contact_details',
-            'employment_details',
-        ])
+        // 1. Validate inputs
+        $validated = $request->validate([
+            'school_level' => 'nullable|string',
+            'course'       => 'nullable|string',
+            'batch'        => 'nullable|string',
+            'search'       => 'nullable|string|max:255',
+            'rows'         => 'nullable|integer|min:1|max:99',
+            'sort'         => 'nullable|string|max:1000',
+        ]);
+
+        $rows = $validated['rows'] ?? 15;
+
+        // 2. Build query using left joins so all requested columns are available in the main query
+        $query = Alumni::query()
             ->leftJoin('users', 'alumni.user_id', '=', 'users.user_id')
-            ->select('alumni.*', 'users.status', 'users.user_name', 'users.name')
+            ->leftJoin('alumni_personal_details', 'alumni.alumni_id', '=', 'alumni_personal_details.alumni_id')
+            ->leftJoin('alumni_academic_details', 'alumni.alumni_id', '=', 'alumni_academic_details.alumni_id')
+            ->select([
+                'alumni.alumni_id as alumni_id',             // alumni table
+                'users.user_id as user_id',
+                'users.email as email',
+                'users.user_name as user_name',
+                'users.status as status',                    // users table
+                'alumni_personal_details.first_name as first_name', // personal_details table
+                'alumni_personal_details.last_name as last_name',   // personal_details table
+                'alumni_academic_details.student_number as student_number', // academic_details table
+                'alumni_academic_details.school_level as school_level',     // academic_details table
+                'alumni_academic_details.course as course',                 // academic_details table
+                'alumni_academic_details.campus as campus',                 // academic_details table
+                'alumni_academic_details.batch as batch',                   // academic_details table
+                'alumni.created_at as created_at'                    // keep for default ordering
+            ])
             ->whereNotNull('alumni.alumni_id');
 
-        // filter by school_level
-        if ($request->filled('school_level')) {
-            $schoolLevel = $request->input('school_level');
-            $query->whereHas('academic_details', function ($q) use ($schoolLevel) {
-                $q->where('school_level', $schoolLevel);
-            });
+        if (!empty($validated['school_level'])) {
+            $query->where('alumni_academic_details.school_level', $validated['school_level']);
         }
 
-        // filter by course
-        if ($request->filled('course')) {
-            $course = $request->input('course');
-            $query->whereHas('academic_details', function ($q) use ($course) {
-                $q->where('course', $course);
-            });
+        if (!empty($validated['course'])) {
+            $query->where('alumni_academic_details.course', $validated['course']);
         }
 
-        
-        // filter by batch
-        if ($request->filled('batch')) {
-            $batch = $request->input('batch');
-            $query->whereHas('academic_details', function ($q) use ($batch) {
-                $q->where('batch', $batch);
-            });
+        if (!empty($validated['batch'])) {
+            $query->where('alumni_academic_details.batch', $validated['batch']);
         }
 
-        // filter by search
-        if ($request->filled('search')) {
-            $search = Str::lower(trim($request->input('search')));
-            $query->where('user_name', 'like', "%{$search}%");
+        if (!empty($validated['search'])) {
+            $search = trim($validated['search']);
+            // case-insensitive search using LOWER on the joined users.user_name
+            $query->whereRaw('LOWER(users.name) LIKE ?', ['%' . Str::lower($search) . '%']);
         }
 
+        // 4. Optional: apply sorting if provided (example: col:dir pairs)
+        // Map allowed sort keys to qualified columns to avoid injection
+        $allowedSortColumns = [
+            'alumni_id'         => 'alumni.alumni_id',
+            'created_at'        => 'alumni.created_at',
+            'student_number'    => 'alumni_academic_details.student_number',
+            'name'              => 'users.name',
+            'batch'             => 'alumni_academic_details.batch',
+        ];
 
+        $sortConfig = [];
+        $index = 1;
+        if (!empty($validated['sort'])) {
+            $pairs = array_filter(array_map('trim', explode(',', $validated['sort'])));
+            foreach ($pairs as $pair) {
+                $parts = explode(':', $pair, 2);
+                if (count($parts) !== 2) {
+                    continue;
+                }
+                [$colKey, $dir] = $parts;
+                $colKey = trim($colKey);
+                $dir = strtolower(trim($dir)) === 'desc' ? 'desc' : 'asc';
 
-        $rows = $request->input('rows', 15);
+                if (! array_key_exists($colKey, $allowedSortColumns)) {
+                    continue;
+                }
+                $sortConfig[] = ['number' => $index++, 'column' => $colKey, 'ascending' => $dir === 'asc'];
+                $query->orderBy($allowedSortColumns[$colKey], $dir);
+            }
+        }
 
-        $alumni = $query->orderBy('alumni.created_at', 'desc')
-            ->paginate($rows)
-            ->withQueryString();
+        // 5. Default ordering if none applied
+        if (empty($query->getQuery()->orders)) {
+            $query->orderBy('alumni.created_at', 'desc');
+        }
+
+        // 6. Avoid duplicate rows if academic_details has multiple rows per alumni
+        // If academic_details is one-to-one this is unnecessary; otherwise use distinct on alumni_id
+        $query->distinct('alumni.alumni_id');
+
+        // 7. Pagination and response
+        $alumni = $query->paginate($rows)->withQueryString();
+
 
         return Inertia::render('admin/alumni', [
-            'alumni' => $alumni,
-            'courses' => Course::all(),
-            'batches' => Batch::all(),
+            'alumni'      => $alumni,
+            'courses'     => Course::all(),
+            'batches'     => Batch::all(),
+            'sortConfig' => $sortConfig,
         ]);
     }
+
+    public function show($alumni)
+    {
+        $record = Alumni::with(['personal_details', 'academic_details', 'contact_details', 'employment_details'])
+            ->where('alumni_id', $alumni)
+            ->leftJoin('users', 'alumni.user_id', '=', 'users.user_id')
+            ->select('alumni.*', 'users.status', 'users.user_name', 'users.name')
+            ->firstOrFail();
+
+        return response()->json($record);
+    }
+
+
 
 
 

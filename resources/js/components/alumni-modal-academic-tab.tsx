@@ -7,7 +7,7 @@ const AlumniModalAcademicTab = ({ alumni }: { alumni: Alumni }) => {
     return (
         <div className="h-40">
             <div
-                className="flex flex-col gap-5 h-40 overflow-x-hidden overflo-y-scroll 
+                className="flex flex-col gap-5 h-40 overflow-x-hidden overflow-y-scroll 
                 pe-2 [&::-webkit-scrollbar]:w-2
                 [&::-webkit-scrollbar-track]:bg-gray-100
                 [&::-webkit-scrollbar-thumb]:bg-gray-300

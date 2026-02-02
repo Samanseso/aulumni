@@ -3,7 +3,7 @@ import { Button } from "./ui/button";
 import { Eye, EllipsisVertical, Ban, Trash, BadgeCheck } from "lucide-react";
 import { SetStateAction, useState } from "react";
 import { CheckedState } from "@radix-ui/react-checkbox";
-import { Alumni } from "@/types";
+import { AlumniRow } from "@/types";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent } from "./ui/dropdown-menu";
 import { Separator } from "./ui/separator";
 import StatusTag from "./status-tag";
@@ -14,7 +14,7 @@ import { destroy } from "@/routes/user";
 import { useConfirmAction } from "./context/confirm-action-context";
 
 interface AlumniTableProps {
-    alumni: Alumni[],
+    alumni: AlumniRow[],
     columns: string[],
     selectedData: number[],
     setSelectedData: React.Dispatch<SetStateAction<number[]>>,
@@ -22,7 +22,7 @@ interface AlumniTableProps {
 
 export function AlumniTable({ alumni, columns, selectedData, setSelectedData }: AlumniTableProps) {
 
-    const [viewAlumni, setViewAlumni] = useState<Alumni | null>(null);
+    const [viewAlumni, setViewAlumni] = useState<string | null>(null);
     
     const { confirmActionContentCreateModal: confimDeleteContentCreateModal } = useConfirmAction();
     
@@ -47,7 +47,7 @@ export function AlumniTable({ alumni, columns, selectedData, setSelectedData }: 
 
     return (
         <div className="table-fixed w-full h-full mb-20">
-            {viewAlumni && <AlumniModal alumni={viewAlumni} setViewAlumni={setViewAlumni} />}
+            {viewAlumni && <AlumniModal alumni_id={viewAlumni} setViewAlumni={setViewAlumni} />}
 
             <table className="w-full">
                 <thead>
@@ -78,17 +78,17 @@ export function AlumniTable({ alumni, columns, selectedData, setSelectedData }: 
                                 <td className="px-4 py-2 text-sm">{alum.alumni_id}</td>
 
                                 <td data-label={columns[idx]} className="px-4 py-2 text-sm">
-                                    <span className="font-bold">{alum.personal_details?.first_name} {alum.personal_details?.last_name}</span> <br />
-                                    <span className="text-xs text-gray-500">{alum.contact_details?.email}</span> <br />
+                                    <span className="font-bold">{alum.first_name} {alum.last_name}</span> <br />
+                                    <span className="text-xs text-gray-500">{alum.email}</span> <br />
                                     <span className="text-xs text-gray-500">@{alum.user_name}</span> <br />
                                 </td>
 
-                                <td className="px-4 py-2 text-sm">{alum.academic_details?.student_number}</td>
+                                <td className="px-4 py-2 text-sm">{alum.student_number}</td>
 
-                                <td className="px-4 py-2 text-sm">{alum.academic_details?.school_level}</td>
-                                <td className="px-4 py-2 text-sm">{alum.academic_details?.course}</td>
-                                <td className="px-4 py-2 text-sm">{alum.academic_details?.campus}</td>
-                                <td className="px-4 py-2 text-sm">{alum.academic_details?.batch}</td>
+                                <td className="px-4 py-2 text-sm">{alum.school_level}</td>
+                                <td className="px-4 py-2 text-sm">{alum.course}</td>
+                                <td className="px-4 py-2 text-sm">{alum.campus}</td>
+                                <td className="px-4 py-2 text-sm">{alum.batch}</td>
                                 <td className="px-4 py-2 text-sm"><StatusTag text={alum.status} /></td>
 
 
@@ -108,7 +108,7 @@ export function AlumniTable({ alumni, columns, selectedData, setSelectedData }: 
                                             >
                                                 <Button variant="ghost" size="sm"
                                                     onClick={() => {
-                                                        setViewAlumni(alum)
+                                                        setViewAlumni(alum.alumni_id)
                                                     }}
                                                 >
                                                     <Eye className="size-4 text-gray-700" />View

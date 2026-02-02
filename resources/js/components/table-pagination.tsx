@@ -1,6 +1,6 @@
 import { PaginationLink, Pagination } from "@/types";
 import { Button } from "./ui/button";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { Link } from "@inertiajs/react";
 
 interface TablePaginationProps {
@@ -40,8 +40,6 @@ function getVisiblePages(
 
 
 
-
-
 export function TablePagination({ data }: TablePaginationProps) {
     const visiblePages = getVisiblePages(data.links, data.current_page, data.last_page, 1);
 
@@ -51,8 +49,7 @@ export function TablePagination({ data }: TablePaginationProps) {
             <div>
                 <Link href={data.prev_page_url ?? ""}>
                     <Button variant="outline" size="sm" disabled={data.prev_page_url == null}>
-                        <ArrowLeft />
-                        Previous
+                        <ChevronsLeft />
                     </Button>
                 </Link>
             </div>
@@ -75,8 +72,7 @@ export function TablePagination({ data }: TablePaginationProps) {
             <div>
                 <Link href={data.next_page_url ?? ""}>
                     <Button variant="outline" size="sm" disabled={data.next_page_url == null} className="cursor-pointer">
-                        Next
-                        <ArrowRight />
+                        <ChevronsRight />
                     </Button>
                 </Link>
 

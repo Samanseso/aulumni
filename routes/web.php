@@ -36,3 +36,4 @@ require __DIR__.'/employee.php';
 require __DIR__.'/branch.php';
 require __DIR__.'/department.php';
 require __DIR__.'/course.php';
+require __DIR__.'/post.php';

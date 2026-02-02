@@ -25,12 +25,14 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const Alumni = () => {
 
-    const props = usePage<{ alumni: Pagination<Alumni[]> }>().props;    
-
-    console.log(props);
+    const props = usePage<{ alumni: Pagination<Alumni[]>, modal: ModalType }>().props;    
 
     const { confirmActionContent, setConfirmActionContent: setConfimActionContent } = useConfirmAction();
     const { modalContent, setModalContent } = useModal();
+
+    useEffect(() => {
+        setModalContent(props.modal);
+    }, [props.modal.status]);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -51,10 +53,7 @@ const Alumni = () => {
                 />
             }
 
-            {modalContent && <Modal content={modalContent} setModalContent={setModalContent} />}
-
-
-
+            {modalContent && modalContent.status && <Modal content={modalContent} setModalContent={setModalContent} />}
 
         </AppLayout>
     )
