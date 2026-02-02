@@ -106,10 +106,10 @@ export function NavMain() {
                                 <SidebarMenuButton
                                     key="JobPostings"
                                     asChild
-                                    isActive={urlIsActive("/content/job-postings") || currentUrl.includes("/content/job-postings")}
+                                    isActive={urlIsActive("/content/post") || currentUrl.includes("/content/job-postings")}
                                     tooltip={{ children: "Job Postings" }}
                                 >
-                                    <Link href={index()} prefetch>
+                                    <Link href={"/content/post"} prefetch>
                                         <span>Job Postings</span>
                                     </Link>
                                 </SidebarMenuButton>

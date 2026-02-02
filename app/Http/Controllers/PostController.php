@@ -6,6 +6,7 @@ use App\Models\Post;
 use App\Models\Attachment;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -64,6 +65,33 @@ class PostController extends Controller
 
             return response()->json($post->load('attachments'), 201);
         });
+    }
+
+    public function approve(Post $post): RedirectResponse 
+    {
+        $post->status = 'approved';
+        $post->save();
+
+        return back()->with([
+            'modal_status'  => 'success',
+            'modal_action'  => 'update',
+            'modal_title'   => 'Approval successful!',
+            'modal_message' => 'Post was approved successfully.',
+        ]);
+    }
+
+
+    public function reject(Post $post): RedirectResponse 
+    {
+        $post->status = 'rejected';
+        $post->save();
+
+        return back()->with([
+            'modal_status'  => 'success',
+            'modal_action'  => 'update',
+            'modal_title'   => 'Rejection successful!',
+            'modal_message' => 'Post was rejected successfully.',
+        ]);
     }
 
     public function update(Request $request, Post $post): JsonResponse

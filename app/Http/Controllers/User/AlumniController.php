@@ -148,7 +148,6 @@ class AlumniController extends Controller
 
 
 
-
     public function step($step)
     {
         if (!session('current_step')) {

@@ -22,7 +22,7 @@ export default function PostList() {
     const { props } = usePage<{ posts: Pagination<PostRow[]>}>();
     
     const columns = [
-        'Post ID',
+        'Post UUID',
         'Author',
         'Content',
         'Privacy',

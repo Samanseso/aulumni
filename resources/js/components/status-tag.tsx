@@ -13,8 +13,10 @@ const StatusTag = ({ text }: { text: string }) => {
             case "IN TRANSIT":
             case "DELIVERED": 
             case "DISPATCHED":
+            case "approved":
             case "active": return "rgb(40, 137, 74)";
             case "WAITING":
+            case "rejected":
             case "CANCELLED": return "#e98780ff";   
             default: return "#e6e6e6";
         }

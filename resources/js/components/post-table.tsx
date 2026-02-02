@@ -1,7 +1,7 @@
 import React, { SetStateAction, useState } from "react";
 import { Checkbox } from "./ui/checkbox";
 import { Button } from "./ui/button";
-import { Eye, EllipsisVertical, Trash, Edit, Paperclip } from "lucide-react";
+import { Eye, EllipsisVertical, Trash, Edit, Paperclip, Check, Ban } from "lucide-react";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent } from "./ui/dropdown-menu";
 import { Separator } from "./ui/separator";
@@ -9,6 +9,7 @@ import { Link } from "@inertiajs/react";
 import { useConfirmAction } from "./context/confirm-action-context";
 import { PostRow } from "@/types"; 
 import StatusTag from "./status-tag";
+import { approve, reject } from "@/routes/post";
 
 interface PostTableProps {
 	posts: PostRow[];
@@ -124,27 +125,18 @@ export function PostTable({ posts, columns, selectedData, setSelectedData }: Pos
 
 											<Separator />
 
-											<Link href={`/posts/${post.post_id}/edit`} as="div">
+											<Link href={approve(post.post_id)} as="div">
 												<Button variant="ghost" size="sm">
-													<Edit className="size-4 text-blue-500" /> Edit
+													<Check className="size-4 text-green-500" /> Approve
 												</Button>
 											</Link>
 
 											<Separator />
-
-											<Button
-												variant="ghost"
-												size="sm"
-												onClick={() =>
-													confirmDelete({
-														url: `/posts/${post.post_id}`,
-														message: "Are you sure you want to delete this post?",
-														action: "Delete",
-													})
-												}
-											>
-												<Trash className="size-4 text-rose-500" /> Delete
-											</Button>
+											<Link href={reject(post.post_id)} as="div">
+												<Button variant="ghost" size="sm">
+													<Ban className="size-4 text-rose-500" /> Reject
+												</Button>
+											</Link>
 										</DropdownMenuContent>
 									</DropdownMenu>
 								</div>
