@@ -3,13 +3,14 @@ import { Checkbox } from "./ui/checkbox";
 import { Button } from "./ui/button";
 import { Eye, EllipsisVertical, Trash, Edit, Paperclip, Check, Ban } from "lucide-react";
 import { CheckedState } from "@radix-ui/react-checkbox";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent } from "./ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuItem, DropdownMenuGroup } from "./ui/dropdown-menu";
 import { Separator } from "./ui/separator";
 import { Link } from "@inertiajs/react";
 import { useConfirmAction } from "./context/confirm-action-context";
-import { PostRow } from "@/types"; 
+import { PostRow } from "@/types";
 import StatusTag from "./status-tag";
 import { approve, reject } from "@/routes/post";
+import PostModal from "./post-modal";
 
 interface PostTableProps {
 	posts: PostRow[];
@@ -19,7 +20,7 @@ interface PostTableProps {
 }
 
 export function PostTable({ posts, columns, selectedData, setSelectedData }: PostTableProps) {
-	const [viewPostId, setViewPostId] = useState<number | null>(null);
+	const [viewPostId, setViewPostId] = useState<string | null>(null);
 	const { confirmActionContentCreateModal: confirmDelete } = useConfirmAction();
 
 	const toggleSelect = (post_id: number) => {
@@ -40,9 +41,9 @@ export function PostTable({ posts, columns, selectedData, setSelectedData }: Pos
 
 	return (
 		<div className="table-fixed w-full h-full mb-20">
-			{/* {viewPostId !== null && (
-        <PostModal post_id={viewPostId} setViewPostId={setViewPostId} />
-      )} */}
+			{viewPostId !== null && (
+				<PostModal post_id={viewPostId} setViewPostId={setViewPostId} />
+			)}
 
 			<table className="w-full">
 				<thead>
@@ -111,32 +112,24 @@ export function PostTable({ posts, columns, selectedData, setSelectedData }: Pos
 											</Button>
 										</DropdownMenuTrigger>
 
-										<DropdownMenuContent
-											className="flex flex-col items-start gap-1 mt-1 p-2 rounded-xl border border-white/5 bg-white shadow"
-											align="end"
-										>
-											<Button
-												variant="ghost"
-												size="sm"
-												onClick={() => setViewPostId(post.post_id)}
-											>
+										<DropdownMenuContent align="end">
+											<DropdownMenuItem onClick={() => setViewPostId(post.post_uuid)}>
 												<Eye className="size-4 text-gray-700" /> View
-											</Button>
-
-											<Separator />
-
-											<Link href={approve(post.post_id)} as="div">
-												<Button variant="ghost" size="sm">
+											</DropdownMenuItem>
+											<DropdownMenuSeparator />
+											<DropdownMenuItem asChild>
+												<Link className="w-full" href={approve(post.post_id)}>
 													<Check className="size-4 text-green-500" /> Approve
-												</Button>
-											</Link>
-
-											<Separator />
-											<Link href={reject(post.post_id)} as="div">
-												<Button variant="ghost" size="sm">
+												</Link>
+											</DropdownMenuItem>
+											<DropdownMenuSeparator />
+											<DropdownMenuItem asChild>
+												<Link className="w-full" href={reject(post.post_id)} as="div">
 													<Ban className="size-4 text-rose-500" /> Reject
-												</Button>
-											</Link>
+												</Link>
+											</DropdownMenuItem>
+
+
 										</DropdownMenuContent>
 									</DropdownMenu>
 								</div>

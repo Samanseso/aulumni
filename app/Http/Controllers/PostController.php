@@ -28,21 +28,32 @@ class PostController extends Controller
         ]);
     }
 
-    public function show(Post $post): JsonResponse
+    public function show(string $post_uuid): JsonResponse
     {
-        $post->load(['user', 'attachments', 'comments', 'reactions', 'shares']);
+        $post = Post::with([
+            'user',
+            'attachments',
+            'comments.user:user_id,user_name,name,email',
+            'reactions',
+            'shares'
+        ])
+        ->where('post_uuid', $post_uuid)
+        ->firstOrFail();
+
+
         return response()->json($post);
     }
+
 
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
             'user_id' => ['required', 'integer'],
             'content' => ['required', 'string'],
-            'privacy' => ['nullable', Rule::in(['public','friends','only_me'])],
+            'privacy' => ['nullable', Rule::in(['public', 'friends', 'only_me'])],
             'attachments' => ['nullable', 'array'],
             'attachments.*.url' => ['required_with:attachments', 'string', 'max:1024'],
-            'attachments.*.type' => ['nullable', Rule::in(['image','video','file'])],
+            'attachments.*.type' => ['nullable', Rule::in(['image', 'video', 'file'])],
         ]);
 
         return DB::transaction(function () use ($data) {
@@ -67,7 +78,7 @@ class PostController extends Controller
         });
     }
 
-    public function approve(Post $post): RedirectResponse 
+    public function approve(Post $post): RedirectResponse
     {
         $post->status = 'approved';
         $post->save();
@@ -81,7 +92,7 @@ class PostController extends Controller
     }
 
 
-    public function reject(Post $post): RedirectResponse 
+    public function reject(Post $post): RedirectResponse
     {
         $post->status = 'rejected';
         $post->save();
@@ -98,7 +109,7 @@ class PostController extends Controller
     {
         $data = $request->validate([
             'content' => ['sometimes', 'string'],
-            'privacy' => ['nullable', Rule::in(['public','friends','only_me'])],
+            'privacy' => ['nullable', Rule::in(['public', 'friends', 'only_me'])],
             'status' => ['nullable', 'string', 'max:50'],
         ]);
 

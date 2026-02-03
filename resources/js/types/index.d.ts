@@ -283,6 +283,12 @@ export interface Comment {
 	comment_id: number;
 	post_id: number;
 	user_id: number;
+	user: {
+		user_id: number;
+		user_name: string;
+		name: string;
+		email: string;
+	}
 	content: string;
 	created_at: string;
 	updated_at: string;

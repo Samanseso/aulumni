@@ -151,7 +151,7 @@ export function AlumniModal({ alumni_id, setViewAlumni }: AlumniModalProps) {
                                     </Button>
 
                                     <div className="flex gap-3">
-                                        <Button variant="outline" onClick={() => setViewAlumni(null)}>Cancel</Button>
+                                        <Button variant="outline" onClick={() => setViewAlumni(null)}>Close</Button>
                                         <Button disabled={processing} type="submit">Save Changes</Button>
                                     </div>
                                 </DialogFooter>
