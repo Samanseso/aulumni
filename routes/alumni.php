@@ -8,7 +8,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('user')->group(function () {
     // Render alumni table
     Route::get('alumni', [AlumniController::class, 'index'])->name('alumni.index');
 
-    
+    Route::get('alumni/export_alumni', [AlumniController::class, 'export_alumni'])->name('alumni.export_alumni');
+
+    // Show
     Route::get('alumni/{alumni}', [AlumniController::class, 'show'])->name('alumni.show');
 
     // Render multi-step alumni form
@@ -22,6 +24,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('user')->group(function () {
 
     // Import alumni
     Route::post('alumni/import', [AlumniController::class, 'import'])->name('alumni.import');
+
+    // Export alumni
+    
 
     // Edit alumni profile
     Route::patch('/alumni/update_profile/{user}', [AlumniController::class, 'update_profile'])->name('alumni.update_profile');

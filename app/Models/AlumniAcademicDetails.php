@@ -17,7 +17,7 @@ class AlumniAcademicDetails extends Model
         'student_number',
         'school_level',
         'batch',
-        'campus',
+        'branch',
         'course',
     ];
 

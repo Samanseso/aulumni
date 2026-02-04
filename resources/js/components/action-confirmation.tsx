@@ -19,8 +19,6 @@ const ActionConfirmation = ({ url, message, action, data, promptPassword = false
 
     const [password, setPassword] = useState("");
 
-    console.log(url);
-
     return (
         <Dialog open={true} onOpenChange={() => setConfirmActionContent(undefined)}>
             <DialogContent className='lg:max-w-md'>

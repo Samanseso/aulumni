@@ -25,11 +25,11 @@ class Comment extends Model
     ];
 
     protected $casts = [
-        'is_edited' => 'boolean',
+        'is_edited'   => 'boolean',
         'reply_count' => 'integer',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-        'deleted_at' => 'datetime',
+        'created_at'  => 'datetime:m-d-Y H:i:s', 
+        'updated_at'  => 'datetime:m-d-Y H:i:s',
+        'deleted_at'  => 'datetime:m-d-Y H:i:s',
     ];
 
     public function post(): BelongsTo

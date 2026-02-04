@@ -15,8 +15,7 @@ class EmployeeImport implements ToCollection, WithHeadingRow
     public function collection(Collection $rows)
     {
         foreach ($rows as $row) {
-            
-            $employeeId = $row['employee_id'] ?? null;
+
             $firstName  = $row['first_name'] ?? null;
             $middleName = $row['middle_name'] ?? null;
             $lastName   = $row['last_name'] ?? null;
@@ -26,6 +25,16 @@ class EmployeeImport implements ToCollection, WithHeadingRow
             $contact    = $row['contact'] ?? null;
             $branch     = $row['branch'] ?? null;
             $department = $row['department'] ?? null;
+
+            $attempt = 0;
+            do {
+                $attempt++;
+                $employee_id = "EMP-" . sprintf('%05d', $attempt);
+
+                if (Employee::where('employee_id', $employee_id)->count() == 0) {
+                    break;
+                }
+            } while ($attempt < 99999);
 
             // Create the user account.
             $user = app(CreateNewUser::class)->create([
@@ -41,10 +50,8 @@ class EmployeeImport implements ToCollection, WithHeadingRow
             // Create or update the employee record.
             Employee::updateOrCreate(
                 [
-                    'employee_id' => $employeeId,
+                    'employee_id' => $employee_id,
                     'user_id'     => $user->user_id,
-                ],
-                [
                     'first_name'  => $firstName,
                     'middle_name' => $middleName,
                     'last_name'   => $lastName,

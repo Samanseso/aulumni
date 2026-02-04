@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Actions\Fortify\CreateNewUser;
+use App\Exports\AlumniExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateAlumni\PersonalDetailsRequest;
 use App\Http\Requests\CreateAlumni\ContactDetailsRequest;
@@ -16,6 +17,7 @@ use App\Models\AlumniContactDetails;
 use App\Models\AlumniEmploymentDetails;
 use App\Models\AlumniPersonalDetails;
 use App\Models\Batch;
+use App\Models\Branch;
 use App\Models\Course;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -24,7 +26,6 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-use Illuminate\Support\Facades\DB;
 
 class AlumniController extends Controller
 {
@@ -32,15 +33,17 @@ class AlumniController extends Controller
     {
         // 1. Validate inputs
         $validated = $request->validate([
+            'branch'       => 'nullable|string',
             'school_level' => 'nullable|string',
             'course'       => 'nullable|string',
             'batch'        => 'nullable|string',
+            'status'       => 'nullable|string',
             'search'       => 'nullable|string|max:255',
             'rows'         => 'nullable|integer|min:1|max:99',
             'sort'         => 'nullable|string|max:1000',
         ]);
 
-        $rows = $validated['rows'] ?? 15;
+        $rows = $validated['rows'] ?? 10;
 
         // 2. Build query using left joins so all requested columns are available in the main query
         $query = Alumni::query()
@@ -58,11 +61,15 @@ class AlumniController extends Controller
                 'alumni_academic_details.student_number as student_number', // academic_details table
                 'alumni_academic_details.school_level as school_level',     // academic_details table
                 'alumni_academic_details.course as course',                 // academic_details table
-                'alumni_academic_details.campus as campus',                 // academic_details table
+                'alumni_academic_details.branch as branch',                 // academic_details table
                 'alumni_academic_details.batch as batch',                   // academic_details table
                 'alumni.created_at as created_at'                    // keep for default ordering
             ])
             ->whereNotNull('alumni.alumni_id');
+
+        if (!empty($validated['branch'])) {
+            $query->where('alumni_academic_details.branch', $validated['branch']);
+        }
 
         if (!empty($validated['school_level'])) {
             $query->where('alumni_academic_details.school_level', $validated['school_level']);
@@ -75,15 +82,20 @@ class AlumniController extends Controller
         if (!empty($validated['batch'])) {
             $query->where('alumni_academic_details.batch', $validated['batch']);
         }
+        
+        if (!empty($validated['status'])) {
+            $query->where('users.status', $validated['status']);
+        }
 
+
+        // 3. Apply search query
         if (!empty($validated['search'])) {
             $search = trim($validated['search']);
             // case-insensitive search using LOWER on the joined users.user_name
             $query->whereRaw('LOWER(users.name) LIKE ?', ['%' . Str::lower($search) . '%']);
         }
 
-        // 4. Optional: apply sorting if provided (example: col:dir pairs)
-        // Map allowed sort keys to qualified columns to avoid injection
+        // 4. Sorting (example: col:dir pairs)
         $allowedSortColumns = [
             'alumni_id'         => 'alumni.alumni_id',
             'created_at'        => 'alumni.created_at',
@@ -118,19 +130,18 @@ class AlumniController extends Controller
             $query->orderBy('alumni.created_at', 'desc');
         }
 
-        // 6. Avoid duplicate rows if academic_details has multiple rows per alumni
-        // If academic_details is one-to-one this is unnecessary; otherwise use distinct on alumni_id
-        $query->distinct('alumni.alumni_id');
 
-        // 7. Pagination and response
-        $alumni = $query->paginate($rows)->withQueryString();
+
+        // 6. Pagination and response
+        $alumni_row = $query->paginate($rows)->withQueryString();
 
 
         return Inertia::render('admin/alumni', [
-            'alumni'      => $alumni,
+            'alumni'      => $alumni_row,
+            'branches'    => Branch::all(),
             'courses'     => Course::all(),
             'batches'     => Batch::all(),
-            'sortConfig' => $sortConfig,
+            'sortConfig'  => $sortConfig,
         ]);
     }
 
@@ -180,7 +191,6 @@ class AlumniController extends Controller
 
     public function render_basic_information()
     {
-
         return Inertia::render('admin/create-alumni/personal', [
             'step' => 1,
             'alumni_personal_details' => session('alumni_personal_details', [])
@@ -335,6 +345,14 @@ class AlumniController extends Controller
             'modal_message' => $this->num_to_words($rowCount) . " alumni accounts was created successfully.",
         ]);
     }
+
+
+
+    public function export_alumni()
+    {
+        return Excel::download(new AlumniExport, 'alumni.xlsx');
+    }
+
 
 
     public function update_profile(UserRequest $request, User $user)

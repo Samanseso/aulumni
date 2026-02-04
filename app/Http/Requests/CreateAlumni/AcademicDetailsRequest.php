@@ -19,7 +19,7 @@ class AcademicDetailsRequest extends FormRequest
             'student_number' => ['required', 'string', 'max:100'],
             'school_level'   => ['required', 'in:Elementary,High School,College,Graduate'],
             'batch'          => ['required', 'digits:4', 'integer', "between:1900,{$currentYear}"],
-            'campus'         => ['required', 'string', 'max:255'],
+            'branch'         => ['required', 'string', 'max:255'],
             'course'         => ['required', 'string', 'max:100'],
         ];
     }
@@ -41,9 +41,9 @@ class AcademicDetailsRequest extends FormRequest
             'batch.integer'           => 'Batch must be a valid year.',
             'batch.between'           => "Batch must be between 1900 and {$currentYear}.",
 
-            'campus.required'         => 'Campus is required.',
-            'campus.string'           => 'Campus must be a string.',
-            'campus.max'              => 'Campus may not be greater than 255 characters.',
+            'branch.required'         => 'Branch is required.',
+            'branch.string'           => 'Branch must be a string.',
+            'branch.max'              => 'Branch may not be greater than 255 characters.',
 
             'course.required'         => 'Course is required.',
             'course.string'           => 'Course must be a string.',

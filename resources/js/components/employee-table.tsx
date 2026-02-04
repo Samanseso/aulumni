@@ -4,7 +4,7 @@ import { Eye, EllipsisVertical, Ban, Trash, BadgeCheck } from "lucide-react";
 import { useState } from "react";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { Employee } from "@/types"; // assume you have an Employee type
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent } from "./ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "./ui/dropdown-menu";
 import { Separator } from "./ui/separator";
 import StatusTag from "./status-tag";
 import { Link } from "@inertiajs/react";
@@ -108,49 +108,41 @@ export function EmployeeTable({ employees, selectedData, setSelectedData }: Empl
                                             </Button>
                                         </DropdownMenuTrigger>
 
-                                        <DropdownMenuContent
-                                            className="flex flex-col items-start gap-1 mt-1 p-2 rounded-xl border border-white/5 bg-white shadow"
-                                            align="end"
-                                        >
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => setViewEmployee(emp)}
-                                            >
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onClick={() => setViewEmployee(emp)}>
                                                 <Eye className="size-4 text-gray-700" /> View
-                                            </Button>
+                                            </DropdownMenuItem>
 
-                                            <Separator />
+                                            <DropdownMenuSeparator />
 
                                             {emp.status === "active" ? (
-                                                <Link href={deactivate(emp.user_id)} as="div">
-                                                    <Button variant="ghost" size="sm">
+                                                <DropdownMenuItem asChild>
+                                                    <Link className="w-full" href={deactivate(emp.user_id)} as="div">
                                                         <Ban className="size-4 text-orange-500" /> Deactivate
-                                                    </Button>
-                                                </Link>
+                                                    </Link>
+                                                </DropdownMenuItem>
+
                                             ) : (
-                                                <Link href={activate(emp.user_id)} as="div">
-                                                    <Button variant="ghost" size="sm">
+                                                <DropdownMenuItem asChild>
+                                                    <Link className="w-full" href={activate(emp.user_id)} as="div">
                                                         <BadgeCheck className="size-4 text-green-500" /> Activate
-                                                    </Button>
-                                                </Link>
+                                                    </Link>
+                                                </DropdownMenuItem>
+
                                             )}
 
-                                            <Separator />
+                                            <DropdownMenuSeparator />
 
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() =>
-                                                    confirmActionContentCreateModal({
-                                                        url: destroy(emp.user_id),
-                                                        message: "Are you sure you want to delete this employee?",
-                                                        action: "Delete",
-                                                    })
-                                                }
-                                            >
+                                            <DropdownMenuItem onClick={() =>
+                                                confirmActionContentCreateModal({
+                                                    url: destroy(emp.user_id),
+                                                    message: "Are you sure you want to delete this employee?",
+                                                    action: "Delete",
+                                                })
+                                            }>
                                                 <Trash className="size-4 text-rose-500" /> Delete
-                                            </Button>
+                                            </DropdownMenuItem>
+
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </div>

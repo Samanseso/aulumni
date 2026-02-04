@@ -8,10 +8,11 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '.
 import { TablePagination } from "./table-pagination";
 import { useConfirmAction } from "./context/confirm-action-context";
 import { useModal } from "./context/modal-context";
-import SortCollapsible from "./sort-collapsible";
 import { Import } from './import';
 import { Pagination, PostRow } from '@/types';
 import PostTable from './post-table';
+import PostCards from './post-cards';
+import { index } from '@/routes/post';
 
 
 type ColumnType = { name: string; db_name: string };
@@ -19,8 +20,8 @@ type Filter = { property: string; value: string };
 
 
 export default function PostList() {
-    const { props } = usePage<{ posts: Pagination<PostRow[]>}>();
-    
+    const { props } = usePage<{ posts: Pagination<PostRow[]> }>();
+
     const columns = [
         'Post UUID',
         'Author',
@@ -64,7 +65,7 @@ export default function PostList() {
             return acc;
         }, {} as Record<string, string>);
 
-        router.get('/posts', params, {
+        router.get(index().url, params, {
             preserveState: true,
             preserveScroll: true,
         });
@@ -83,7 +84,7 @@ export default function PostList() {
 
     // handlers
     const handlePrivacyChange = (val: string) => setOrRemoveParameters('privacy', val);
-    const handleAuthorChange = (val: string) => setOrRemoveParameters('user_id', val);
+    const handleStatusChange = (val: string) => setOrRemoveParameters('status', val);
     const handleSearchInputChange = () => setOrRemoveParameters('search', searchInput || undefined);
     const handleRowsInputChange = () => {
         const n = parseInt(rowsInput);
@@ -139,21 +140,25 @@ export default function PostList() {
                             </SelectContent>
                         </Select>
 
-                        <Select defaultValue={filter.find(f => f.property === 'user_id')?.value || ''} onValueChange={handleAuthorChange}>
-                            <SelectTrigger className="text-black gap-2 !text-black">
-                                <SelectValue placeholder="Author" />
+
+                        <Select defaultValue={filter.find(f => f.property === "status")?.value || ""} onValueChange={handleStatusChange}>
+                            <SelectTrigger className="text-black gap-2 !text-black text-nowrap">
+                                <SelectValue placeholder="Status" />
                             </SelectTrigger>
                             <SelectContent>
-                                {/* {filter.find(f => f.property === 'user_id')?.value ? (
-                                    <SelectItem value="none" className="text-red">Reset</SelectItem>
-                                ) : (
-                                    <SelectItem value="none" className="hidden">Author</SelectItem>
-                                )}
-                                {props.users.map(user => (
-                                    <SelectItem key={user.user_id} value={String(user.user_id)}>{user.name}</SelectItem>
-                                ))} */}
+                                {
+                                    filter.find(f => f.property === "status")?.value ?
+                                        <SelectItem value="none" className="text-red focus:text-red">Reset</SelectItem> :
+                                        <SelectItem value="none" className="hidden">Status</SelectItem>
+                                }
+                                <SelectItem value="pending">Pending</SelectItem>
+                                <SelectItem value="active">Active</SelectItem>
+                                <SelectItem value="inactve">Inactive</SelectItem>
                             </SelectContent>
                         </Select>
+
+                        <Input prefix='From' type='date' />
+                        <Input prefix='To' type='date' />
                     </div>
                 </div>
 
@@ -194,13 +199,14 @@ export default function PostList() {
             </div>
 
             {posts.length > 0 && (
-                <PostTable
-                    key={tableVersion}
-                    posts={posts}
-                    columns={columns}
-                    selectedData={selectedData}
-                    setSelectedData={setSelectedData}
-                />
+                // <PostTable
+                //     key={tableVersion}
+                //     posts={posts}
+                //     columns={columns}
+                //     selectedData={selectedData}
+                //     setSelectedData={setSelectedData}
+                // />
+                <PostCards posts={props.posts.data} />
             )}
 
             <Import open={open} table="posts" setOpen={setOpen} />

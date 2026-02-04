@@ -29,7 +29,7 @@ class AlumniImport implements ToCollection, WithHeadingRow
             $birthday                   = $row['birthday'] ?? null;
             $bio                        = $row['bio'] ?? null;
             $interest                   = $row['interest'] ?? null;
-            $campus                     = $row['campus'] ?? null;
+            $branch                     = $row['branch'] ?? null;
             $address                    = $row['address'] ?? null;
 
             $studentNumber              = $row['student_number'] ?? null;
@@ -99,7 +99,7 @@ class AlumniImport implements ToCollection, WithHeadingRow
                     'birthday'    => $birthday,
                     'bio'         => $bio,
                     'interest'    => $interest,
-                    'campus'      => $campus,
+                    'branch'      => $branch,
                     'address'     => $address,
                 ]
             );
@@ -111,7 +111,7 @@ class AlumniImport implements ToCollection, WithHeadingRow
                     'student_number' => $studentNumber,
                     'school_level'   => $schoolLevel,
                     'batch'          => $batch,
-                    'campus'         => $campus,
+                    'branch'         => $branch,
                     'course'         => $course,
                 ]
             );

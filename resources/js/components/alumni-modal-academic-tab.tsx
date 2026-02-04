@@ -62,15 +62,15 @@ const AlumniModalAcademicTab = ({ alumni }: { alumni: Alumni }) => {
                     </div>
                 </div>
 
-                {/* Campus */}
+                {/* Branch */}
                 <div className="flex items-center w-full">
-                    <Label className="flex-1 text-xs uppercase text-gray-500">Campus</Label>
+                    <Label className="flex-1 text-xs uppercase text-gray-500">Branch</Label>
                     <div className="flex-3">
                         <Input
-                            id="campus"
-                            name="campus"
-                            defaultValue={alumni.academic_details?.campus || ''}
-                            placeholder="Campus"
+                            id="branch"
+                            name="branch"
+                            defaultValue={alumni.academic_details?.branch || ''}
+                            placeholder="Branch"
                         />
                     </div>
                 </div>

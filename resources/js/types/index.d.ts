@@ -1,7 +1,4 @@
-import { InertiaLinkProps } from '@inertiajs/react';
-import { LucideIcon } from 'lucide-react';
-import alumni from '../routes/alumni/index';
-import Contact from '../pages/admin/create-alumni/contact';
+
 
 export interface Auth {
 	user: User;
@@ -33,16 +30,8 @@ export interface SharedData {
 }
 
 
-export interface Admin {
-	id: number;
-	username: string;
-	password: string;
-	firstname: string;
-	middlename: string;
-	lastname: string;
-	photo: string;
-	created_on: string;
-	author: string;
+export interface Admin extends User{
+	
 };
 
 export interface AlumniPersonalDetails {
@@ -64,7 +53,7 @@ export interface AlumniAcademicDetails {
 	student_number: string;
 	school_level: string;
 	batch: string;
-	campus: string;
+	branch: string;
 	course: string;
 	created_at?: string | null;
 	updated_at?: string | null;
@@ -171,7 +160,7 @@ export interface AlumniRow {
 	student_number: string;
 	school_level: string;
 	course: string;
-	campus: string;
+	branch: string;
 	batch: string;
 	created_at: string;
 }

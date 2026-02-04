@@ -27,11 +27,12 @@ class Post extends Model
     ];
 
     protected $casts = [
-        'comments_count' => 'integer',
-        'reactions_count' => 'integer',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+        'comments_count'   => 'integer',
+        'reactions_count'  => 'integer',
+        'created_at'       => 'datetime:m-d-Y H:i:s', 
+        'updated_at'       => 'datetime:m-d-Y H:i:s',
     ];
+
 
     protected static function boot()
     {

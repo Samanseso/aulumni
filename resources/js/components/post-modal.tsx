@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogTitle, DialogDescription } from "./ui/dialog";
 import { Button } from "./ui/button";
-import { Trash, Share2, MessageCircle, Heart, Link as LinkIcon, ChevronsUpDown, Check, Ban } from "lucide-react";
+import { Trash, Share2, MessageCircle, Heart, Link as LinkIcon, ChevronsUpDown, Check, Ban, Globe } from "lucide-react";
 import { Form, Link } from "@inertiajs/react";
 import { Post, Attachment, Comment, Reaction } from "@/types";
 import { useConfirmAction } from "./context/confirm-action-context";
@@ -48,7 +48,9 @@ export default function PostModal({ post_id, setViewPostId }: PostModalProps) {
         getPost(post_id)
             .then(res => setPost(res))
             .catch(err => console.log(err))
-    }, [post_id])
+    }, [post_id]);
+
+
 
     return (
         <Dialog open={true} onOpenChange={() => setViewPostId(null)} modal={true}>
@@ -67,19 +69,16 @@ export default function PostModal({ post_id, setViewPostId }: PostModalProps) {
                                     </div>
                                     <div>
                                         <div className="font-semibold text-lg">{post.user.name}</div>
-                                        <div className="text-xs text-gray-500">@{post.user.user_name} &nbsp;&middot;&nbsp; {new Date(post.created_at).toLocaleString()}</div>
+                                        <div className="text-xs text-gray-500 flex items-center gap-1.5">
+                                            <Globe size={12} />
+                                            <span>•</span>
+                                            {new Date(post.created_at).toLocaleString()}
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div className="">
-                                    <div className="flex justify-between items-start">
-
-
-                                        <div className="text-right">
-                                            <StatusTag text={post.status} />
-                                            <div className="text-sm text-gray-600 mt-1">{post.privacy}</div>
-                                        </div>
-                                    </div>
+                                <div className="flex justify-between items-start">
+                                    <StatusTag text={post.status} />
                                 </div>
                             </div>
                         </div>
@@ -159,6 +158,7 @@ export default function PostModal({ post_id, setViewPostId }: PostModalProps) {
                                 <div className="space-y-3 max-h-56 overflow-auto pr-2">
                                     {post.comments && post.comments.length > 0 ? (
                                         post.comments.map(c => {
+
                                             const time = getRelativeTimeDifference(c.created_at)
                                             return (
                                                 <div key={c.comment_id} className="flex gap-3 items-start">

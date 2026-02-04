@@ -27,7 +27,7 @@ return new class extends Migration
             $table->string('student_number', 100)->nullable();
             $table->enum('school_level', ['Elementary','High School','College','Graduate'])->nullable();
             $table->string('batch', 50)->nullable();
-            $table->string('campus', 100)->nullable();
+            $table->string('branch', 100)->nullable();
             $table->string('course', 100)->nullable();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();

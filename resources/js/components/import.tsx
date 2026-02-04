@@ -38,7 +38,7 @@ export function Import({ open, setOpen, table }: AlumniImportProps) {
                         <div>
                             <DialogTitle className="mb-3">Import {table}</DialogTitle>
                             <DialogDescription>
-                                Select an Excel or CSV file to import alumni data.
+                                Select an Excel or CSV file to {table} data.
                             </DialogDescription>
 
                             <Input

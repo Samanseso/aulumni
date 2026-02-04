@@ -4,7 +4,7 @@ import { Eye, EllipsisVertical, Ban, Trash, BadgeCheck } from "lucide-react";
 import { SetStateAction, useState } from "react";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { AlumniRow } from "@/types";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent } from "./ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuItem } from "./ui/dropdown-menu";
 import { Separator } from "./ui/separator";
 import StatusTag from "./status-tag";
 import { Link } from "@inertiajs/react";
@@ -23,9 +23,9 @@ interface AlumniTableProps {
 export function AlumniTable({ alumni, columns, selectedData, setSelectedData }: AlumniTableProps) {
 
     const [viewAlumni, setViewAlumni] = useState<string | null>(null);
-    
+
     const { confirmActionContentCreateModal: confimDeleteContentCreateModal } = useConfirmAction();
-    
+
 
     const updatedSelectedData = (user_id: number) => {
         if (selectedData.includes(user_id)) {
@@ -87,7 +87,7 @@ export function AlumniTable({ alumni, columns, selectedData, setSelectedData }: 
 
                                 <td className="px-4 py-2 text-sm">{alum.school_level}</td>
                                 <td className="px-4 py-2 text-sm">{alum.course}</td>
-                                <td className="px-4 py-2 text-sm">{alum.campus}</td>
+                                <td className="px-4 py-2 text-sm">{alum.branch}</td>
                                 <td className="px-4 py-2 text-sm">{alum.batch}</td>
                                 <td className="px-4 py-2 text-sm"><StatusTag text={alum.status} /></td>
 
@@ -102,42 +102,32 @@ export function AlumniTable({ alumni, columns, selectedData, setSelectedData }: 
                                                 </Button>
                                             </DropdownMenuTrigger>
 
-                                            <DropdownMenuContent
-                                                className="flex flex-col items-start gap-1 mt-1 p-2 rounded-xl border border-white/5 bg-white shadow"
-                                                align='end'
-                                            >
-                                                <Button variant="ghost" size="sm"
-                                                    onClick={() => {
-                                                        setViewAlumni(alum.alumni_id)
-                                                    }}
-                                                >
-                                                    <Eye className="size-4 text-gray-700" />View
-                                                </Button>
 
-                                                <Separator />
+                                            <DropdownMenuContent align='end'>
+                                                <DropdownMenuItem onClick={() => { setViewAlumni(alum.alumni_id) }}>
+                                                    <Eye className="size-4 text-gray-700" />View
+                                                </DropdownMenuItem>
+
+                                                <DropdownMenuSeparator />
                                                 {
                                                     alum.status === 'active' ? (
-                                                        <>
-                                                            <Link href={deactivate(alum.user_id)} as="div">
-                                                                <Button variant="ghost" size="sm">
-                                                                    <Ban className="size-4 text-orange-500" />Deactivate
-                                                                </Button>
+                                                        <DropdownMenuItem asChild>
+                                                            <Link classID="w-full" href={deactivate(alum.user_id)} as="div">
+                                                                <Ban className="size-4 text-orange-500" />Deactivate
                                                             </Link>
-                                                        </>
+                                                        </DropdownMenuItem>
                                                     ) : (
-                                                        <>
-                                                            <Link href={activate(alum.user_id)} as="div">
-                                                                <Button variant="ghost" size="sm">
-                                                                    <BadgeCheck className="size-4 text-green-500" />Activate
-                                                                </Button>
+                                                        <DropdownMenuItem asChild>
+                                                            <Link classID="w-full" href={activate(alum.user_id)} as="div">
+                                                                <BadgeCheck className="size-4 text-green-500" />Activate
                                                             </Link>
-                                                        </>
+                                                        </DropdownMenuItem>
                                                     )
 
                                                 }
-                                                 <Separator />
+                                                <DropdownMenuSeparator />
 
-                                                <Button variant="ghost" size="sm"
+                                                <DropdownMenuItem
                                                     onClick={() => confimDeleteContentCreateModal({
                                                         url: destroy(alum.user_id),
                                                         message: "Are you sure you want to delete this user?",
@@ -145,7 +135,7 @@ export function AlumniTable({ alumni, columns, selectedData, setSelectedData }: 
                                                     })}
                                                 >
                                                     <Trash className="size-4 text-rose-500" />Delete
-                                                </Button>
+                                                </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu >
                                     </div>

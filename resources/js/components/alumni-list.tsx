@@ -1,5 +1,5 @@
 import AppLayout from "@/layouts/app-layout";
-import { BreadcrumbItem, Pagination, Alumni, AlumniRow, Course, Batch, ColumnType } from "@/types";
+import { BreadcrumbItem, Pagination, Alumni, AlumniRow, Course, Batch, ColumnType, Branch } from "@/types";
 import { router, usePage } from "@inertiajs/react";
 import { Button } from "./ui/button";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -8,9 +8,8 @@ import { Link } from "@inertiajs/react";
 import { TablePagination } from "./table-pagination";
 import SearchBar from "./search-bar";
 import { AlumniTable } from "./alumni-table";
-import { index, step } from "@/routes/alumni";
+import { export_alumni, index, step } from "@/routes/alumni";
 import { Import } from "./import";
-import { Modal } from "./modal";
 import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from "./ui/select";
 import { Input } from "./ui/input";
 import { bulk_activate, bulk_deactivate, bulk_delete } from "@/routes/user";
@@ -18,7 +17,6 @@ import { useConfirmAction } from "./context/confirm-action-context";
 import { Filter } from "@/types";
 import { useModal } from "./context/modal-context";
 import SortCollapsible from "./sort-collapsible";
-
 
 const columns = [
     'Alumni ID',
@@ -31,16 +29,16 @@ const columns = [
     'Status',
 ];
 
-const sortableColuns: ColumnType[] = [
-    {name: 'Alumni ID', db_name: 'alumni_id'},
-    {name: 'Name', db_name: 'name'},
-    {name: 'Student #', db_name: 'student_number'},
-    {name: 'Batch', db_name: 'batch'},
+const sortableColumns: ColumnType[] = [
+    { name: 'Alumni ID', db_name: 'alumni_id' },
+    { name: 'Name', db_name: 'name' },
+    { name: 'Student #', db_name: 'student_number' },
+    { name: 'Batch', db_name: 'batch' },
 ]
 
 
 export default function AlumniList() {
-    const { props } = usePage<{ alumni: Pagination<AlumniRow[]>, courses: Course[], batches: Batch[] }>();
+    const { props } = usePage<{ alumni: Pagination<AlumniRow[]>, branches: Branch[], courses: Course[], batches: Batch[] }>();
 
     const [alumni, setAlumni] = useState<AlumniRow[]>(props.alumni.data);
     const [rowsInput, setRowsInput] = useState(props.alumni.per_page.toString() ?? 10);
@@ -56,6 +54,7 @@ export default function AlumniList() {
 
     const { confirmActionContentCreateModal } = useConfirmAction();
     const { createModal } = useModal();
+
 
     useEffect(() => {
         setOpen(false);
@@ -76,7 +75,7 @@ export default function AlumniList() {
         });
     }, []);
 
-    const setOrRemoveParameters = (property: string, value?: string) => {
+    const setOrRemoveFilter = (property: string, value?: string) => {
         const next = value === undefined || value === "none"
             ? filter.filter(f => f.property !== property)
             : [...filter.filter(f => f.property !== property), { property, value }];
@@ -87,11 +86,13 @@ export default function AlumniList() {
         applyFilters(pageRemoved);
     };
 
-    // handlers (shortened)
-    const handleSchoolLevelChange = (e: string) => setOrRemoveParameters("school_level", e);
-    const handleCourseChange = (e: string) => setOrRemoveParameters("course", e);
-    const handleBatchChange = (e: string) => setOrRemoveParameters("batch", e);
-    const handleSearchInputChange = () => setOrRemoveParameters("search", searchInput || undefined);
+    // handlers
+    const handleBranchChange = (e: string) => setOrRemoveFilter("branch", e);
+    const handleSchoolLevelChange = (e: string) => setOrRemoveFilter("school_level", e);
+    const handleCourseChange = (e: string) => setOrRemoveFilter("course", e);
+    const handleBatchChange = (e: string) => setOrRemoveFilter("batch", e);
+    const handleStatusChange = (e: string) => setOrRemoveFilter("status", e);
+    const handleSearchInputChange = () => setOrRemoveFilter("search", searchInput || undefined);
     const handleRowsInputChange = () => {
         const n = parseInt(rowsInput);
         if (Number.isNaN(n) || n < 1 || n > 99) {
@@ -102,8 +103,8 @@ export default function AlumniList() {
                 message: "Rows should be from 1 - 99 only",
             });
             return;
-        } 
-        setOrRemoveParameters("rows", n.toString());
+        }
+        setOrRemoveFilter("rows", n.toString());
 
     };
 
@@ -120,12 +121,16 @@ export default function AlumniList() {
             <div className="flex p-5 pb-2 justify-between">
                 <p className="font-bold text-xl text-gray-600">List of Alumni</p>
                 <div className="flex gap-2">
-                    <Button variant="outline" className="hidden md:flex"><Download />Export</Button>
+
+                    <Button variant="outline" className="hidden md:flex"
+                        onClick={() => window.location.href = export_alumni().url}
+                    ><Download />Export</Button>
+
                     <Button variant="outline" className="hidden md:flex" onClick={() => setOpen(true)}>
                         <Upload />Import
                     </Button>
 
-                    <Link href={step(1)}>
+                    <Link href={step(1)} as="div">
                         <Button><Plus />Add Alumni</Button>
                     </Link>
                 </div>
@@ -135,8 +140,8 @@ export default function AlumniList() {
                     <ListFilter size={15} />
                     <div className="flex items-center gap-2">
                         <Select defaultValue={filter.find(f => f.property === "school_level")?.value || ""} onValueChange={handleSchoolLevelChange}>
-                            <SelectTrigger className="text-black gap-2 !text-black  text-nowrap">
-                                <SelectValue placeholder="School Levels" />
+                            <SelectTrigger className="text-black gap-2 !text-black text-nowrap">
+                                <SelectValue placeholder="School Level" />
                             </SelectTrigger>
                             <SelectContent>
                                 {
@@ -150,8 +155,25 @@ export default function AlumniList() {
                                 <SelectItem value="Graduate">Graduate</SelectItem>
                             </SelectContent>
                         </Select>
+                        
+                        <Select defaultValue={filter.find(f => f.property === "branch")?.value || ""} onValueChange={handleBranchChange}>
+                            <SelectTrigger className="text-black gap-2 !text-black text-nowrap">
+                                <SelectValue placeholder="Branch" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {
+                                    filter.find(f => f.property === "branch")?.value ?
+                                        <SelectItem value="none" className="text-red">Reset</SelectItem> :
+                                        <SelectItem value="none" className="hidden">Branch</SelectItem>
+                                }
+                                {props.branches.map(branch => (
+                                    <SelectItem key={branch.name} value={branch.name}>{branch.name}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+
                         <Select defaultValue={filter.find(f => f.property === "course")?.value || ""} onValueChange={handleCourseChange}>
-                            <SelectTrigger className="text-black gap-2 !text-black">
+                            <SelectTrigger className="text-black gap-2 !text-black text-nowrap">
                                 <SelectValue placeholder="Course" />
                             </SelectTrigger>
                             <SelectContent>
@@ -167,7 +189,7 @@ export default function AlumniList() {
                         </Select>
 
                         <Select defaultValue={filter.find(f => f.property === "batch")?.value || ""} onValueChange={handleBatchChange}>
-                            <SelectTrigger className="text-black gap-2 !text-black">
+                            <SelectTrigger className="text-black gap-2 !text-black text-nowrap  ">
                                 <SelectValue placeholder="Batch" />
                             </SelectTrigger>
                             <SelectContent>
@@ -182,11 +204,27 @@ export default function AlumniList() {
                             </SelectContent>
                         </Select>
 
+                        <Select defaultValue={filter.find(f => f.property === "status")?.value || ""} onValueChange={handleStatusChange}>
+                            <SelectTrigger className="text-black gap-2 !text-black text-nowrap">
+                                <SelectValue placeholder="Status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {
+                                    filter.find(f => f.property === "status")?.value ?
+                                        <SelectItem value="none" className="text-red focus:text-red">Reset</SelectItem> :
+                                        <SelectItem value="none" className="hidden">Status</SelectItem>
+                                }
+                                <SelectItem value="pending">Pending</SelectItem>
+                                <SelectItem value="active">Active</SelectItem>
+                                <SelectItem value="inactve">Inactive</SelectItem>
+                            </SelectContent>
+                        </Select>
+
                     </div>
                 </div>
 
                 <div className="flex gap-2 items-center">
-                    <SortCollapsible columns={sortableColuns} setOrRemoveParameters={setOrRemoveParameters}/>
+                    <SortCollapsible columns={sortableColumns} setOrRemoveFilter={setOrRemoveFilter} />
                     <Input
                         prefix="Show"
                         suffix="rows"
@@ -201,7 +239,7 @@ export default function AlumniList() {
                                 handleRowsInputChange();
                             }
                         }}
-                    />  
+                    />
 
                     <Input
                         endIcon={<Search size={20} color='gray' />}

@@ -29,7 +29,7 @@ export function Input({
   return (
     <div
       className={cn(  
-        "flex items-center w-full rounded-md bg-transparent",
+        "flex items-center gap-1 w-full rounded-md bg-transparent",
         "border border-input px-3 py-1.5 h-9",
         "focus-within:ring-blue/70 focus-within:ring-1",
         className

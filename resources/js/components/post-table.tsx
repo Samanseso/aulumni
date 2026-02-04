@@ -3,7 +3,7 @@ import { Checkbox } from "./ui/checkbox";
 import { Button } from "./ui/button";
 import { Eye, EllipsisVertical, Trash, Edit, Paperclip, Check, Ban } from "lucide-react";
 import { CheckedState } from "@radix-ui/react-checkbox";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuItem, DropdownMenuGroup } from "./ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuItem } from "./ui/dropdown-menu";
 import { Separator } from "./ui/separator";
 import { Link } from "@inertiajs/react";
 import { useConfirmAction } from "./context/confirm-action-context";

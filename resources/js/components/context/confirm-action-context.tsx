@@ -14,7 +14,6 @@ export const ConfirmActionProvider = ({ children }: { children: React.ReactNode 
     const [confirmActionContent, setConfirmActionContent] = useState<ActionModalContentType | undefined>(undefined);
 
     const confirmActionContentCreateModal = (data: ActionModalContentType | undefined) => {
-        console.log(data)
         setConfirmActionContent(data);
     }
 

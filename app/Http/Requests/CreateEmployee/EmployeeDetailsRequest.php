@@ -14,8 +14,6 @@ class EmployeeDetailsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'employee_id' => ['required', 'string', 'max:50'],
-            'user_id'     => ['required', 'string', 'max:36'],
             'first_name'  => ['required', 'string', 'max:255'],
             'middle_name' => ['required', 'string', 'max:255'],
             'last_name'   => ['required', 'string', 'max:255'],
@@ -28,14 +26,6 @@ class EmployeeDetailsRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'employee_id.required' => 'Employee ID is required.',
-            'employee_id.string'   => 'Employee ID must be a string.',
-            'employee_id.max'      => 'Employee ID may not be greater than 50 characters.',
-
-            'user_id.required'     => 'User ID is required.',
-            'user_id.string'       => 'User ID must be a string.',
-            'user_id.max'          => 'User ID may not be greater than 36 characters.',
-
             'first_name.required'  => 'First name is required.',
             'first_name.string'    => 'First name must be a string.',
             'first_name.max'       => 'First name may not be greater than 255 characters.',

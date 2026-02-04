@@ -17,7 +17,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 	{ title: 'Create', href: '' },
 ];
 
-const campuses = [
+const branches = [
 	'Juan Sumulong',
 	'Jose Abad Santos',
 	'Apolinario Mabini',
@@ -107,28 +107,28 @@ const AcademicInfo: React.FC = () => {
 											</div>
 										</div>
 
-										{/* Campus */}
+										{/* Branch */}
 										<div className="flex">
 											<Label
 												className="text-gray-500 w-50 font-bold uppercase text-xs mt-2.5"
-												htmlFor="campus"
+												htmlFor="branch"
 											>
-												Campus <span className="text-red">*</span>
+												Branch <span className="text-red">*</span>
 											</Label>
 											<div className="w-full">
-												<Select name="campus" defaultValue={props.alumni_academic_details?.campus || ''}>
+												<Select name="branch" defaultValue={props.alumni_academic_details?.branch || ''}>
 													<SelectTrigger>
-														<SelectValue placeholder="Select Campus" />
+														<SelectValue placeholder="Select Branch" />
 													</SelectTrigger>
 													<SelectContent>
-														{campuses.map((campus) => (
-															<SelectItem key={campus} value={campus}>
-																{campus}
+														{branches.map((branch) => (
+															<SelectItem key={branch} value={branch}>
+																{branch}
 															</SelectItem>
 														))}
 													</SelectContent>
 												</Select>
-												<InputError className="mt-2" message={errors.campus} />
+												<InputError className="mt-2" message={errors.branch} />
 											</div>
 										</div>
 

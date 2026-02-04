@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Employee extends Model
 {
-    protected $table = 'employees';
+    protected $table = 'admin';
     protected $primaryKey = 'employee_id';
     public $incrementing = true;
     public $timestamps = true;

@@ -1,10 +1,10 @@
 import AppLayout from "@/layouts/app-layout";
-import { BreadcrumbItem, Pagination, Alumni, AlumniRow, ModalType, Employee, Filter } from "@/types";
+import { BreadcrumbItem, Pagination, Alumni, AlumniRow, ModalType, Employee, Filter, Branch, Department, ColumnType } from "@/types";
 import { Head, router, usePage } from "@inertiajs/react";
 import { Button } from "./ui/button";
 import { UserTable } from "./user-table";
 import { useCallback, useEffect, useState } from "react";
-import { SlidersHorizontal, UserPlus, PencilLine, Download, Plus, Upload, ChevronDown, ListFilter, Search } from "lucide-react";
+import { SlidersHorizontal, UserPlus, PencilLine, Download, Plus, Upload, ChevronDown, ListFilter, Search, BadgeCheck, Ban, Trash } from "lucide-react";
 import { Link } from "@inertiajs/react";
 import { TablePagination } from "./table-pagination";
 import SearchBar from "./search-bar";
@@ -12,10 +12,14 @@ import { step } from "@/routes/alumni";
 import { Modal } from "./modal";
 import { EmployeeTable } from "./employee-table";
 import { Import } from "./import";
-import { index } from "@/routes/employee";
+import { export_employee, index } from "@/routes/employee";
 import { Input } from "./ui/input";
 import { useConfirmAction } from "./context/confirm-action-context";
 import { useModal } from "./context/modal-context";
+import { bulk_activate, bulk_deactivate, bulk_delete } from "@/routes/user";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import SortCollapsible from "./sort-collapsible";
+import CreateEmployeeModal from "./create-employee-modal";
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -24,22 +28,22 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-const columns = [
-    'Employee ID',
-    'Name',
-    'Contact',
-    'Branch',
-    'Department',
-];
+
+const sortableColuns: ColumnType[] = [
+    { name: 'Employee ID', db_name: 'employee_id' },
+    { name: 'Name', db_name: 'name' },
+    { name: 'Date created', db_name: 'created_at' },
+]
 
 
 export default function EmployeeList() {
-    const { props } = usePage<{ employees: Pagination<Employee[]>, modal: ModalType }>();
+    const { props } = usePage<{ employees: Pagination<Employee[]>, branches: Branch[], departments: Department[], modal: ModalType }>();
 
     const [employees, setEmployees] = useState<Employee[]>(props.employees.data);
     const [rowsInput, setRowsInput] = useState(props.employees.per_page.toString() ?? 10);
     const [searchInput, setSearchInput] = useState('');
     const [selectedData, setSelectedData] = useState<number[]>([]);
+    const [addEmployeeModal, setAddEmployeeModal] = useState(false);
 
     const [tableVersion, setTableVersion] = useState(0);
 
@@ -84,6 +88,8 @@ export default function EmployeeList() {
         applyFilters(pageRemoved);
     };
 
+    const handleBranchChange = (branch: string) => setOrRemoveFilter("branch", branch);
+    const handleDepartmentChange = (department: string) => setOrRemoveFilter("department", department);
     const handleSearchInputChange = () => setOrRemoveFilter("search", searchInput || undefined);
     const handleRowsInputChange = () => {
         const n = parseInt(rowsInput);
@@ -102,27 +108,64 @@ export default function EmployeeList() {
 
     return (
         <div className="m-4 relative bg-white shadow rounded-lg h-[100%] overflow-hidden">
+            {addEmployeeModal && <CreateEmployeeModal setAddEmployeeModal={setAddEmployeeModal} />}
             <div className="flex p-5 pb-2 justify-between">
                 <p className="font-bold text-xl text-gray-600">List of Employees</p>
                 <div className="flex gap-2">
-                    <Button variant="outline" className="hidden md:flex"><Download />Export</Button>
+                    <Button variant="outline" className="hidden md:flex" onClick={() => window.location.href = export_employee().url}>
+                        <Download />Export
+                    </Button>
                     <Button variant="outline" className="hidden md:flex" onClick={() => setOpen(true)}>
                         <Upload />Import
                     </Button>
 
-                    <Link href={step(1)}>
-                        <Button variant="outline" className=" text-white bg-blue hover:bg-red hover:text-white"><Plus />Add Employee</Button>
-                    </Link>
+
+                    <Button variant="outline" className=" text-white bg-blue hover:bg-red hover:text-white"
+                        onClick={() => setAddEmployeeModal(true)}
+                    >
+                        <Plus />Add Employee
+                    </Button>
+
                 </div>
             </div>
             <div className="justify-between flex items-center py-3 px-0 rounded-t-lg mb-6 px-5">
                 <div className="flex items-center gap-2">
-                    <ListFilter size={15} className="" />
-                    <Button variant="outline" className="hidden md:flex">Branch<ChevronDown /></Button>
-                    <Button variant="outline" className="hidden md:flex">Department<ChevronDown /></Button>
+                    <ListFilter size={15} className="w-full" />
+                    <Select defaultValue={filter.find(f => f.property === "branch")?.value || ""} onValueChange={handleBranchChange}>
+                        <SelectTrigger className="text-black gap-2 !text-black text-nowrap">
+                            <SelectValue placeholder="Branch" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {
+                                filter.find(f => f.property === "branch")?.value ?
+                                    <SelectItem value="none" className="text-red">Reset</SelectItem> :
+                                    <SelectItem value="none" className="hidden">Branch</SelectItem>
+                            }
+                            {props.branches.map(branch => (
+                                <SelectItem key={branch.name} value={branch.name}>{branch.name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <Select defaultValue={filter.find(f => f.property === "department")?.value || ""} onValueChange={handleDepartmentChange}>
+                        <SelectTrigger className="text-black gap-2 !text-black text-nowrap">
+                            <SelectValue placeholder="Department" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {
+                                filter.find(f => f.property === "department")?.value ?
+                                    <SelectItem value="none" className="text-red">Reset</SelectItem> :
+                                    <SelectItem value="none" className="hidden">Department</SelectItem>
+                            }
+                            {props.departments.map(department => (
+                                <SelectItem key={department.name} value={department.name}>{department.name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+
                 </div>
 
                 <div className="flex gap-2">
+                    <SortCollapsible columns={sortableColuns} setOrRemoveFilter={setOrRemoveFilter} />
                     <Input
                         prefix="Show"
                         suffix="rows"
@@ -173,47 +216,46 @@ export default function EmployeeList() {
 
                 <div>
                     {
-                        // selectedData.length > 0 &&
-                        // <div className="flex items-end gap-3">
-                        //     <p className="text-sm">With {selectedData.length} selected:</p>
-                        //     <div className="flex gap-3">
+                        selectedData.length > 0 &&
+                        <div className="flex items-end gap-3">
+                            <p className="text-sm">With {selectedData.length} selected:</p>
+                            <div className="flex gap-3">
 
-                        //         <Button size="sm" className="translate-y-1.5" variant="outline" onClick={() => confirmActionContentCreateModal({
-                        //             url: bulk_activate(),
-                        //             message: "Are you sure you want to activate this accounts",
-                        //             action: "Activate",
-                        //             data: { user_ids: selectedData }
+                                <Button size="sm" className="translate-y-1.5" variant="outline" onClick={() => confirmActionContentCreateModal({
+                                    url: bulk_activate(),
+                                    message: "Are you sure you want to activate this accounts",
+                                    action: "Activate",
+                                    data: { user_ids: selectedData }
 
-                        //         })}>
-                        //             <BadgeCheck className="text-green-500" />Activate
-                        //         </Button>
+                                })}>
+                                    <BadgeCheck className="text-green-500" />Activate
+                                </Button>
 
-                        //         <Button size="sm" className="translate-y-1.5" variant="outline" onClick={() => confirmActionContentCreateModal({
-                        //             url: bulk_deactivate(),
-                        //             message: "Are you sure you want to deactivate this accounts",
-                        //             action: "Deactivate",
-                        //             data: { user_ids: selectedData }
+                                <Button size="sm" className="translate-y-1.5" variant="outline" onClick={() => confirmActionContentCreateModal({
+                                    url: bulk_deactivate(),
+                                    message: "Are you sure you want to deactivate this accounts",
+                                    action: "Deactivate",
+                                    data: { user_ids: selectedData }
+                                })}>
+                                    <Ban className="text-red-500" />Deactivate
+                                </Button>
 
-                        //         })}>
-                        //             <Ban className="text-red-500" />Deactivate
-                        //         </Button>
+                                <Button size="sm" className="translate-y-1.5" variant="outline">
+                                    <Upload />Export
+                                </Button>
 
-                        //         <Button size="sm" className="translate-y-1.5" variant="outline">
-                        //             <Upload />Export
-                        //         </Button>
+                                <Button size="sm" className="translate-y-1.5 bg-rose-100 text-red" onClick={() => confirmActionContentCreateModal({
+                                    url: bulk_delete(),
+                                    message: "Are you sure you want to delete this accounts?",
+                                    action: "Delete",
+                                    data: { user_ids: selectedData },
+                                    promptPassword: true,
+                                })}>
+                                    <Trash />Delete
+                                </Button>
+                            </div>
 
-                        //         <Button size="sm" className="translate-y-1.5 bg-rose-100 text-red" onClick={() => confirmActionContentCreateModal({
-                        //             url: bulk_delete(),
-                        //             message: "Are you sure you want to delete this accounts?",
-                        //             action: "Delete",
-                        //             data: { user_ids: selectedData },
-                        //             promptPassword: true,
-                        //         })}>
-                        //             <Trash />Delete
-                        //         </Button>
-                        //     </div>
-
-                        // </div>
+                        </div>
                     }
                 </div>
                 {props.employees.data.length > 0 && <TablePagination data={props.employees} />}

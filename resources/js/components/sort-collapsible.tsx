@@ -12,7 +12,7 @@ interface ColumnType {
 
 interface SortCollapsibleProps {
     columns: ColumnType[];
-    setOrRemoveParameters: (property: string, value?: string) => void
+    setOrRemoveFilter: (property: string, value?: string) => void
 }
 
 interface SortConfigItem {
@@ -21,9 +21,10 @@ interface SortConfigItem {
     ascending: boolean;
 }
 
-const SortCollapsible = ({ columns, setOrRemoveParameters }: SortCollapsibleProps) => {
+const SortCollapsible = ({ columns, setOrRemoveFilter }: SortCollapsibleProps) => {
     const { props } = usePage<{ sortConfig: SortConfigItem[]}>();
     const [ open, setOpen] = useState(false);
+
 
     const [sortConfig, setSortConfig] = useState<SortConfigItem[]>(props.sortConfig);
 
@@ -56,7 +57,7 @@ const SortCollapsible = ({ columns, setOrRemoveParameters }: SortCollapsibleProp
 
         if (!sortConfig.length) {
             // remove sort filter if nothing selected
-            setOrRemoveParameters('sort', undefined);
+            setOrRemoveFilter('sort', undefined);
             return;
         }
 
@@ -66,7 +67,7 @@ const SortCollapsible = ({ columns, setOrRemoveParameters }: SortCollapsibleProp
             .map((c) => `${c.column}:${c.ascending ? 'asc' : 'desc'}`)
             .join(',');
 
-        setOrRemoveParameters('sort', sortValue);
+        setOrRemoveFilter('sort', sortValue);
     };
 
     const handleOpenChange = (open: boolean) => {
