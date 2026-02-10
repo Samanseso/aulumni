@@ -8,16 +8,24 @@ import { createRoot } from 'react-dom/client';
 import { initializeTheme } from './hooks/use-appearance';
 import { ConfirmActionProvider } from './components/context/confirm-action-context';
 import { ModalProvider } from './components/context/modal-context';
+import { configureEcho } from '@laravel/echo-react';
+
+configureEcho({
+    broadcaster: 'reverb',
+});
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
+
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
-    resolve: (name) =>
-        resolvePageComponent(
-            `./pages/${name}.tsx`,
-            import.meta.glob('./pages/**/*.tsx'),
-        ),
+    resolve: (name) => {
+        //console.log('Requested page name:', name);
+        const pages = import.meta.glob('./pages/**/*.tsx');
+        //console.log('Available page keys:', Object.keys(pages));
+        return resolvePageComponent(`./pages/${name}.tsx`, pages);
+    },
+
     setup({ el, App, props }) {
         const root = createRoot(el);
 

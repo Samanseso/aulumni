@@ -28,7 +28,7 @@ class PostController extends Controller
         ]);
     }
 
-    public function show(string $post_uuid): JsonResponse
+    public function show(Post $post): JsonResponse
     {
         $post = Post::with([
             'user',
@@ -37,7 +37,7 @@ class PostController extends Controller
             'reactions',
             'shares'
         ])
-        ->where('post_uuid', $post_uuid)
+        ->where('post_id', $post->post_id)
         ->firstOrFail();
 
 

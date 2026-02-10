@@ -1,6 +1,6 @@
 import moment from 'moment';
 
-export const getRelativeTimeDifference = (givenDate: string) => {
+export const getRelativeTimeDifference = (givenDate: string): string => {
     
     const nowUtc = moment.utc();
     const thenUtc = moment.utc(new Date(givenDate));
@@ -24,9 +24,7 @@ export const getRelativeTimeDifference = (givenDate: string) => {
     const diffInWeeks = nowUtc.diff(thenUtc, 'weeks');
     if (diffInWeeks < 4) return `${diffInWeeks} week${diffInWeeks > 1 ? 's' : ''} ago`;
 
-    const diffInMonths = nowUtc.diff(thenUtc, 'months');
-    if (diffInMonths < 12) return `${diffInMonths} month${diffInMonths > 1 ? 's' : ''} ago`;
+    const date = new Date(givenDate).toLocaleString('en', {'month' : 'short', 'day': '2-digit'});
 
-    const diffInYears = nowUtc.diff(thenUtc, 'years');
-    return `${diffInYears} year${diffInYears > 1 ? 's' : ''} ago`;
+    return date;
 };

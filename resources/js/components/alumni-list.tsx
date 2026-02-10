@@ -139,6 +139,7 @@ export default function AlumniList() {
                 <div className="flex items-center gap-2">
                     <ListFilter size={15} />
                     <div className="flex items-center gap-2">
+
                         <Select defaultValue={filter.find(f => f.property === "school_level")?.value || ""} onValueChange={handleSchoolLevelChange}>
                             <SelectTrigger className="text-black gap-2 !text-black text-nowrap">
                                 <SelectValue placeholder="School Level" />
@@ -216,7 +217,7 @@ export default function AlumniList() {
                                 }
                                 <SelectItem value="pending">Pending</SelectItem>
                                 <SelectItem value="active">Active</SelectItem>
-                                <SelectItem value="inactve">Inactive</SelectItem>
+                                <SelectItem value="inactive">Inactive</SelectItem>
                             </SelectContent>
                         </Select>
 

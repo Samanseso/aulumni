@@ -1,5 +1,5 @@
-import { Link } from '@inertiajs/react';
-import { BookOpen, FileClock, Folder, LayoutGrid, User, Wrench } from 'lucide-react';
+import { Link, usePage } from '@inertiajs/react';
+import { BookOpen, FileClock, Folder, LayoutGrid, UserIcon, Wrench } from 'lucide-react';
 
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -13,63 +13,11 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard } from '@/routes';
-import { type NavItem } from '@/types';
+import type { User, NavItem } from '@/types';
 import AppLogo from './app-logo';
+import { home } from '@/routes';
+import { NavAlumni } from './nav-alumni';
 
-
-
-
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-    {
-        title: 'User',
-        href: '',
-        icon: User,
-        subNavItem: [
-            {
-                title: 'Alumni',
-                href: '/user/alumni',
-            },
-            {
-                title: 'Employee',
-                href: '/user/employee',
-            },
-            {
-                title: 'Admin',
-                href: '/user/admin',
-            }
-        ]
-    },
-    {
-        title: 'Utility',
-        href: '',
-        icon: Wrench,
-        subNavItem: [
-            {
-                title: 'Branch',
-                href: '/branch',
-            },
-            {
-                title: 'Department',
-                href: '/department',
-            },
-            {
-                title: 'Course',
-                href: '/course',
-            }
-        ]
-    },
-    {
-        title: 'System Logs',
-        href: '',
-        icon: FileClock,
-    },
-];
 
 const footerNavItems: NavItem[] = [
     {
@@ -85,13 +33,15 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
+
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={dashboard()} prefetch>
+                            <Link href={home()} prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>
@@ -99,7 +49,7 @@ export function AppSidebar() {
                 </SidebarMenu>
             </SidebarHeader>
 
-            <SidebarContent>
+            <SidebarContent> 
                 <NavMain />
             </SidebarContent>
 

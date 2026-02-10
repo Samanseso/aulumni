@@ -3,6 +3,7 @@ import { ModalType } from "@/types";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "./ui/dialog";
 import { useState, SetStateAction } from "react";
+import { router } from "@inertiajs/react";
 
 interface ModalProps {
     content: ModalType;
@@ -14,6 +15,11 @@ export function Modal({ content, setModalContent }: ModalProps) {
 
     const onModalClose = (open: boolean) => {
         if (!open) {
+            
+            // this prevent modal rerender when modal values are reused
+            router.reload({ only: ['modal']});
+
+
             setModalContent(undefined);
             setOpen(false);
         }

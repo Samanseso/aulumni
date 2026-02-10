@@ -7,7 +7,7 @@ import { Modal } from '@/components/modal';
 
 export default function CreateAlumniLayout({ children }: PropsWithChildren) {
 
-    const { props } = usePage<{ step: number, modal: ModalType }>();
+    const { props } = usePage<{ step: number }>();
 
     // When server-side rendering, we only render the layout on the client...
     if (typeof window === 'undefined') {
@@ -21,7 +21,6 @@ export default function CreateAlumniLayout({ children }: PropsWithChildren) {
                {children}
             </div>
 
-            {props.modal && props.modal.status && <Modal content={props.modal} />}
         </div>
     );
 }

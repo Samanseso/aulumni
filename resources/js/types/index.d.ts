@@ -243,6 +243,15 @@ export interface Post {
 	updated_at: string;
 }
 
+interface CompletePost extends Post {
+    attachments: Attachment[];
+    comments?: Comment[];
+	liked_by_user: boolean;
+    author: { user_id: number; name?: string; user_name?: string; email?: string };
+};
+
+
+
 export type PostRow = { post_id: ID;
 	post_uuid: string;
 	user_id: number;

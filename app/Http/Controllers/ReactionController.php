@@ -6,6 +6,7 @@ use App\Models\Reaction;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
@@ -21,37 +22,61 @@ class ReactionController extends Controller
         return response()->json($reactions);
     }
 
+
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
             'post_id' => ['required', 'integer'],
-            'user_id' => ['required', 'integer'],
-            'type' => ['nullable', Rule::in(['like','love','haha','wow','sad','angry'])],
         ]);
 
-        return DB::transaction(function () use ($data) {
-            $post = Post::findOrFail($data['post_id']);
+        $userId = $request->user()->user_id;
+        if (! $userId) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
 
-            // If user already reacted, update type; otherwise create
+        return DB::transaction(function () use ($data, $userId) {
+            // Lock the post row to avoid concurrent counter issues
+            $post = Post::where('post_id', $data['post_id'])->lockForUpdate()->firstOrFail();
+
+            // Find existing reaction for this user and post
             $reaction = Reaction::where('post_id', $post->post_id)
-                ->where('user_id', $data['user_id'])
+                ->where('user_id', $userId)
                 ->first();
 
             if ($reaction) {
-                $reaction->type = $data['type'] ?? $reaction->type;
-                $reaction->save();
-            } else {
-                $reaction = Reaction::create([
-                    'post_id' => $post->post_id,
-                    'user_id' => $data['user_id'],
-                    'type' => $data['type'] ?? 'like',
-                ]);
-                $post->increment('reactions_count');
+                // Delete existing reaction
+                $reaction->delete();
+
+                // Decrement counter (ensure it doesn't go below zero)
+                if ($post->reactions_count > 0) {
+                    $post->decrement('reactions_count');
+                }
+
+                return response()->json([
+                    'action' => 'deleted',
+                    'reaction_id' => $reaction->id ?? null,
+                    'reactions_count' => $post->fresh()->reactions_count,
+                ], 200);
             }
 
-            return response()->json($reaction, $reaction->wasRecentlyCreated ? 201 : 200);
+            // Create new reaction
+            $newReaction = Reaction::create([
+                'post_id' => $post->post_id,
+                'user_id' => $userId,
+            ]);
+
+            // Increment counter
+            $post->increment('reactions_count');
+
+            return response()->json([
+                'action' => 'created',
+                'reaction' => $newReaction,
+                'reactions_count' => $post->fresh()->reactions_count,
+            ], 201);
         });
     }
+
+
 
     public function destroy(Request $request): JsonResponse
     {

@@ -12,6 +12,7 @@ import { activate, deactivate } from "@/routes/user";
 import { AlumniModal } from "./alumni-modal";
 import { destroy } from "@/routes/user";
 import { useConfirmAction } from "./context/confirm-action-context";
+import { show } from "@/routes/alumni";
 
 interface AlumniTableProps {
     alumni: AlumniRow[],
@@ -47,7 +48,7 @@ export function AlumniTable({ alumni, columns, selectedData, setSelectedData }: 
 
     return (
         <div className="table-fixed w-full h-full mb-20">
-            {viewAlumni && <AlumniModal alumni_id={viewAlumni} setViewAlumni={setViewAlumni} />}
+            {/* {viewAlumni && <AlumniModal alumni_id={viewAlumni} setViewAlumni={setViewAlumni} />} */}
 
             <table className="w-full">
                 <thead>
@@ -104,8 +105,10 @@ export function AlumniTable({ alumni, columns, selectedData, setSelectedData }: 
 
 
                                             <DropdownMenuContent align='end'>
-                                                <DropdownMenuItem onClick={() => { setViewAlumni(alum.alumni_id) }}>
-                                                    <Eye className="size-4 text-gray-700" />View
+                                                <DropdownMenuItem asChild>
+                                                    <Link href={show(alum.user_name).url}>
+                                                        <Eye className="size-4 text-gray-700" />View
+                                                    </Link>
                                                 </DropdownMenuItem>
 
                                                 <DropdownMenuSeparator />

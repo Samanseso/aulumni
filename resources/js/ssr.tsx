@@ -6,6 +6,7 @@ import ReactDOMServer from 'react-dom/server';
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 createServer((page) =>
+
     createInertiaApp({
         page,
         render: ReactDOMServer.renderToString,

@@ -19,6 +19,7 @@ use App\Models\AlumniPersonalDetails;
 use App\Models\Batch;
 use App\Models\Branch;
 use App\Models\Course;
+use App\Models\Post;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -145,17 +146,74 @@ class AlumniController extends Controller
         ]);
     }
 
-    public function show($alumni)
+    public function show($user_name)
     {
-        $record = Alumni::with(['personal_details', 'academic_details', 'contact_details', 'employment_details'])
+        $alumni = Alumni::with(['personal_details', 'academic_details', 'contact_details', 'employment_details'])
+            ->leftJoin('users', 'alumni.user_id', '=', 'users.user_id')
+            ->where('users.user_name', $user_name)
+            ->select('alumni.*', 'users.status', 'users.user_name', 'users.email', 'users.name')
+            ->firstOrFail();
+
+        $posts = Post::with(['user', 'attachments'])->where('user_id', $alumni->user_id)->get();
+
+        return Inertia::render('admin/alumni-profile/all', [
+            'alumni' => $alumni,
+            'posts'  => $posts,
+        ]);
+    }
+
+    public function show_personal($alumni)
+    {
+        $alumni = Alumni::with(['personal_details', 'academic_details', 'contact_details', 'employment_details'])
             ->where('alumni_id', $alumni)
             ->leftJoin('users', 'alumni.user_id', '=', 'users.user_id')
             ->select('alumni.*', 'users.status', 'users.user_name', 'users.name')
             ->firstOrFail();
 
-        return response()->json($record);
+        return Inertia::render('admin/alumni-profile/personal', [
+            'alumni' => $alumni,
+        ]);
     }
 
+
+    public function show_academic($alumni)
+    {
+        $alumni = Alumni::with(['personal_details', 'academic_details', 'contact_details', 'employment_details'])
+            ->where('alumni_id', $alumni)
+            ->leftJoin('users', 'alumni.user_id', '=', 'users.user_id')
+            ->select('alumni.*', 'users.status', 'users.user_name', 'users.name')
+            ->firstOrFail();
+
+        return Inertia::render('admin/alumni-profile/academic', [
+            'alumni' => $alumni,
+        ]);
+    }
+
+    public function show_contact($alumni)
+    {
+        $alumni = Alumni::with(['personal_details', 'academic_details', 'contact_details', 'employment_details'])
+            ->where('alumni_id', $alumni)
+            ->leftJoin('users', 'alumni.user_id', '=', 'users.user_id')
+            ->select('alumni.*', 'users.status', 'users.user_name', 'users.name')
+            ->firstOrFail();
+
+        return Inertia::render('admin/alumni-profile/contact', [
+            'alumni' => $alumni,
+        ]);
+    }
+
+    public function show_employment($alumni)
+    {
+        $alumni = Alumni::with(['personal_details', 'academic_details', 'contact_details', 'employment_details'])
+            ->where('alumni_id', $alumni)
+            ->leftJoin('users', 'alumni.user_id', '=', 'users.user_id')
+            ->select('alumni.*', 'users.status', 'users.user_name', 'users.name')
+            ->firstOrFail();
+
+        return Inertia::render('admin/alumni-profile/employment', [
+            'alumni' => $alumni,
+        ]);
+    }
 
 
 
@@ -321,6 +379,7 @@ class AlumniController extends Controller
         // Clear the session data
         session()->forget(['alumni_personal_details', 'alumni_academic_details', 'alumni_contact_details', 'current_step']);
 
+        
         return redirect()->route('alumni.index')->with([
             'modal_status' => "success",
             'modal_action' => "create",

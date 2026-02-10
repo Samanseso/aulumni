@@ -4,7 +4,7 @@ use App\Http\Controllers\User\AlumniController;
 use App\Http\Controllers\User\EmployeeController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth'])->prefix('user')->group(function () {
+Route::middleware(['auth', 'role:admin'])->prefix('user')->group(function () {
 
     // Render employee table
     Route::get('employee', [EmployeeController::class, 'index'])->name('employee.index');

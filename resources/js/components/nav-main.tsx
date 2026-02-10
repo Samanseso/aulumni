@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link } from "@inertiajs/react";
 import {
     LayoutGrid,
@@ -6,8 +6,6 @@ import {
     Wrench,
     FileClock,
     ChevronDown,
-    Megaphone,
-    AppWindow,
     FileText,
 } from "lucide-react";  
 import {
@@ -18,8 +16,8 @@ import {
     SidebarMenuButton,
     SidebarMenuAction,
 } from "@/components/ui/sidebar";
-import { dashboard } from "@/routes";
-import { index } from "@/routes/post";
+import { home } from "@/routes";
+import { useActiveUrl } from "@/hooks/use-active-url";
 
 export function NavMain() {
 
@@ -45,10 +43,7 @@ export function NavMain() {
 
     const currentUrl = typeof window !== "undefined" ? window.location.pathname : "";
 
-    const urlIsActive = (href: string) => {
-        if (!href) return false;
-        return currentUrl === href || currentUrl.startsWith(href);
-    };
+    const { urlIsActive } = useActiveUrl()
 
 
     return (
@@ -59,10 +54,10 @@ export function NavMain() {
                 <SidebarMenuItem key="Dashboard">
                     <SidebarMenuButton
                         asChild
-                        isActive={urlIsActive(dashboard().url)}
+                        isActive={urlIsActive(home().url)}
                         tooltip={{ children: "Dashboard" }}
                     >
-                        <Link href={dashboard().url} prefetch>
+                        <Link href={home().url} prefetch>
                             <LayoutGrid />
                             <span>Dashboard</span>
                         </Link>

@@ -3,7 +3,7 @@
 use App\Http\Controllers\BranchController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'role:admin'])->prefix('utility')->group(function () {
 
     // List branches
     Route::get('branch', [BranchController::class, 'index'])->name('branch.index');

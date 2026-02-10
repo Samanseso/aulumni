@@ -110,7 +110,7 @@ export default function AdminUserList() {
 	return (
 		<div className="m-4 relative bg-white shadow rounded-lg h-[100%] overflow-hidden">
 			<div className="flex p-5 pb-2 justify-between">
-				<p className="font-bold text-xl text-gray-600">List of Alumni</p>
+				<p className="font-bold text-xl text-gray-600">List of Administrators</p>
 				<div className="flex gap-2">
 
 					<Button variant="outline" className="hidden md:flex"
