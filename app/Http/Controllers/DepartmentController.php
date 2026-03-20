@@ -5,14 +5,25 @@ namespace App\Http\Controllers;
 use App\Http\Requests\DepartmentRequest;
 use App\Models\Department;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\View\View;
 
 class DepartmentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $search = trim((string) $request->input('search', ''));
+
         $department = Department::paginate(15)->withQueryString();
+
+        if ($search !== '') {
+            $department = Department::query()
+                ->where('name', 'like', "%{$search}%")
+                ->orWhere('description', 'like', "%{$search}%")
+                ->paginate(15)
+                ->withQueryString();
+        }
+
         return Inertia::render('admin/departments', ['department' => $department]);
     }
 

@@ -30,8 +30,8 @@ export interface SharedData {
 }
 
 
-export interface Admin extends User{
-	
+export interface Admin extends User {
+
 };
 
 export interface AlumniPersonalDetails {
@@ -62,9 +62,11 @@ export interface AlumniAcademicDetails {
 export interface AlumniContactDetails {
 	email: string;
 	contact: string;
+	telephone?: string | null;
 	mailing_address?: string | null;
 	present_address?: string | null;
 	provincial_address?: string | null;
+	company_address?: string | null;
 	facebook_url?: string | null;
 	twitter_url?: string | null;
 	gmail_url?: string | null;
@@ -92,15 +94,16 @@ export interface AlumniEmploymentDetails {
 	updated_at?: string | null;
 }
 
-interface User {
-	user_id: int;
+export interface User {
+	user_id: number;
 	name: string;
 	user_name: string;
 	email: string;
+	avatar?: string;
 	user_type: string;
 	password: string;
 	status: string;
-	created_by: string;
+	created_by?: string | null;
 	created_at: string;
 	updated_at: string;
 }
@@ -233,8 +236,12 @@ export interface Post {
 	post_id: number;
 	post_uuid: string;
 	user_id: number;
-	content: string;
-	place: string | null;
+	job_title: string;
+	company: string;
+	location: string;
+	job_type: 'Full-time' | 'Part-time' | 'Contract' | 'Internship' | 'Remote';
+	salary?: string | null;
+	job_description: string;
 	privacy: 'public' | 'friends' | 'only_me';
 	comments_count: number;
 	reactions_count: number;
@@ -243,20 +250,22 @@ export interface Post {
 	updated_at: string;
 }
 
+
 interface CompletePost extends Post {
-    attachments: Attachment[];
-    comments?: Comment[];
+	attachments: Attachment[];
+	comments?: Comment[];
 	liked_by_user: boolean;
-    author: { user_id: number; name?: string; user_name?: string; email?: string };
+	author: { user_id: number; name?: string; user_name?: string; email?: string };
 };
 
 
 
-export type PostRow = { post_id: ID;
+export type PostRow = {
+	post_id: number;
 	post_uuid: string;
 	user_id: number;
-	user: User;
-	content: string;
+	author: { user_id: number; name?: string; user_name?: string; email?: string };
+	job_title: string;
 	attachments?: Attachment[];
 	privacy: 'public' | 'friends' | 'only_me';
 	comments_count: number;
@@ -266,6 +275,9 @@ export type PostRow = { post_id: ID;
 	updated_at: string;
 };
 
+export type GroupedPost = {
+	[key: string]: PostRow[];
+}
 
 
 export interface Attachment {
@@ -337,4 +349,68 @@ export interface CreateShareDTO {
 	post_id: number;
 	user_id: number;
 	comment?: string | null;
+}
+
+declare global {
+    interface Window {
+        Pusher: typeof Pusher;
+        Echo: Echo;
+    }
+}
+
+
+export interface ImportFailureItem {
+  row: number | null;
+  attribute: string | null;
+  errors: string[];
+  values: Record<string, any> | any[] | null;
+}
+
+export interface ImportFailureRow {
+  row: number | string | null;
+  errors: string[];
+  attributes: (string | null)[];
+  values: (Record<string, any> | any[] | null)[];
+}
+
+export interface ImportReport {
+  total: number | null;
+  succeeded: number | null;
+  failed: number;
+  failures: ImportFailureRow[];
+  report_url?: string | null;
+}
+
+
+
+
+
+export interface ImportReportNotificationPayload {
+  title: string;
+  message: string;
+  report: ImportReport;
+  read_at: string | null;
+  timestamp: string;
+}
+
+export interface UserMentionPayload {
+  user: string
+  message: string
+}
+
+export type NotificationPayloadMap = {
+  'App\\Notifications\\ImportReportNotification': ImportReportNotificationPayload
+  'App\\Notifications\\UserMentionNotification': UserMentionPayload
+}
+
+
+
+
+export interface AppNotification<T> { 
+	id: string;
+	type: string;
+	data: T;
+	read_at: string | null;
+	created_at: string;
+	updated_at: string;
 }

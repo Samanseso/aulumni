@@ -5,9 +5,9 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import UserAvatar from '@/components/user-avatar'
 import AppLayout from '@/layouts/app-layout'
-import { CompletePost, Post, User } from '@/types'
+import { CompletePost, User } from '@/types'
 import { usePage } from '@inertiajs/react'
-import { Globe, Image, Smile, Video } from 'lucide-react'
+import { Globe, Image, BriefcaseBusiness } from 'lucide-react'
 import { useState } from 'react'
 
 const NewsFeed = () => {
@@ -18,7 +18,7 @@ const NewsFeed = () => {
 
     return (
         <AppLayout>
-            <div className='mt-3 max-w-xl mx-auto'>
+            <div className='mt-3 w-full lg:max-w-xl mx-auto'>
                 {createPostModal && <PostCreateModal setCreatePostModal={setCreatePostModal} />}
                 <div className='w-full p-3 pb-1 shadow bg-white lg:rounded-lg mb-3'>
                     <div className='flex gap-2 items-center mb-1'>
@@ -26,15 +26,14 @@ const NewsFeed = () => {
                         <Input
                             onClick={() => setCreatePostModal(true)}
                             readOnly
-                            endIcon={<Smile size={20} />}
-                            placeholder='Share something...'
+                            endIcon={<BriefcaseBusiness size={20} />}
+                            placeholder='Post a job opportunity...'
                             className='border-0 bg-muted rounded-full'
                         />
                     </div>
                     <div className='flex items-center justify-between ps-12.5'>
                         <div className='flex items-center gap-4 text-muted-foreground'>
                             <Button variant="ghost" className='!px-0 text-sm'><Image />Image</Button>
-                            <Button variant="ghost" className='!px-0 text-sm'><Video />Video</Button>
                         </div>
 
                         <div className='flex items-center'>

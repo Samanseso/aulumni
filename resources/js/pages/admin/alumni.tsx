@@ -22,7 +22,7 @@ const Alumni = () => {
     
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Dashboard" />
+            <Head title="Alumni" />
 
             <AlumniList />
 

@@ -44,13 +44,15 @@ class EmployeeImport implements ToCollection, WithHeadingRow
                 'password' => $password,
                 'password_confirmation' => $password,
                 'status'     => $status,
-                'created_by' => Auth::id() ?? 1,
+                'created_by' => Auth::id(),
             ]);
 
             // Create or update the employee record.
             Employee::updateOrCreate(
                 [
                     'employee_id' => $employee_id,
+                ],
+                [
                     'user_id'     => $user->user_id,
                     'first_name'  => $firstName,
                     'middle_name' => $middleName,
@@ -58,7 +60,7 @@ class EmployeeImport implements ToCollection, WithHeadingRow
                     'contact'     => $contact,
                     'branch'      => $branch,
                     'department'  => $department,
-                ]
+                ],
             );
         }
     }

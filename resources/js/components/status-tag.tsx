@@ -6,7 +6,7 @@ const StatusTag = ({ text }: { text: string }) => {
     const getBgColor = () => {
         switch (text) {
             case "inactive":
-            case "pending": return "rgb(194, 191, 45)";
+            case "pending": return "#c2bf2d";
             case "LOADING":
             case "ASSIGNED": return "#8dc9ecff";
             case "EN ROUTE": return "#d978e6ff";
@@ -14,7 +14,7 @@ const StatusTag = ({ text }: { text: string }) => {
             case "DELIVERED": 
             case "DISPATCHED":
             case "approved":
-            case "active": return "rgb(40, 137, 74)";
+            case "active": return "#28894a";
             case "WAITING":
             case "rejected":
             case "CANCELLED": return "#e98780ff";   

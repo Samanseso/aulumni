@@ -1,6 +1,6 @@
 import { PaginationLink, Pagination } from "@/types";
 import { Button } from "./ui/button";
-import { ArrowLeft, ArrowRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { Link } from "@inertiajs/react";
 
 interface TablePaginationProps {
@@ -41,18 +41,19 @@ function getVisiblePages(
 
 
 export function TablePagination({ data }: TablePaginationProps) {
-    const visiblePages = getVisiblePages(data.links, data.current_page, data.last_page, 1);
+    const visiblePages = getVisiblePages(data.links, data.current_page, data.last_page, 2);
 
     return (
         <div className="flex justify-between gap-2 translate-y-2">
-            {/* I don't know why but pr-8 works ------------------------^ */}
-            <div>
-                <Link href={data.prev_page_url ?? ""}>
-                    <Button variant="outline" size="sm" disabled={data.prev_page_url == null}>
-                        <ChevronsLeft />
+
+            {
+                data.prev_page_url &&
+                <Link href={data.prev_page_url}>
+                    <Button variant="outline" size="icon" disabled={data.prev_page_url == null}>
+                        <ChevronLeft />
                     </Button>
                 </Link>
-            </div>
+            }
             <div className="flex space-x-2">
                 {
                     visiblePages.map((page) => (
@@ -60,7 +61,7 @@ export function TablePagination({ data }: TablePaginationProps) {
                             key={parseInt(page.label)}
                             variant="outline"
                             disabled={!page.url}
-                            size="sm"
+                            size="icon"
                             className={`${parseInt(page.label) === data.current_page ? 'bg-blue text-white' : ''}`}
                             asChild
                         >
@@ -70,11 +71,14 @@ export function TablePagination({ data }: TablePaginationProps) {
                 }
             </div>
             <div>
-                <Link href={data.next_page_url ?? ""}>
-                    <Button variant="outline" size="sm" disabled={data.next_page_url == null} className="cursor-pointer">
-                        <ChevronsRight />
-                    </Button>
-                </Link>
+                {
+                    data.next_page_url &&
+                    <Link href={data.next_page_url}>
+                        <Button variant="outline" size="icon" disabled={data.next_page_url == null} className="cursor-pointer">
+                            <ChevronRight />
+                        </Button>
+                    </Link>
+                }
 
             </div>
         </div>

@@ -20,27 +20,37 @@ class CreateNewUser implements CreatesNewUsers
      */
     public function create(array $input): User
     {
-
         Validator::make($input, [
             ...$this->profileRules(),
             'password' => $this->passwordRules(),
         ])->validate();
 
-        $user_name = Str::lower(Str::remove(" ", $input['name']));
-        $user_name_count = User::where('user_name', $user_name)->count();
+        $baseUserName = Str::of($input['name'] ?? 'user')
+            ->lower()
+            ->replaceMatches('/[^a-z0-9]+/', '')
+            ->value();
 
-        
-        $unique_user_name = $user_name_count == 0 ? 
-        Str::lower(Str::remove(" ", $input['name'])) : 
-        Str::lower(Str::remove(" ", $input['name'])) . $user_name_count + 1;
+        if ($baseUserName === '') {
+            $baseUserName = 'user';
+        }
+
+        $uniqueUserName = $baseUserName;
+        $suffix = 2;
+
+        while (User::where('user_name', $uniqueUserName)->exists()) {
+            $uniqueUserName = $baseUserName.$suffix;
+            $suffix++;
+        }
 
 
         return User::create([
-            'user_name' => $unique_user_name,
+            'user_name' => $uniqueUserName,
             'name' => $input['name'],
             'email' => $input['email'],
             'user_type' => $input['user_type'],
             'password' => $input['password'],
+            'status' => $input['status'] ?? 'pending',
+            'created_by' => $input['created_by'] ?? null,
         ]);
     }
 }

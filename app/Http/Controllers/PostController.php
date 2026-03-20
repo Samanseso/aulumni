@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\PostsUpdated;
+use App\Http\Requests\PostRequest;
 use App\Models\Post;
 use App\Models\Attachment;
 use Illuminate\Http\Request;
@@ -9,20 +11,47 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class PostController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Post::query()->with(['user', 'attachments']);
+        $validated = $request->validate([
+            'user_id' => ['nullable', 'integer'],
+            'privacy' => ['nullable', Rule::in(['public', 'friends', 'only_me'])],
+            'status' => ['nullable', Rule::in(['pending', 'approved', 'rejected'])],
+            'search' => ['nullable', 'string', 'max:255'],
+            'rows' => ['nullable', 'integer', 'min:1', 'max:100'],
+        ]);
 
-        if ($request->filled('user_id')) {
-            $query->where('user_id', $request->input('user_id'));
+        $query = Post::query()->with(['author', 'attachments']);
+
+        if (! empty($validated['user_id'])) {
+            $query->where('user_id', $validated['user_id']);
         }
 
-        $posts = $query->orderBy('created_at', 'desc')->paginate(20);
+        if (! empty($validated['privacy'])) {
+            $query->where('privacy', $validated['privacy']);
+        }
+
+        if (! empty($validated['status'])) {
+            $query->where('status', $validated['status']);
+        }
+
+        if (! empty($validated['search'])) {
+            $search = trim($validated['search']);
+            $query->where(function ($inner) use ($search) {
+                $inner->where('job_title', 'like', "%{$search}%")
+                    ->orWhere('company', 'like', "%{$search}%")
+                    ->orWhere('location', 'like', "%{$search}%");
+            });
+        }
+
+        $posts = $query->orderBy('created_at', 'desc')->paginate($validated['rows'] ?? 20)->withQueryString();
         return Inertia::render('admin/posts', [
             'posts' => $posts,
         ]);
@@ -31,52 +60,97 @@ class PostController extends Controller
     public function show(Post $post): JsonResponse
     {
         $post = Post::with([
-            'user',
+            'author',
             'attachments',
-            'comments.user:user_id,user_name,name,email',
             'reactions',
-            'shares'
         ])
-        ->where('post_id', $post->post_id)
-        ->firstOrFail();
+            ->where('post_id', $post->post_id)
+            ->firstOrFail();
 
 
         return response()->json($post);
     }
 
-
-    public function store(Request $request): JsonResponse
+    public function retrieve($post_id): JsonResponse
     {
-        $data = $request->validate([
-            'user_id' => ['required', 'integer'],
-            'content' => ['required', 'string'],
-            'privacy' => ['nullable', Rule::in(['public', 'friends', 'only_me'])],
-            'attachments' => ['nullable', 'array'],
-            'attachments.*.url' => ['required_with:attachments', 'string', 'max:1024'],
-            'attachments.*.type' => ['nullable', Rule::in(['image', 'video', 'file'])],
-        ]);
+        $post = Post::query()->with(['author', 'attachments'])
+            ->where('post_id', $post_id)
+            ->firstOrFail();
 
-        return DB::transaction(function () use ($data) {
+        return response()->json($post);
+    }
+
+    public function destroy(Post $post): RedirectResponse
+    {
+        $post->delete();
+
+        return back()->with([
+            'modal_status'  => 'success',
+            'modal_action'  => 'delete',
+            'modal_title'   => 'Post deleted',
+            'modal_message' => 'Post was deleted successfully.',
+        ]);
+    }
+
+
+    public function store(PostRequest $request)
+    {
+        $user = $request->user();
+
+        return DB::transaction(function () use ($request, $user) {
             $post = Post::create([
                 'post_uuid' => (string) Str::uuid(),
-                'user_id' => $data['user_id'],
-                'content' => $data['content'],
-                'privacy' => $data['privacy'] ?? 'public',
+                'user_id' => $user->user_id,
+                'job_title' => $request['job_title'],
+                'company' => $request['company'],
+                'location' => $request['location'],
+                'job_type' => $request['job_type'],
+                'salary' => $request['salary'] ?? null,
+                'job_description' => $request['job_description'],
+                'privacy' => $request['privacy'] ?? 'public',
+                'status' => 'pending',
             ]);
 
-            if (!empty($data['attachments'])) {
-                foreach ($data['attachments'] as $att) {
+
+            if ($request->hasFile('attachments')) {
+                foreach ($request->file('attachments') as $file) {
+                    if (! $file->isValid()) continue;
+
+                    $path = $file->store('attachments/' . date('Y/m'), 'public');
+
+                    $url = url('storage/' . $path);
+
+
                     Attachment::create([
                         'post_id' => $post->post_id,
-                        'url' => $att['url'],
-                        'type' => $att['type'] ?? 'image',
+                        'url' => $url,
+                        'type' => $this->guessAttachmentType($file),
                     ]);
                 }
             }
 
-            return response()->json($post->load('attachments'), 201);
+
+            broadcast(new PostsUpdated($post->post_id));
+
+            // Flash a success message (Inertia will expose this in page.props.flash)
+            return back()->with([
+                'modal_status'  => 'success',
+                'modal_action'  => 'create',
+                'modal_title'   => 'Job posted',
+                'modal_message' => 'Your job post was created successfully.',
+            ]);
         });
     }
+
+    protected function guessAttachmentType(UploadedFile $file): string
+    {
+        $mime = $file->getMimeType() ?? '';
+        if (str_starts_with($mime, 'image/')) return 'image';
+        if (str_starts_with($mime, 'video/')) return 'video';
+        return 'file';
+    }
+
+
 
     public function approve(Post $post): RedirectResponse
     {
@@ -108,7 +182,12 @@ class PostController extends Controller
     public function update(Request $request, Post $post): JsonResponse
     {
         $data = $request->validate([
-            'content' => ['sometimes', 'string'],
+            'job_title' => ['sometimes', 'string', 'max:255'],
+            'company' => ['sometimes', 'string', 'max:255'],
+            'location' => ['sometimes', 'string', 'max:255'],
+            'job_type' => ['sometimes', Rule::in(['Full-time', 'Part-time', 'Contract', 'Internship', 'Remote'])],
+            'salary' => ['nullable', 'string', 'max:100'],
+            'job_description' => ['sometimes', 'string'],
             'privacy' => ['nullable', Rule::in(['public', 'friends', 'only_me'])],
             'status' => ['nullable', 'string', 'max:50'],
         ]);
@@ -116,11 +195,5 @@ class PostController extends Controller
         $post->update($data);
 
         return response()->json($post);
-    }
-
-    public function destroy(Post $post): JsonResponse
-    {
-        $post->delete();
-        return response()->json(null, 204);
     }
 }

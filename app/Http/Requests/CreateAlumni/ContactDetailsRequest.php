@@ -16,9 +16,11 @@ class ContactDetailsRequest extends FormRequest
         return [
             'email'             => ['nullable', 'email', 'max:255'],
             'contact'           => ['nullable', 'string', 'max:11'],
+            'telephone'         => ['nullable', 'string', 'max:50'],
             'mailing_address'   => ['nullable', 'string', 'max:2000'],
             'present_address'   => ['nullable', 'string', 'max:2000'],
             'provincial_address'=> ['nullable', 'string', 'max:2000'],
+            'company_address'   => ['nullable', 'string', 'max:255'],
             'facebook_url'      => ['nullable', 'url', 'max:1000'],
             'twitter_url'       => ['nullable', 'url', 'max:1000'],
             'gmail_url'         => ['nullable', 'url', 'max:1000'],
@@ -33,6 +35,8 @@ class ContactDetailsRequest extends FormRequest
             'email.email'        => 'Please provide a valid email address.',
             'contact.required'      => 'Contact number is required.',
             'contact.max'           => 'Contact number may not be greater than 11 characters.',
+            'telephone.max'        => 'Telephone may not be greater than 50 characters.',
+            'company_address.max'  => 'Company address may not be greater than 255 characters.',
             'facebook_url.url'   => 'Facebook URL must be a valid URL.',
             'twitter_url.url'    => 'Twitter URL must be a valid URL.',
         ];

@@ -1,15 +1,9 @@
-import AppLayout from "@/layouts/app-layout";
-import { BreadcrumbItem, Pagination, Alumni, AlumniRow, ModalType, Employee, Filter, Branch, Department, ColumnType } from "@/types";
-import { Head, router, usePage } from "@inertiajs/react";
+import { ModalType, Employee, Filter, Branch, Department, ColumnType } from "@/types";
+import { router, usePage } from "@inertiajs/react";
 import { Button } from "./ui/button";
-import { UserTable } from "./user-table";
 import { useCallback, useEffect, useState } from "react";
-import { SlidersHorizontal, UserPlus, PencilLine, Download, Plus, Upload, ChevronDown, ListFilter, Search, BadgeCheck, Ban, Trash } from "lucide-react";
-import { Link } from "@inertiajs/react";
+import { Download, Plus, Upload, ChevronDown, Search, BadgeCheck, Ban, Trash } from "lucide-react";
 import { TablePagination } from "./table-pagination";
-import SearchBar from "./search-bar";
-import { step } from "@/routes/alumni";
-import { Modal } from "./modal";
 import { EmployeeTable } from "./employee-table";
 import { Import } from "./import";
 import { export_employee, index } from "@/routes/employee";
@@ -17,19 +11,13 @@ import { Input } from "./ui/input";
 import { useConfirmAction } from "./context/confirm-action-context";
 import { useModal } from "./context/modal-context";
 import { bulk_activate, bulk_deactivate, bulk_delete } from "@/routes/user";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import SortCollapsible from "./sort-collapsible";
 import CreateEmployeeModal from "./create-employee-modal";
-
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'User Management',
-        href: '/user-management/students',
-    },
-];
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import EmployeeController from "@/actions/App/Http/Controllers/User/EmployeeController";
 
 
-const sortableColuns: ColumnType[] = [
+const sortableColumns: ColumnType[] = [
     { name: 'Employee ID', db_name: 'employee_id' },
     { name: 'Name', db_name: 'name' },
     { name: 'Date created', db_name: 'created_at' },
@@ -109,29 +97,12 @@ export default function EmployeeList() {
     return (
         <div className="m-4 relative bg-white shadow rounded-lg h-[100%] overflow-hidden">
             {addEmployeeModal && <CreateEmployeeModal setAddEmployeeModal={setAddEmployeeModal} />}
-            <div className="flex p-5 pb-2 justify-between">
-                <p className="font-bold text-xl text-gray-600">List of Employees</p>
-                <div className="flex gap-2">
-                    <Button variant="outline" className="hidden md:flex" onClick={() => window.location.href = export_employee().url}>
-                        <Download />Export
-                    </Button>
-                    <Button variant="outline" className="hidden md:flex" onClick={() => setOpen(true)}>
-                        <Upload />Import
-                    </Button>
 
+            <div className="justify-between flex items-center py-3 px-5 rounded-t-lg mt-3 mb-3">
 
-                    <Button variant="outline" className=" text-white bg-blue hover:bg-red hover:text-white"
-                        onClick={() => setAddEmployeeModal(true)}
-                    >
-                        <Plus />Add Employee
-                    </Button>
-
-                </div>
-            </div>
-            <div className="justify-between flex items-center py-3 px-0 rounded-t-lg mb-6 px-5">
                 <div className="flex items-center gap-2">
-                    <ListFilter size={15} className="w-full" />
-                    <Select defaultValue={filter.find(f => f.property === "branch")?.value || ""} onValueChange={handleBranchChange}>
+
+                    {/* <Select defaultValue={filter.find(f => f.property === "branch")?.value || ""} onValueChange={handleBranchChange}>
                         <SelectTrigger className="text-black gap-2 !text-black text-nowrap">
                             <SelectValue placeholder="Branch" />
                         </SelectTrigger>
@@ -160,30 +131,10 @@ export default function EmployeeList() {
                                 <SelectItem key={department.name} value={department.name}>{department.name}</SelectItem>
                             ))}
                         </SelectContent>
-                    </Select>
-
-                </div>
-
-                <div className="flex gap-2">
-                    <SortCollapsible columns={sortableColuns} setOrRemoveFilter={setOrRemoveFilter} />
-                    <Input
-                        prefix="Show"
-                        suffix="rows"
-                        id="rows"
-                        type="number"
-                        className="w-32 gap-2"
-                        defaultValue={props.employees.per_page}
-                        onChange={(e) => setRowsInput(e.target.value)}
-                        onKeyDown={e => {
-                            if (e.key == "Enter") {
-                                e.preventDefault();
-                                handleRowsInputChange();
-                            }
-                        }}
-                    />
+                    </Select> */}
 
                     <Input
-                        endIcon={<Search size={20} color='gray' />}
+                        startIcon={<Search size={20} color='gray' />}
                         type="text"
                         placeholder="Search here"
                         onChange={e => setSearchInput(e.target.value)}
@@ -194,14 +145,60 @@ export default function EmployeeList() {
                                 handleSearchInputChange();
                             }
                         }}
-                        className="w-50 shadow-none focus-within:ring-0" />
+                        className="w-45 shadow-none focus-within:ring-0" />
+
+                    <div className="flex justify-center gap-2">
+                        <SortCollapsible columns={sortableColumns} setOrRemoveFilter={setOrRemoveFilter} />
+                        <Input
+                            prefix="Show"
+                            suffix="rows"
+                            id="rows"
+                            type="number"
+                            className="w-32 gap-2"
+                            defaultValue={props.employees.per_page}
+                            onChange={(e) => setRowsInput(e.target.value)}
+                            onKeyDown={e => {
+                                if (e.key == "Enter") {
+                                    e.preventDefault();
+                                    handleRowsInputChange();
+                                }
+                            }}
+                        />
+                    </div>
+
+                </div>
+
+                <div className="flex gap-4">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger className="focus:outline-0 cursor-pointer">
+                            <ChevronDown size={18} />
+                        </DropdownMenuTrigger>
+
+                        <DropdownMenuContent align="start" sideOffset={16}>
+                            <DropdownMenuItem onClick={() => window.location.href = export_employee().url}>
+                                <Download /> Export
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+
+                            <DropdownMenuItem onClick={() => setOpen(true)}>
+                                <Upload /> Import
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    <Button variant="outline" className=" text-white bg-blue hover:bg-red hover:text-white"
+                        onClick={() => setAddEmployeeModal(true)}
+                    >
+                        <Plus />Add Employee
+                    </Button>
+
                 </div>
 
             </div>
 
             {employees.length > 0 && <EmployeeTable key={tableVersion} employees={employees} selectedData={selectedData} setSelectedData={setSelectedData} />}
 
-            <Import open={open} table="employee" setOpen={setOpen} />
+            <Import open={open} entityLabel="employee" importAction={EmployeeController.import.form()} setOpen={setOpen} />
 
             <div className="flex w-full justify-between items-end px-6 absolute bottom-7 right-0 space-x-10">
                 {

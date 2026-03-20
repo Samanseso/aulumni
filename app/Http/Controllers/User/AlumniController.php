@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\User;
 
+use App\Actions\Alumni\CreateAlumni;
 use App\Actions\Fortify\CreateNewUser;
 use App\Exports\AlumniExport;
 use App\Http\Controllers\Controller;
@@ -21,11 +22,14 @@ use App\Models\Branch;
 use App\Models\Course;
 use App\Models\Post;
 use App\Models\User;
+use App\Notifications\ImportReportNotification;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Validators\Failure;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class AlumniController extends Controller
@@ -83,7 +87,7 @@ class AlumniController extends Controller
         if (!empty($validated['batch'])) {
             $query->where('alumni_academic_details.batch', $validated['batch']);
         }
-        
+
         if (!empty($validated['status'])) {
             $query->where('users.status', $validated['status']);
         }
@@ -107,13 +111,19 @@ class AlumniController extends Controller
 
         $sortConfig = [];
         $index = 1;
+
+
         if (!empty($validated['sort'])) {
             $pairs = array_filter(array_map('trim', explode(',', $validated['sort'])));
+
             foreach ($pairs as $pair) {
                 $parts = explode(':', $pair, 2);
                 if (count($parts) !== 2) {
                     continue;
                 }
+
+                
+
                 [$colKey, $dir] = $parts;
                 $colKey = trim($colKey);
                 $dir = strtolower(trim($dir)) === 'desc' ? 'desc' : 'asc';
@@ -154,7 +164,7 @@ class AlumniController extends Controller
             ->select('alumni.*', 'users.status', 'users.user_name', 'users.email', 'users.name')
             ->firstOrFail();
 
-        $posts = Post::with(['user', 'attachments'])->where('user_id', $alumni->user_id)->get();
+        $posts = Post::with(['author', 'attachments'])->where('user_id', $alumni->user_id)->get();
 
         return Inertia::render('admin/alumni-profile/all', [
             'alumni' => $alumni,
@@ -306,16 +316,6 @@ class AlumniController extends Controller
     public function process_employment_details(EmploymentDetailsRequest $request): RedirectResponse
     {
 
-        $attempt = 0;
-        do {
-            $attempt++;
-            $alumni_id = date('y') . "-" . sprintf('%05d', $attempt);
-
-            if (Alumni::where('alumni_id', $alumni_id)->count() == 0) {
-                break;
-            }
-        } while ($attempt < 99999);
-
         $password = (
             session('alumni_personal_details')['first_name'][0] .
             session('alumni_personal_details')['middle_name'][0] .
@@ -323,85 +323,110 @@ class AlumniController extends Controller
             '@' . date('Y')
         );
 
-        $input = [
-            'name' => session('alumni_personal_details')['first_name'] . " " . session('alumni_personal_details')['last_name'] ?? 'No Name',
-            'email' => session('alumni_contact_details')['email'],
-            'user_type' => 'alumni',
-            'password' => $password,
-            'password_confirmation' => $password,
-        ];
-
-        $user = app(CreateNewUser::class)->create($input);
-
-
-        // Save alumni alumni record
-        $alumni = new Alumni();
-        $alumni->fill([
-            'alumni_id'  => $alumni_id,
-            'user_id'       => $user->user_id,
+        $alumni = app(CreateAlumni::class)->create([
+            'user' => [
+                'name' => session('alumni_personal_details')['first_name'] . " " . session('alumni_personal_details')['last_name'] ?? 'No Name',
+                'email' => session('alumni_contact_details')['email'],
+                'user_type' => 'alumni',
+                'password' => $password,
+            ],
+            'personal' => session('alumni_personal_details', []),
+            'academic' => session('alumni_academic_details', []),
+            'contact' => session('alumni_contact_details', []),
+            'employment' => $request->all(),
         ]);
-        $alumni->save();
-
-
-        // Save alumni personal details
-        $alumni_personal = new AlumniPersonalDetails();
-        $alumni_personal->fill(array_merge(
-            session('alumni_personal_details', []),
-            ['alumni_id' => $alumni_id]
-        ));
-        $alumni_personal->save();
-
-
-        // Save alumni academic details
-        $alumni_academic = new AlumniAcademicDetails();
-        $alumni_academic->fill(array_merge(
-            session('alumni_academic_details', []),
-            ['alumni_id' => $alumni_id]
-        ));
-        $alumni_academic->save();
-
-        // Save alumni contact details
-        $alumni_contact = new AlumniContactDetails();
-        $alumni_contact->fill(array_merge(
-            session('alumni_contact_details', []),
-            ['alumni_id' => $alumni_id]
-        ));
-        $alumni_contact->save();
-
-        // Save alumni employment details
-        $alumni_employment = new AlumniEmploymentDetails();
-        $alumni_employment->fill(array_merge(
-            $request->all(),
-            ['alumni_id' => $alumni_id]
-        ));
-        $alumni_employment->save();
 
         // Clear the session data
         session()->forget(['alumni_personal_details', 'alumni_academic_details', 'alumni_contact_details', 'current_step']);
 
-        
+
         return redirect()->route('alumni.index')->with([
             'modal_status' => "success",
             'modal_action' => "create",
             'modal_title' => "Create successful!",
-            'modal_message' => "Alumni #$alumni_id was added successfully.",
+            'modal_message' => "Alumni #{$alumni->alumni_id} was added successfully.",
         ]);
     }
 
     public function import(Request $request): RedirectResponse
     {
-        // Get row count
-        $collection = Excel::toCollection(new AlumniImport, $request->file('file'));
-        $rowCount = $collection->first()->count();
+        $request->validate(['file' => 'required|file']);
 
-        // Insert to database
-        Excel::import(new AlumniImport, $request->file('file'));
+        $import = new AlumniImport();
+        Excel::import($import, $request->file('file'));
+
+        $importToDb = AlumniImport::importToDbMap();
+
+        // Collection<Failure>
+        $rawFailures = $import->failures();
+
+        // Normalize each Failure -> array
+        $normalized = $rawFailures->map(function ($f) {
+            if ($f instanceof Failure) {
+                return [
+                    'row' => $f->row(),
+                    'attribute' => $f->attribute(),
+                    'errors' => $f->errors(),
+                    'values' => $f->values(),
+                ];
+            }
+            return (array) $f;
+        });
+
+        // Group by row and merge errors/attributes per row
+        $failuresByRow = $normalized
+            ->groupBy('row')
+            ->map(function (Collection $items, $row) use ($importToDb) {
+                return [
+                    'row' => $row,
+                    'errors' => $items->pluck('errors')->flatten(1)->unique()->values()->all(),
+                    'attributes' => $items->pluck('attribute')
+                        ->map(fn ($attribute) => $importToDb[$attribute] ?? null)
+                        ->filter()
+                        ->unique()
+                        ->values()
+                        ->all(),
+                    'values' => $items->pluck('values')
+                        ->map(function ($values) use ($importToDb) {
+                            $dbValues = [];
+                            foreach ($importToDb as $importKey => $dbKey) {
+                                if (array_key_exists($importKey, $values)) {
+                                    $dbValues[$dbKey] = $values[$importKey];
+                                }
+                            }
+                            return $dbValues;
+                        })
+                        ->all(),
+                ];
+            })
+            ->values()   // reindex numerically
+            ->all();     // convert to array for serialization
+
+        // Unique failed rows count
+        $failedRowCount = count($failuresByRow);
+
+
+
+
+        $succeeded = $import->getSuccessCount();
+
+        $report = [
+            'total' => $succeeded + $failedRowCount,
+            'succeeded' => $succeeded,
+            'failed' => $failedRowCount,
+            'failures' => $failuresByRow,
+        ];
+
+        // Notify (payload is JSON-serializable)
+        $request->user()->notify(new ImportReportNotification($report));
 
         return redirect()->route('alumni.index')->with([
             'modal_status' => "success",
             'modal_action' => "create",
-            'modal_title' => "Import successful!",
-            'modal_message' => $this->num_to_words($rowCount) . " alumni accounts was created successfully.",
+            'modal_title' => "Import finished",
+            'modal_message' => $report['failed'] > 0
+                ? "{$report['succeeded']} of {$report['total']} rows succeeded. {$report['failed']} failed."
+                : "Alumni were created successfully. All {$report['total']} rows imported.",
         ]);
     }
 

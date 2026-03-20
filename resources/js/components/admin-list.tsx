@@ -1,21 +1,21 @@
-import AppLayout from "@/layouts/app-layout";
-import { BreadcrumbItem, Pagination, ColumnType, Admin } from "@/types";
 import { router, usePage } from "@inertiajs/react";
 import { Button } from "./ui/button";
 import { useCallback, useEffect, useState } from "react";
-import { Download, Plus, Upload, Search, BadgeCheck, Ban, Trash, ListFilter } from "lucide-react";
+import { Download, Plus, Upload, Search, BadgeCheck, Ban, Trash, ChevronDown } from "lucide-react";
 import { Link } from "@inertiajs/react";
 import { TablePagination } from "./table-pagination";
 import { Import } from "./import";
-import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from "./ui/select";
 import { Input } from "./ui/input";
 import { useModal } from "./context/modal-context";
-import { Filter } from "@/types";
+import { Admin, ColumnType, Filter } from "@/types";
 import { export_admin, index } from "@/routes/admin";
 import { bulk_activate, bulk_deactivate, bulk_delete } from "@/routes/user";
 import { useConfirmAction } from "./context/confirm-action-context";
 import SortCollapsible from "./sort-collapsible";
 import AdminTable from "./admin-table";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import AdminController from "@/actions/App/Http/Controllers/User/AdminController";
+import CreateAdminModal from "./create-admin-modal";
 
 const columns = [
 	"User ID",
@@ -43,6 +43,7 @@ export default function AdminUserList() {
 	const [rowsInput, setRowsInput] = useState(props.admins.per_page.toString() ?? "10");
 	const [searchInput, setSearchInput] = useState("");
 	const [selectedData, setSelectedData] = useState<number[]>([]);
+	const [createOpen, setCreateOpen] = useState(false);
 
 	const params = new URLSearchParams(window.location.search);
 	const initialFilters: Filter[] = Array.from(params.entries()).map(([property, value]) => ({ property, value }));
@@ -57,7 +58,7 @@ export default function AdminUserList() {
 	useEffect(() => {
 		setOpen(false);
 		setAdmins(props.admins.data);
-	}, [props.users]);
+	}, [props.admins]);
 
 	const applyFilters = useCallback((nextFilters: Filter[]) => {
 		sessionStorage.setItem("user_filters", JSON.stringify(nextFilters.filter((f) => f.property !== "page")));
@@ -86,8 +87,6 @@ export default function AdminUserList() {
 	};
 
 	// handlers
-	const handleBranchChange = (e: string) => setOrRemoveFilter("branch", e);
-	const handleDepartmentChange = (e: string) => setOrRemoveFilter("department", e);
 	const handleSearchInputChange = () => setOrRemoveFilter("search", searchInput || undefined);
 	const handleRowsInputChange = () => {
 		const n = parseInt(rowsInput);
@@ -109,96 +108,64 @@ export default function AdminUserList() {
 
 	return (
 		<div className="m-4 relative bg-white shadow rounded-lg h-[100%] overflow-hidden">
-			<div className="flex p-5 pb-2 justify-between">
-				<p className="font-bold text-xl text-gray-600">List of Administrators</p>
-				<div className="flex gap-2">
+			{createOpen && <CreateAdminModal setOpen={setCreateOpen} />}
 
-					<Button variant="outline" className="hidden md:flex"
-						onClick={() => window.location.href = export_admin().url}
-					><Download />Export</Button>
-
-					<Button variant="outline" className="hidden md:flex" onClick={() => setOpen(true)}>
-						<Upload />Import
-					</Button>
-
-					<Link href={""} as="div">
-						<Button><Plus />Add Admin</Button>
-					</Link>
-				</div>
-			</div>
-
-			<div className="justify-between flex items-center py-3 px-0 rounded-t-lg mb-6 px-5">
+			<div className="justify-between flex items-center py-3 px-5 px-0 rounded-t-lg mt-3 mb-3">
 				<div className="flex items-center gap-2">
-					<ListFilter size={15} />
 					<div className="flex items-center gap-2">
-
-						<Select defaultValue={filter.find(f => f.property === "branch")?.value || ""} onValueChange={handleBranchChange}>
-							<SelectTrigger className="text-black gap-2 !text-black text-nowrap">
-								<SelectValue placeholder="Branch" />
-							</SelectTrigger>
-							<SelectContent>
-								{
-									filter.find(f => f.property === "branch")?.value ?
-										<SelectItem value="none" className="text-red">Reset</SelectItem> :
-										<SelectItem value="none" className="hidden">Branch</SelectItem>
+						<Input
+							startIcon={<Search size={20} color='gray' />}
+							type="text"
+							placeholder="Search here"
+							onChange={e => setSearchInput(e.target.value)}
+							onEndIconClick={handleSearchInputChange}
+							onKeyDown={e => {
+								if (e.key == "Enter") {
+									e.preventDefault();
+									handleSearchInputChange();
 								}
-								{/* {props.branches.map(branch => (
-									<SelectItem key={branch.name} value={branch.name}>{branch.name}</SelectItem>
-								))} */}
-							</SelectContent>
-						</Select>
+							}}
+							className="w-45 shadow-none focus-within:ring-0" />
+							
+						<SortCollapsible columns={sortableColumns} setOrRemoveFilter={setOrRemoveFilter} />
 
-						<Select defaultValue={filter.find(f => f.property === "department")?.value || ""} onValueChange={handleDepartmentChange}>
-							<SelectTrigger className="text-black gap-2 !text-black text-nowrap">
-								<SelectValue placeholder="Department" />
-							</SelectTrigger>
-							<SelectContent>
-								{
-									filter.find(f => f.property === "department")?.value ?
-										<SelectItem value="none" className="text-red">Reset</SelectItem> :
-										<SelectItem value="none" className="hidden">Department</SelectItem>
+						<Input
+							prefix="Show"
+							suffix="rows"	
+							id="rows"
+							type="number"
+							className="w-32 gap-2"
+							defaultValue={props.admins.per_page}
+							onChange={(e) => setRowsInput(e.target.value)}
+							onKeyDown={e => {
+								if (e.key == "Enter") {
+									e.preventDefault();
+									handleRowsInputChange();
 								}
-								{/* {props.departments.map(department => (
-									<SelectItem key={department.name} value={department.name}>{department.name}</SelectItem>
-								))} */}
-							</SelectContent>
-						</Select>
-
-
+							}}
+						/>
 					</div>
 				</div>
 
-				<div className="flex gap-2 items-center">
-					<SortCollapsible columns={sortableColumns} setOrRemoveFilter={setOrRemoveFilter} />
-					<Input
-						prefix="Show"
-						suffix="rows"
-						id="rows"
-						type="number"
-						className="w-32 gap-2"
-						defaultValue={props.admins.per_page}
-						onChange={(e) => setRowsInput(e.target.value)}
-						onKeyDown={e => {
-							if (e.key == "Enter") {
-								e.preventDefault();
-								handleRowsInputChange();
-							}
-						}}
-					/>
+				<div className="flex gap-4 items-center">
+					<DropdownMenu>
+						<DropdownMenuTrigger className="focus:outline-0 cursor-pointer">
+							<ChevronDown size={18} />
+						</DropdownMenuTrigger>
 
-					<Input
-						endIcon={<Search size={20} color='gray' />}
-						type="text"
-						placeholder="Search here"
-						onChange={e => setSearchInput(e.target.value)}
-						onEndIconClick={handleSearchInputChange}
-						onKeyDown={e => {
-							if (e.key == "Enter") {
-								e.preventDefault();
-								handleSearchInputChange();
-							}
-						}}
-						className="w-45 shadow-none focus-within:ring-0" />
+						<DropdownMenuContent align="start" sideOffset={16}>
+							<DropdownMenuItem onClick={() => { }}>
+								<Download /> Export
+							</DropdownMenuItem>
+							<DropdownMenuSeparator />
+
+							<DropdownMenuItem onClick={() => setOpen(true)}>
+								<Upload /> Import
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+
+					<Button onClick={() => setCreateOpen(true)}><Plus />Add Admin</Button>
 				</div>
 			</div>
 
@@ -206,7 +173,7 @@ export default function AdminUserList() {
 				<AdminTable admins={admins} selectedData={selectedData} setSelectedData={setSelectedData} />
 			)}
 
-			<Import open={open} table="admin" setOpen={setOpen} />
+			<Import open={open} entityLabel="admin" importAction={AdminController.import.form()} setOpen={setOpen} />
 
 			<div className="flex w-full justify-between items-end px-6 absolute bottom-7 right-0 space-x-10">
 				{

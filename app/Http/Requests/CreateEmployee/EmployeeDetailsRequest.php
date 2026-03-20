@@ -3,6 +3,7 @@
 namespace App\Http\Requests\CreateEmployee;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class EmployeeDetailsRequest extends FormRequest
 {
@@ -17,6 +18,7 @@ class EmployeeDetailsRequest extends FormRequest
             'first_name'  => ['required', 'string', 'max:255'],
             'middle_name' => ['required', 'string', 'max:255'],
             'last_name'   => ['required', 'string', 'max:255'],
+            'email'       => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
             'contact'     => ['required', 'string', 'max:50'],
             'branch'      => ['required', 'string', 'max:255'],
             'department'  => ['required', 'string', 'max:255'],
@@ -37,6 +39,10 @@ class EmployeeDetailsRequest extends FormRequest
             'last_name.required'   => 'Last name is required.',
             'last_name.string'     => 'Last name must be a string.',
             'last_name.max'        => 'Last name may not be greater than 255 characters.',
+
+            'email.required'       => 'Email is required.',
+            'email.email'          => 'Email must be a valid email address.',
+            'email.unique'         => 'Email is already in use.',
 
             'contact.required'     => 'Contact is required.',
             'contact.string'       => 'Contact must be a string.',

@@ -33,7 +33,7 @@ const CreateEmployeeModal = ({ setAddEmployeeModal }: CreateEmployeeModalProps) 
                         preserveScroll: true,
                     }}
 
-                    onSubmitComplete={() => setAddEmployeeModal(false)}
+                    onSuccess={() => setAddEmployeeModal(false)}
                 >
                     {({ processing, errors }) => (
                         <>
@@ -187,7 +187,7 @@ const CreateEmployeeModal = ({ setAddEmployeeModal }: CreateEmployeeModalProps) 
                             </div>
 
                             <DialogFooter>
-                                <Button type='button' variant='secondary' onClick={() => { }} >Cancel</Button>
+                                <Button type='button' variant='secondary' onClick={() => setAddEmployeeModal(false)} >Cancel</Button>
                                 <Button disabled={processing} type='submit'>Create</Button>
                             </DialogFooter>
                         </>

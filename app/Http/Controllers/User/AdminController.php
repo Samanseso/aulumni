@@ -3,13 +3,10 @@
 namespace App\Http\Controllers\User;
 
 use App\Actions\Fortify\CreateNewUser;
-use App\Exports\EmployeeExport;
+use App\Exports\AdminExport;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\CreateEmployee\EmployeeDetailsRequest;
-use App\Imports\EmployeeImport;
-use App\Models\Branch;
-use App\Models\Department;
-use App\Models\Employee;
+use App\Http\Requests\AdminRequest;
+use App\Imports\AdminImport;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,162 +18,120 @@ class AdminController extends Controller
 {
     public function index(Request $request)
     {
-        // 1. Validate inputs
-        // $validated = $request->validate([
-        //     'branch'       => 'nullable|string',
-        //     'department'   => 'nullable|string',
-        //     'search'       => 'nullable|string|max:255',
-        //     'rows'         => 'nullable|integer|min:1|max:99',
-        //     'sort'         => 'nullable|string|max:1000',
-        // ]);
+        $validated = $request->validate([
+            'search' => 'nullable|string|max:255',
+            'status' => 'nullable|in:active,pending,inactive',
+            'rows' => 'nullable|integer|min:1|max:99',
+            'sort' => 'nullable|string|max:1000',
+        ]);
 
-        // 2. Buld query and add filters
-        // $query = Employee::query()
-        //     ->leftJoin('users', 'employees.user_id', '=', 'users.user_id')
-        //     ->select('employees.*', 'users.name', 'users.user_name', 'users.email', 'users.status')
-        //     ->whereNotNull('employees.employee_id');
+        $query = User::query()->where('user_type', 'admin');
 
-       
-        // if (!empty($validated['branch'])) {
-        //     $query->where('employees.branch', $validated['branch']);
-        // }
+        if (! empty($validated['status'])) {
+            $query->where('status', $validated['status']);
+        }
 
-        // if (!empty($validated['department'])) {
-        //     $query->where('employees.department', $validated['department']);
-        // }
+        if (! empty($validated['search'])) {
+            $search = Str::lower(trim($validated['search']));
 
+            $query->where(function ($inner) use ($search) {
+                $inner->whereRaw('LOWER(name) LIKE ?', ['%'.$search.'%'])
+                    ->orWhereRaw('LOWER(email) LIKE ?', ['%'.$search.'%'])
+                    ->orWhereRaw('LOWER(user_name) LIKE ?', ['%'.$search.'%']);
+            });
+        }
 
-        // // 3. Apply search query
-        // if (!empty($validated['search'])) {
-        //     $search = trim($validated['search']);
-        //     $query->whereRaw('LOWER(users.name) LIKE ?', ['%' . Str::lower($search) . '%']);
-        // }
+        $allowedSortColumns = [
+            'user_id' => 'user_id',
+            'name' => 'name',
+            'user_name' => 'user_name',
+            'email' => 'email',
+            'status' => 'status',
+            'created_at' => 'created_at',
+        ];
 
-        // // 4. Sorting (example: col:dir pairs)
-        // $allowedSortColumns = [
-        //     'employee_id'  => 'employees.employee_id',
-        //     'name'         => 'users.name',
-        //     'created_at'   => 'employees.created_at',
-        // ];
+        $sortConfig = [];
+        $index = 1;
 
+        if (! empty($validated['sort'])) {
+            $pairs = array_filter(array_map('trim', explode(',', $validated['sort'])));
 
-        // // 4. Sorting (example: col:dir pairs)
-        // $sortConfig = [];
-        // $index = 1;
-        // if (!empty($validated['sort'])) {
-        //     $pairs = array_filter(array_map('trim', explode(',', $validated['sort'])));
-        //     foreach ($pairs as $pair) {
-        //         $parts = explode(':', $pair, 2);
-        //         if (count($parts) !== 2) {
-        //             continue;
-        //         }
-        //         [$colKey, $dir] = $parts;
-        //         $colKey = trim($colKey);
-        //         $dir = strtolower(trim($dir)) === 'desc' ? 'desc' : 'asc';
+            foreach ($pairs as $pair) {
+                $parts = explode(':', $pair, 2);
 
-        //         if (! array_key_exists($colKey, $allowedSortColumns)) {
-        //             continue;
-        //         }
-        //         $sortConfig[] = ['number' => $index++, 'column' => $colKey, 'ascending' => $dir === 'asc'];
-        //         $query->orderBy($allowedSortColumns[$colKey], $dir);
-        //     }
-        // }
+                if (count($parts) !== 2) {
+                    continue;
+                }
 
-        // // 5. Default ordering if none applied
-        // if (empty($query->getQuery()->orders)) {
-        //     $query->orderBy('employees.created_at', 'desc');
-        // }
+                [$column, $direction] = $parts;
+                $column = trim($column);
+                $direction = strtolower(trim($direction)) === 'desc' ? 'desc' : 'asc';
 
+                if (! array_key_exists($column, $allowedSortColumns)) {
+                    continue;
+                }
 
-        $rows = $request->input('rows', 10);
+                $sortConfig[] = [
+                    'number' => $index++,
+                    'column' => $column,
+                    'ascending' => $direction === 'asc',
+                ];
 
-        // 6. Pagination and response
-        $admins = User::where('user_type', 'admin')->paginate($rows);
+                $query->orderBy($allowedSortColumns[$column], $direction);
+            }
+        }
+
+        if (empty($query->getQuery()->orders)) {
+            $query->latest('created_at');
+        }
+
+        $admins = $query->paginate($validated['rows'] ?? 10)->withQueryString();
 
         return Inertia::render('admin/admins', [
             'admins' => $admins,
-            // 'branches' => Branch::all(),
-            // 'departments' => Department::all(),
-             'sortConfig'  => [],
+            'sortConfig' => $sortConfig,
         ]);
     }
 
     public function import(Request $request): RedirectResponse
     {
+        $request->validate(['file' => 'required|file']);
 
-        // Get row count
-        $collection = Excel::toCollection(new Employee, $request->file('file'));
-        $rowCount = $collection->first()->count();
+        $file = $request->file('file');
+        $rowCount = Excel::toCollection(new AdminImport(), $file)->first()?->count() ?? 0;
 
-        // Insert to database
-        Excel::import(new EmployeeImport, $request->file('file'));
+        Excel::import(new AdminImport((int) $request->user()->user_id), $file);
 
-        return redirect()->route('employee.index')->with([
-            'modal_status' => "success",
-            'modal_action' => "create",
-            'modal_title' => "Import successful!",
-            'modal_message' => "$rowCount emmployee accounts was created successfully.",
+        return redirect()->route('admin.index')->with([
+            'modal_status' => 'success',
+            'modal_action' => 'create',
+            'modal_title' => 'Import successful!',
+            'modal_message' => "{$rowCount} admin accounts were imported successfully.",
         ]);
     }
 
-    public function export_employee()
+    public function export_admin()
     {
-        return Excel::download(new EmployeeExport, 'employee.xlsx');
+        return Excel::download(new AdminExport(), 'admins.xlsx');
     }
 
-    public function store (EmployeeDetailsRequest $request): RedirectResponse
+    public function store(AdminRequest $request): RedirectResponse
     {
-
-        $attempt = 0;
-        do {
-            $attempt++;
-            $employee_id = "EMP-" . sprintf('%05d', $attempt);
-
-            if (Employee::where('employee_id', $employee_id)->count() == 0) {
-                break;
-            }
-        } while ($attempt < 99999);
-
-
-        $password = (
-            $request->first_name .
-            $request->middle_name .
-            $request->last_name .
-            '@' . date('Y')
-        );
-
-
-        $input = [
-            'name' => $request->first_name . " " . $request->last_name  ?? 'No Name',
-            'email' => $request->email,
-            'user_type' => 'employee',
-            'password' => $password,
-            'password_confirmation' => $password,
-        ];
-
-        $user = app(CreateNewUser::class)->create($input);
-
-        $employee = new Employee();
-        $employee->fill([
-            'employee_id'      => $employee_id,
-            'user_id'          => $user->user_id,
-            'first_name'       => $request->first_name,
-            'middle_name'      => $request->first_name,
-            'last_name'        => $request->first_name,
-            'contact'          => $request->contact,
-            'branch'           => $request->branch,
-            'department'       => $request->department
-        ]);
-        $employee->save();
-
-        return redirect()->route('employee.index')->with([
-            'modal_status' => "success",
-            'modal_action' => "create",
-            'modal_title' => "Create successful!",
-            'modal_message' => "Emmployee $employee_id was added successfully.",
+        $user = app(CreateNewUser::class)->create([
+            'name' => $request->string('name')->toString(),
+            'email' => $request->string('email')->toString(),
+            'user_type' => 'admin',
+            'password' => $request->string('password')->toString(),
+            'password_confirmation' => $request->string('password_confirmation')->toString(),
+            'status' => $request->input('status', 'pending'),
+            'created_by' => (string) $request->user()->user_id,
         ]);
 
+        return redirect()->route('admin.index')->with([
+            'modal_status' => 'success',
+            'modal_action' => 'create',
+            'modal_title' => 'Create successful!',
+            'modal_message' => "Admin account for {$user->name} was created successfully.",
+        ]);
     }
-
-    
 }

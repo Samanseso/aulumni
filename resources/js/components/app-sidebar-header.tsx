@@ -1,7 +1,7 @@
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { User, type BreadcrumbItem as BreadcrumbItemType } from '@/types';
-import { ReactNode } from 'react';
+import { AppNotification, ImportReportNotificationPayload, User, type BreadcrumbItem as BreadcrumbItemType } from '@/types';
+import { ReactNode, useEffect, useState } from 'react';
 import { NavUser } from './nav-user';
 import SearchBar from './search-bar';
 import { TopNavUser } from './top-nav-user';
@@ -9,24 +9,37 @@ import { Bell, MessageCircle, MessageSquare } from 'lucide-react';
 import { usePage } from '@inertiajs/react';
 import aulogo from "../../../public/assets/images/aulogo.png";
 import { cn } from '@/lib/utils';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from './ui/dropdown-menu';
+import Notifications from './notifications';
+import NotificationsListener from './notification-listener';
 
 
-export function AppSidebarHeader({
-    breadcrumbs = [],
-}: {
-    breadcrumbs?: BreadcrumbItemType[],
-}) {
+export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbItemType[] }) {
 
-    const { props } = usePage<{ auth: { user: User } }>();
+    const { props } = usePage<{ auth: { user: User }, notifications: AppNotification<ImportReportNotificationPayload>[] }>();
+    const isAdmin = props.auth.user.user_type === 'admin';
+    const [notifs, setNotifs] = useState(
+        props.notifications.map((notification) => ({
+            ...notification.data,
+            read_at: notification.read_at,
+        })),
+    );
+    const [newNotifsCount, setNewNotifsCount] = useState(0);
+
+
+    useEffect(() => {
+        setNewNotifsCount(notifs.filter(n => n && n.read_at == null).length);
+    }, [notifs]);
+
 
     return (
         <header className={cn(
             "flex bg-white rounded-lg shadow m-4 mb-0 justify-between h-16 shrink-0 items-center gap-2 border-b border-sidebar-border/50 px-3 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:px-4",
-            props.auth.user.user_type == "alumni" && "rounded-none m-0"
+            !isAdmin && "rounded-none m-0"
         )}>
 
             <div className="flex items-center gap-2">
-                {props.auth.user.user_type === "alumni" ?
+                {!isAdmin ?
                     <>
                         <div className="flex aspect-square size-12 items-center justify-center text-sidebar-primary-foreground">
                             <img src={aulogo} alt="aulumni logo" />
@@ -44,9 +57,26 @@ export function AppSidebarHeader({
                 <div className='flex items-center justify-center w-10 h-10 rounded-full bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white'>
                     <MessageSquare size={18} className='mt-0.25' />
                 </div>
-                <div className='flex items-center justify-center w-10 h-10 rounded-full bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white'>
-                    <Bell size={17} />
-                </div>
+
+                <NotificationsListener setNotifs={setNotifs} />
+
+                <DropdownMenu>
+                    <DropdownMenuTrigger className='rounded-full focus:outline-0 cursor-pointer'>
+                        <div className='relative flex items-center justify-center w-10 h-10 rounded-full bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white'>
+                            {newNotifsCount > 0 &&
+                                <div className='absolute top-[-3px] right-[-3px] h-4.5 w-4.5 rounded-full flex items-center justify-center bg-red'>
+                                    <span className='text-xs text-white'>{newNotifsCount}</span>
+                                </div>
+                            }
+
+                            <Bell size={17} />
+                        </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className='w-sm' align='end'>
+                        {notifs && <Notifications notifs={notifs} />}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+
                 <TopNavUser />
             </div>
         </header>

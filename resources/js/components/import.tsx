@@ -3,16 +3,16 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { useState } from "react";
 import { Input } from "./ui/input";
 import { Form } from "@inertiajs/react";
-import AlumniController from "@/actions/App/Http/Controllers/User/AlumniController";
-import EmployeeController from "@/actions/App/Http/Controllers/User/EmployeeController";
+import { RouteFormDefinition } from "@/wayfinder";
 
 interface AlumniImportProps {
     open: boolean;
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    table: string;
+    entityLabel: string;
+    importAction: RouteFormDefinition<"post">;
 }
 
-export function Import({ open, setOpen, table }: AlumniImportProps) {
+export function Import({ open, setOpen, entityLabel, importAction }: AlumniImportProps) {
     const [file, setFile] = useState<File | null>(null);
 
     const onModalClose = (open: boolean) => {
@@ -28,17 +28,16 @@ export function Import({ open, setOpen, table }: AlumniImportProps) {
         }
     };
 
-    const controller = table == 'alumni' ? AlumniController : EmployeeController
 
     return (
         <Dialog open={open} onOpenChange={open => onModalClose(open)} modal={true}>
             <DialogContent>
-                <Form {...controller.import.form()}>
-                    {({ processing }) => (
+                <Form {...importAction} onSuccess={() => onModalClose(false)}>
+                    {({ processing, reset }) => (
                         <div>
-                            <DialogTitle className="mb-3">Import {table}</DialogTitle>
+                            <DialogTitle className="mb-3">Import {entityLabel}</DialogTitle>
                             <DialogDescription>
-                                Select an Excel or CSV file to {table} data.
+                                Select an Excel or CSV file to import {entityLabel} data.
                             </DialogDescription>
 
                             <Input

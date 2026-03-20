@@ -20,162 +20,148 @@ class EmployeeController extends Controller
 {
     public function index(Request $request)
     {
-        // 1. Validate inputs
         $validated = $request->validate([
-            'branch'       => 'nullable|string',
-            'department'   => 'nullable|string',
-            'search'       => 'nullable|string|max:255',
-            'rows'         => 'nullable|integer|min:1|max:99',
-            'sort'         => 'nullable|string|max:1000',
+            'branch' => 'nullable|string',
+            'department' => 'nullable|string',
+            'search' => 'nullable|string|max:255',
+            'rows' => 'nullable|integer|min:1|max:99',
+            'sort' => 'nullable|string|max:1000',
         ]);
 
-        // 2. Buld query and add filters
         $query = Employee::query()
             ->leftJoin('users', 'employees.user_id', '=', 'users.user_id')
             ->select('employees.*', 'users.name', 'users.user_name', 'users.email', 'users.status')
             ->whereNotNull('employees.employee_id');
 
-       
-        if (!empty($validated['branch'])) {
+        if (! empty($validated['branch'])) {
             $query->where('employees.branch', $validated['branch']);
         }
 
-        if (!empty($validated['department'])) {
+        if (! empty($validated['department'])) {
             $query->where('employees.department', $validated['department']);
         }
 
-
-        // 3. Apply search query
-        if (!empty($validated['search'])) {
+        if (! empty($validated['search'])) {
             $search = trim($validated['search']);
-            $query->whereRaw('LOWER(users.name) LIKE ?', ['%' . Str::lower($search) . '%']);
+            $query->whereRaw('LOWER(users.name) LIKE ?', ['%'.Str::lower($search).'%']);
         }
 
-        // 4. Sorting (example: col:dir pairs)
         $allowedSortColumns = [
-            'employee_id'  => 'employees.employee_id',
-            'name'         => 'users.name',
-            'created_at'   => 'employees.created_at',
+            'employee_id' => 'employees.employee_id',
+            'name' => 'users.name',
+            'created_at' => 'employees.created_at',
         ];
 
-
-        // 4. Sorting (example: col:dir pairs)
         $sortConfig = [];
         $index = 1;
-        if (!empty($validated['sort'])) {
+
+        if (! empty($validated['sort'])) {
             $pairs = array_filter(array_map('trim', explode(',', $validated['sort'])));
+
             foreach ($pairs as $pair) {
                 $parts = explode(':', $pair, 2);
+
                 if (count($parts) !== 2) {
                     continue;
                 }
-                [$colKey, $dir] = $parts;
-                $colKey = trim($colKey);
-                $dir = strtolower(trim($dir)) === 'desc' ? 'desc' : 'asc';
 
-                if (! array_key_exists($colKey, $allowedSortColumns)) {
+                [$column, $direction] = $parts;
+                $column = trim($column);
+                $direction = strtolower(trim($direction)) === 'desc' ? 'desc' : 'asc';
+
+                if (! array_key_exists($column, $allowedSortColumns)) {
                     continue;
                 }
-                $sortConfig[] = ['number' => $index++, 'column' => $colKey, 'ascending' => $dir === 'asc'];
-                $query->orderBy($allowedSortColumns[$colKey], $dir);
+
+                $sortConfig[] = [
+                    'number' => $index++,
+                    'column' => $column,
+                    'ascending' => $direction === 'asc',
+                ];
+
+                $query->orderBy($allowedSortColumns[$column], $direction);
             }
         }
 
-        // 5. Default ordering if none applied
         if (empty($query->getQuery()->orders)) {
             $query->orderBy('employees.created_at', 'desc');
         }
 
-
-        $rows = $request->input('rows', 10);
-
-        // 6. Pagination and response
-        $employees = $query->paginate($rows)->withQueryString();
+        $employees = $query->paginate($validated['rows'] ?? 10)->withQueryString();
 
         return Inertia::render('admin/employees', [
             'employees' => $employees,
             'branches' => Branch::all(),
             'departments' => Department::all(),
-            'sortConfig'  => $sortConfig,
+            'sortConfig' => $sortConfig,
         ]);
     }
 
     public function import(Request $request): RedirectResponse
     {
+        $request->validate(['file' => 'required|file']);
 
-        // Get row count
-        $collection = Excel::toCollection(new Employee, $request->file('file'));
-        $rowCount = $collection->first()->count();
+        $file = $request->file('file');
+        $rowCount = Excel::toCollection(new EmployeeImport(), $file)->first()?->count() ?? 0;
 
-        // Insert to database
-        Excel::import(new EmployeeImport, $request->file('file'));
+        Excel::import(new EmployeeImport(), $file);
 
         return redirect()->route('employee.index')->with([
-            'modal_status' => "success",
-            'modal_action' => "create",
-            'modal_title' => "Import successful!",
-            'modal_message' => "$rowCount emmployee accounts was created successfully.",
+            'modal_status' => 'success',
+            'modal_action' => 'create',
+            'modal_title' => 'Import successful!',
+            'modal_message' => "{$rowCount} employee accounts were imported successfully.",
         ]);
     }
 
     public function export_employee()
     {
-        return Excel::download(new EmployeeExport, 'employee.xlsx');
+        return Excel::download(new EmployeeExport(), 'employees.xlsx');
     }
 
-    public function store (EmployeeDetailsRequest $request): RedirectResponse
+    public function store(EmployeeDetailsRequest $request): RedirectResponse
     {
-
         $attempt = 0;
+
         do {
             $attempt++;
-            $employee_id = "EMP-" . sprintf('%05d', $attempt);
+            $employeeId = 'EMP-'.sprintf('%05d', $attempt);
+        } while (Employee::where('employee_id', $employeeId)->exists() && $attempt < 99999);
 
-            if (Employee::where('employee_id', $employee_id)->count() == 0) {
-                break;
-            }
-        } while ($attempt < 99999);
+        $firstName = $request->string('first_name')->toString();
+        $middleName = $request->string('middle_name')->toString();
+        $lastName = $request->string('last_name')->toString();
 
+        $password = Str::upper($firstName[0]).Str::lower($middleName[0]).Str::lower($lastName[0]).'@'.date('Y');
 
-        $password = (
-            $request->first_name .
-            $request->middle_name .
-            $request->last_name .
-            '@' . date('Y')
-        );
-
-
-        $input = [
-            'name' => $request->first_name . " " . $request->last_name  ?? 'No Name',
-            'email' => $request->email,
+        $user = app(CreateNewUser::class)->create([
+            'name' => trim($firstName.' '.$lastName) ?: 'No Name',
+            'email' => $request->string('email')->toString(),
             'user_type' => 'employee',
             'password' => $password,
             'password_confirmation' => $password,
-        ];
-
-        $user = app(CreateNewUser::class)->create($input);
+            'status' => 'pending',
+            'created_by' => (string) $request->user()->user_id,
+        ]);
 
         $employee = new Employee();
         $employee->fill([
-            'employee_id'      => $employee_id,
-            'user_id'          => $user->user_id,
-            'first_name'       => $request->first_name,
-            'middle_name'      => $request->first_name,
-            'last_name'        => $request->first_name,
-            'contact'          => $request->contact,
-            'branch'           => $request->branch,
-            'department'       => $request->department
+            'employee_id' => $employeeId,
+            'user_id' => $user->user_id,
+            'first_name' => $firstName,
+            'middle_name' => $middleName,
+            'last_name' => $lastName,
+            'contact' => $request->string('contact')->toString(),
+            'branch' => $request->string('branch')->toString(),
+            'department' => $request->string('department')->toString(),
         ]);
         $employee->save();
 
         return redirect()->route('employee.index')->with([
-            'modal_status' => "success",
-            'modal_action' => "create",
-            'modal_title' => "Create successful!",
-            'modal_message' => "Emmployee $employee_id was added successfully.",
+            'modal_status' => 'success',
+            'modal_action' => 'create',
+            'modal_title' => 'Create successful!',
+            'modal_message' => "Employee {$employeeId} was added successfully.",
         ]);
-
     }
-
-    
 }

@@ -1,10 +1,11 @@
 import moment from 'moment';
 
 export const getRelativeTimeDifference = (givenDate: string): string => {
-    
+
     const nowUtc = moment.utc();
     const thenUtc = moment.utc(new Date(givenDate));
 
+    
     if (!thenUtc.isValid()) return 'Invalid date';
 
     const diffInSeconds = nowUtc.diff(thenUtc, 'seconds');

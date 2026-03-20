@@ -8,6 +8,7 @@ import { RouteDefinition } from '@/wayfinder';
 import { Input } from './ui/input';
 import InputError from './input-error';
 import { ActionModalContentType } from '@/types';
+import { Spinner } from './ui/spinner';
 
 
 interface ActionConfirmationProps extends ActionModalContentType{
@@ -18,6 +19,9 @@ const ActionConfirmation = ({ url, message, action, data, promptPassword = false
     const { props } = usePage<{ errors: { password: string | undefined } | undefined }>();
 
     const [password, setPassword] = useState("");
+    const [processing, setProcessing] = useState(false);
+
+    
 
     return (
         <Dialog open={true} onOpenChange={() => setConfirmActionContent(undefined)}>
@@ -45,7 +49,10 @@ const ActionConfirmation = ({ url, message, action, data, promptPassword = false
                 <DialogFooter>
                     <Button variant="secondary" onClick={() => setConfirmActionContent(undefined)}>No, keep it</Button>
                     <Link href={url} onSuccess={() => setConfirmActionContent(undefined)} data={{ ...data || undefined, password: password }} as="div">
-                        <Button variant={action == "Delete" ? "destructive" : "default"}><Trash />Yes, {action}!</Button>
+                        <Button disabled={processing} onClick={() => setProcessing(true)} variant={action == "Delete" ? "destructive" : "default"}>
+                            { processing && <Spinner />}
+                            Yes, {action}!
+                        </Button>
                     </Link>
                 </DialogFooter>
             </DialogContent>

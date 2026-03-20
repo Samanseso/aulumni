@@ -16,21 +16,21 @@ class Post extends Model
     public $timestamps = true;
 
     protected $fillable = [
-        'post_uuid',
-        'user_id',
-        'content',
-        'place',
-        'privacy',
-        'comments_count',
-        'reactions_count',
+        'post_uuid', 
+        'user_id', 
+        'job_title', 
+        'company', 
+        'location', 
+        'job_type', 
+        'salary', 
+        'job_description', 
+        'privacy', 
         'status',
     ];
 
     protected $casts = [
         'comments_count'   => 'integer',
         'reactions_count'  => 'integer',
-        'created_at'       => 'datetime:m-d-Y H:i:s', 
-        'updated_at'       => 'datetime:m-d-Y H:i:s',
     ];
 
 

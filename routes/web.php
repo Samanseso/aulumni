@@ -11,6 +11,8 @@ use Inertia\Inertia;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
+# All routes
+require __DIR__. '/notification.php';
 
 # Admin routes
 require __DIR__.'/settings.php';

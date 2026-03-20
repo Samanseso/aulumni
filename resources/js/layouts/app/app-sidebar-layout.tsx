@@ -13,10 +13,11 @@ export default function AppSidebarLayout({
 }: PropsWithChildren<{ breadcrumbs?: BreadcrumbItem[]}>) {
 
     const { props } = usePage<{ auth: { user: User } }>();
+    const hasAdminSidebar = props.auth.user.user_type === "admin";
     
     return (
         <AppShell variant="sidebar">
-            { props.auth.user.user_type !== "alumni" && <AppSidebar />}
+            {hasAdminSidebar && <AppSidebar />}
             <AppContent variant="sidebar" className="overflow-x-hidden">
                 <AppSidebarHeader breadcrumbs={breadcrumbs} />
                 {children}

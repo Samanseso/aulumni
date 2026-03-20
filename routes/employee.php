@@ -9,8 +9,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('user')->group(function () {
     // Render employee table
     Route::get('employee', [EmployeeController::class, 'index'])->name('employee.index');
 
-    // Render single-step employee form 
-    Route::get('employee/create', [EmployeeController::class, 'store'])->name('employee.store');
+    // Create employee
+    Route::post('employee', [EmployeeController::class, 'store'])->name('employee.store');
 
     // Export employee 
     Route::get('employee/export_employee', [EmployeeController::class, 'export_employee'])->name('employee.export_employee');

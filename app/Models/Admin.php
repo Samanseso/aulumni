@@ -2,30 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 
-class Employee extends Model
+class Admin extends User
 {
-    protected $table = 'admin';
-    protected $primaryKey = 'employee_id';
-    public $incrementing = true;
-    public $timestamps = true;
-
-    protected $fillable = [
-        'employee_id',
-        'user_id',
-        'employee_number',
-        'first_name',
-        'middle_name',
-        'last_name',
-        'contact',
-        'branch',
-        'department',
-    ];
-
-    public function user(): BelongsTo
+    protected static function booted(): void
     {
-        return $this->belongsTo(User::class, 'user_id', 'user_id');
+        static::addGlobalScope('admins_only', function (Builder $builder) {
+            $builder->where('user_type', 'admin');
+        });
     }
 }

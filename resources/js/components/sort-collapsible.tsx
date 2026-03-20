@@ -79,7 +79,7 @@ const SortCollapsible = ({ columns, setOrRemoveFilter }: SortCollapsibleProps) =
         <DropdownMenu open={open} onOpenChange={handleOpenChange}>
             <DropdownMenuTrigger asChild onClick={() => setOpen(!open)}>
                 <Button variant="outline" className="text-sm font-light">
-                    Sort by <ChevronDown className="text-gray-400" />
+                    Sort<ChevronDown className="text-gray-400" />
                 </Button>
             </DropdownMenuTrigger>
 

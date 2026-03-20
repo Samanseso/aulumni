@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -33,16 +32,15 @@ class HomeController extends Controller
 
     public function show_posts($user_id)
     {
-        // Get posts (adjust query to your needs: all posts, user feed, paginated, etc.)
-        $posts = Post::with(['author', 'attachments', 'comments.user:user_id,user_name,name,email', 'shares'])
+        $posts = Post::with(['author', 'attachments'])
+            ->where('status', 'approved')
             ->withCount(['reactions as liked_by_user' => function ($q) use ($user_id) {
                 $q->where('user_id', $user_id);
             }])
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Convert liked_by_user from 0/1 to boolean and optionally add reaction_type
-        $posts = $posts->map(function ($post) use ($user_id) {
+        $posts = $posts->map(function ($post) {
             $post->setAttribute('liked_by_user', (bool) $post->liked_by_user);
 
             return $post;
@@ -51,5 +49,14 @@ class HomeController extends Controller
         return Inertia::render('alumni/news-feed', [
             'posts' => $posts,
         ]);
+    }
+
+    public function show_profile($user_name)
+    {
+        if ($user_name === 'notifications') {
+            return redirect()->route('notifications.index');
+        }
+
+        return Inertia::render('alumni/profile');
     }
 }

@@ -7,7 +7,7 @@ import { AlumniRow } from "@/types";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuItem } from "./ui/dropdown-menu";
 import { Separator } from "./ui/separator";
 import StatusTag from "./status-tag";
-import { Link } from "@inertiajs/react";
+import { Link, router } from "@inertiajs/react";
 import { activate, deactivate } from "@/routes/user";
 import { AlumniModal } from "./alumni-modal";
 import { destroy } from "@/routes/user";
@@ -25,7 +25,7 @@ export function AlumniTable({ alumni, columns, selectedData, setSelectedData }: 
 
     const [viewAlumni, setViewAlumni] = useState<string | null>(null);
 
-    const { confirmActionContentCreateModal: confimDeleteContentCreateModal } = useConfirmAction();
+    const { confirmActionContentCreateModal } = useConfirmAction();
 
 
     const updatedSelectedData = (user_id: number) => {
@@ -47,14 +47,14 @@ export function AlumniTable({ alumni, columns, selectedData, setSelectedData }: 
     }
 
     return (
-        <div className="table-fixed w-full h-full mb-20">
+        <div className="table-fixed w-full h-full  max-h-[63vh] overflow-auto [&::-webkit-scrollbar]:w-0">
             {/* {viewAlumni && <AlumniModal alumni_id={viewAlumni} setViewAlumni={setViewAlumni} />} */}
 
             <table className="w-full">
                 <thead>
                     <tr className="border-t">
                         <th className="rounded-l-md ps-7 pe-2">
-                            <Checkbox checked={selectedData.length == alumni.length} onCheckedChange={(checked) => selectAllData(checked)} />
+                            <Checkbox className="size-5 mt-1.25 cursor-pointer" checked={selectedData.length == alumni.length} onCheckedChange={(checked) => selectAllData(checked)} />
                         </th>
                         {columns.map((col) => (
                             <th key={col} className="px-4 py-2 text-left text-xs text-gray-500 font-semibold whitespace-nowrap uppercase">
@@ -68,12 +68,20 @@ export function AlumniTable({ alumni, columns, selectedData, setSelectedData }: 
                     {alumni.map((alum, idx) => {
                         return (
                             <tr
+                                onClick={(e) => {
+
+                                    // if ((e.target as HTMLElement).tagName.toLowerCase() === "button" || (e.target as HTMLElement).closest("button")) {
+                                    //     return;
+                                    // }
+
+                                    // router.visit(show(alum.user_name));
+                                }}
                                 key={idx}
-                                className={`border-t border-t-gray-300 ${idx % 2 == 0 && "bg-stone-100 "}`}
+                                className={`cursor-pointer border-t border-t-gray-300 ${idx % 2 == 0 && "bg-stone-100 "}`}
                             >
                                 <td className="ps-7 pe-2">
                                     <div className="flex items-center justify-center">
-                                        <Checkbox checked={selectedData.includes(alum.user_id)} onCheckedChange={() => updatedSelectedData(alum.user_id)} />
+                                        <Checkbox className="size-5 cursor-pointer bg-white" checked={selectedData.includes(alum.user_id)} onCheckedChange={() => updatedSelectedData(alum.user_id)} />
                                     </div>
                                 </td>
                                 <td className="px-4 py-2 text-sm">{alum.alumni_id}</td>
@@ -85,9 +93,8 @@ export function AlumniTable({ alumni, columns, selectedData, setSelectedData }: 
                                 </td>
 
                                 <td className="px-4 py-2 text-sm">{alum.student_number}</td>
-
                                 <td className="px-4 py-2 text-sm">{alum.school_level}</td>
-                                <td className="px-4 py-2 text-sm">{alum.course}</td>
+                                <td className="px-4 py-2 text-sm max-w-[100px] truncate">{alum.course}</td>
                                 <td className="px-4 py-2 text-sm">{alum.branch}</td>
                                 <td className="px-4 py-2 text-sm">{alum.batch}</td>
                                 <td className="px-4 py-2 text-sm"><StatusTag text={alum.status} /></td>
@@ -131,7 +138,7 @@ export function AlumniTable({ alumni, columns, selectedData, setSelectedData }: 
                                                 <DropdownMenuSeparator />
 
                                                 <DropdownMenuItem
-                                                    onClick={() => confimDeleteContentCreateModal({
+                                                    onClick={() => confirmActionContentCreateModal({
                                                         url: destroy(alum.user_id),
                                                         message: "Are you sure you want to delete this user?",
                                                         action: "Delete"

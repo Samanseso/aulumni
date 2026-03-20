@@ -3,7 +3,7 @@ import { BreadcrumbItem, Pagination, Alumni, AlumniRow, Course, Batch, ColumnTyp
 import { router, usePage } from "@inertiajs/react";
 import { Button } from "./ui/button";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Download, Plus, Upload, ChevronDown, ListFilter, Search, BadgeCheck, Ban, Trash, ArrowDownWideNarrow } from "lucide-react";
+import { Download, Plus, Upload, ChevronDown, ListFilter, Search, BadgeCheck, Ban, Trash, ArrowDownWideNarrow, X } from "lucide-react";
 import { Link } from "@inertiajs/react";
 import { TablePagination } from "./table-pagination";
 import SearchBar from "./search-bar";
@@ -17,6 +17,10 @@ import { useConfirmAction } from "./context/confirm-action-context";
 import { Filter } from "@/types";
 import { useModal } from "./context/modal-context";
 import SortCollapsible from "./sort-collapsible";
+import NotificationsListener from "./notification-listener";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import AlumniFilter from "./alumni-filter";
+import AlumniController from "@/actions/App/Http/Controllers/User/AlumniController";
 
 const columns = [
     'Alumni ID',
@@ -39,7 +43,6 @@ const sortableColumns: ColumnType[] = [
 
 export default function AlumniList() {
     const { props } = usePage<{ alumni: Pagination<AlumniRow[]>, branches: Branch[], courses: Course[], batches: Batch[] }>();
-
     const [alumni, setAlumni] = useState<AlumniRow[]>(props.alumni.data);
     const [rowsInput, setRowsInput] = useState(props.alumni.per_page.toString() ?? 10);
     const [searchInput, setSearchInput] = useState('');
@@ -54,6 +57,11 @@ export default function AlumniList() {
 
     const { confirmActionContentCreateModal } = useConfirmAction();
     const { createModal } = useModal();
+
+    const urlParams = new URLSearchParams(window.location.search);
+
+
+
 
 
     useEffect(() => {
@@ -110,222 +118,178 @@ export default function AlumniList() {
 
 
 
-
     useEffect(() => {
         setTableVersion(v => v + 1)
     }, [alumni]);
 
-
     return (
-        <div className="m-4 relative bg-white shadow rounded-lg h-[100%] overflow-hidden">
-            <div className="flex p-5 pb-2 justify-between">
-                <p className="font-bold text-xl text-gray-600">List of Alumni</p>
-                <div className="flex gap-2">
+        <div className="m-4 bg-white shadow rounded-lg h-[100%] overflow-hidden">
+            <div className="justify-between flex items-center py-3 px-5 rounded-t-lg mt-3 mb-3">
+                <div className="flex items-center gap-2">
 
-                    <Button variant="outline" className="hidden md:flex"
-                        onClick={() => window.location.href = export_alumni().url}
-                    ><Download />Export</Button>
+                    {selectedData.length > 0 ?
+                        <div className="flex pe-2 bg-gray-100 rounded-full">
+                            <div className="flex items-center me-2">
+                                <Button variant="ghost" size="icon" className="rounded-full hover:bg-gray-300" onClick={() => setSelectedData([])}>
+                                    <X size={18} />
+                                </Button>
 
-                    <Button variant="outline" className="hidden md:flex" onClick={() => setOpen(true)}>
-                        <Upload />Import
-                    </Button>
+                                <p className="text-sm text-muted-foreground">
+                                    {selectedData.length} selected
+                                </p>
+                            </div>
 
+                            <Button variant="ghost" className="rounded-full hover:bg-gray-300" onClick={() => confirmActionContentCreateModal({
+                                url: bulk_activate(),
+                                message: "Are you sure you want to activate this accounts",
+                                action: "Activate",
+                                data: { user_ids: selectedData }
+
+                            })}>
+                                <BadgeCheck className="text-green-500" />Activate
+                            </Button>
+
+                            <Button variant="ghost" className="rounded-full hover:bg-gray-300" onClick={() => confirmActionContentCreateModal({
+                                url: bulk_deactivate(),
+                                message: "Are you sure you want to deactivate this accounts",
+                                action: "Deactivate",
+                                data: { user_ids: selectedData }
+
+                            })}>
+                                <Ban className="text-orange-500" />Deactivate
+                            </Button>
+
+                            <Button variant="ghost" className="rounded-full hover:bg-gray-300">
+                                <Upload />Export
+                            </Button>
+
+                            <Button variant="ghost" className="text-red rounded-full hover:bg-gray-300" onClick={() => confirmActionContentCreateModal({
+                                url: bulk_delete(),
+                                message: "Are you sure you want to delete this accounts?",
+                                action: "Delete",
+                                data: { user_ids: selectedData },
+                                promptPassword: true,
+                            })}>
+                                <Trash />Delete
+                            </Button>
+                        </div> :
+                        <div className="flex gap-2">
+                            <Input
+                                startIcon={<Search size={20} color='gray' />}
+                                type="text"
+                                placeholder="Search here"
+                                onChange={e => setSearchInput(e.target.value)}
+                                onEndIconClick={handleSearchInputChange}
+                                onKeyDown={e => {
+                                    if (e.key == "Enter") {
+                                        e.preventDefault();
+                                        handleSearchInputChange();
+                                    }
+                                }}
+                                className="w-45 shadow-none focus-within:ring-0" />
+                            <div className="flex items-center gap-2">
+                                <AlumniFilter
+                                    branches={props.branches}
+                                    courses={props.courses}
+                                    batches={props.batches}
+                                    handleSchoolLevelChange={handleSchoolLevelChange}
+                                    handleBatchChange={handleBatchChange}
+                                    handleBranchChange={handleBranchChange}
+                                    handleCourseChange={handleCourseChange}
+                                    handleStatusChange={handleStatusChange}
+                                />
+
+                                
+                                    {urlParams.get("school_level") &&
+                                    <Button variant="outline" className="text-light text-blue" onClick={() => handleSchoolLevelChange("none")}>
+                                        {urlParams.get("school_level")} <X size={12} />
+                                    </Button>}
+
+                                    {urlParams.get("branch") &&
+                                        <Button variant="outline" className="text-light text-blue" onClick={() => handleBranchChange("none")}>
+                                            {urlParams.get("branch")} <X size={12} />
+                                        </Button>}
+
+                                    {urlParams.get("course") &&
+                                    <Button variant="outline" className="text-light text-blue" onClick={() => handleCourseChange("none")}>
+                                        {urlParams.get("course")} <X size={12} />
+                                    </Button>}
+
+                                    {urlParams.get("batch") &&
+                                    <Button variant="outline" className="text-light text-blue" onClick={() => handleBatchChange("none")}>
+                                        {urlParams.get("batch")} <X size={12} />
+                                    </Button>}
+
+                                    {urlParams.get("status") &&
+                                    <Button variant="outline" className="text-light text-blue" onClick={() => handleStatusChange("none")}>
+                                        {urlParams.get("status")} <X size={12} />
+                                    </Button> }
+                                
+                                <SortCollapsible columns={sortableColumns} setOrRemoveFilter={setOrRemoveFilter} />
+                                <Input
+                                    prefix="Show"
+                                    suffix="rows"
+                                    id="rows"
+                                    type="number"
+                                    className="w-32 gap-2"
+                                    defaultValue={props.alumni.per_page}
+                                    onChange={(e) => setRowsInput(e.target.value)}
+                                    onKeyDown={e => {
+                                        if (e.key == "Enter") {
+                                            e.preventDefault();
+                                            handleRowsInputChange();
+                                        }
+                                    }}
+                                />
+
+
+                            </div>
+                        </div>
+                    }
+
+                </div>
+
+                <div className="flex gap-2 items-center">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger className="focus:outline-0 cursor-pointer" asChild>
+                            <Button variant="ghost" className="">
+                                More
+                                <ChevronDown size={18} />
+                            </Button>
+                        </DropdownMenuTrigger>
+
+                        <DropdownMenuContent align="start">
+                            <DropdownMenuItem onClick={() => window.location.href = export_alumni().url}>
+                                <Download /> Export
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+
+                            <DropdownMenuItem onClick={() => setOpen(true)}>
+                                <Upload /> Import
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                     <Link href={step(1)} as="div">
                         <Button><Plus />Add Alumni</Button>
                     </Link>
                 </div>
             </div>
-            <div className="justify-between flex items-center py-3 px-0 rounded-t-lg mb-6 px-5">
-                <div className="flex items-center gap-2">
-                    <ListFilter size={15} />
-                    <div className="flex items-center gap-2">
 
-                        <Select defaultValue={filter.find(f => f.property === "school_level")?.value || ""} onValueChange={handleSchoolLevelChange}>
-                            <SelectTrigger className="text-black gap-2 !text-black text-nowrap">
-                                <SelectValue placeholder="School Level" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {
-                                    filter.find(f => f.property === "school_level")?.value ?
-                                        <SelectItem value="none" className="text-red focus:text-red">Reset</SelectItem> :
-                                        <SelectItem value="none" className="hidden">School Level</SelectItem>
-                                }
-                                <SelectItem value="Elementary">Elementary</SelectItem>
-                                <SelectItem value="High School">High School</SelectItem>
-                                <SelectItem value="College">College</SelectItem>
-                                <SelectItem value="Graduate">Graduate</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        
-                        <Select defaultValue={filter.find(f => f.property === "branch")?.value || ""} onValueChange={handleBranchChange}>
-                            <SelectTrigger className="text-black gap-2 !text-black text-nowrap">
-                                <SelectValue placeholder="Branch" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {
-                                    filter.find(f => f.property === "branch")?.value ?
-                                        <SelectItem value="none" className="text-red">Reset</SelectItem> :
-                                        <SelectItem value="none" className="hidden">Branch</SelectItem>
-                                }
-                                {props.branches.map(branch => (
-                                    <SelectItem key={branch.name} value={branch.name}>{branch.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-
-                        <Select defaultValue={filter.find(f => f.property === "course")?.value || ""} onValueChange={handleCourseChange}>
-                            <SelectTrigger className="text-black gap-2 !text-black text-nowrap">
-                                <SelectValue placeholder="Course" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {
-                                    filter.find(f => f.property === "course")?.value ?
-                                        <SelectItem value="none" className="text-red">Reset</SelectItem> :
-                                        <SelectItem value="none" className="hidden">Course</SelectItem>
-                                }
-                                {props.courses.map(course => (
-                                    <SelectItem key={course.code} value={course.code}>{course.code}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-
-                        <Select defaultValue={filter.find(f => f.property === "batch")?.value || ""} onValueChange={handleBatchChange}>
-                            <SelectTrigger className="text-black gap-2 !text-black text-nowrap  ">
-                                <SelectValue placeholder="Batch" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {
-                                    filter.find(f => f.property === "batch")?.value ?
-                                        <SelectItem value="none" className="text-red">Reset</SelectItem> :
-                                        <SelectItem value="none" className="hidden">Batch</SelectItem>
-                                }
-                                {props.batches.map(batch => (
-                                    <SelectItem key={batch.year} value={batch.year}>{batch.year}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-
-                        <Select defaultValue={filter.find(f => f.property === "status")?.value || ""} onValueChange={handleStatusChange}>
-                            <SelectTrigger className="text-black gap-2 !text-black text-nowrap">
-                                <SelectValue placeholder="Status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {
-                                    filter.find(f => f.property === "status")?.value ?
-                                        <SelectItem value="none" className="text-red focus:text-red">Reset</SelectItem> :
-                                        <SelectItem value="none" className="hidden">Status</SelectItem>
-                                }
-                                <SelectItem value="pending">Pending</SelectItem>
-                                <SelectItem value="active">Active</SelectItem>
-                                <SelectItem value="inactive">Inactive</SelectItem>
-                            </SelectContent>
-                        </Select>
-
-                    </div>
-                </div>
-
-                <div className="flex gap-2 items-center">
-                    <SortCollapsible columns={sortableColumns} setOrRemoveFilter={setOrRemoveFilter} />
-                    <Input
-                        prefix="Show"
-                        suffix="rows"
-                        id="rows"
-                        type="number"
-                        className="w-32 gap-2"
-                        defaultValue={props.alumni.per_page}
-                        onChange={(e) => setRowsInput(e.target.value)}
-                        onKeyDown={e => {
-                            if (e.key == "Enter") {
-                                e.preventDefault();
-                                handleRowsInputChange();
-                            }
-                        }}
-                    />
-
-                    <Input
-                        endIcon={<Search size={20} color='gray' />}
-                        type="text"
-                        placeholder="Search here"
-                        onChange={e => setSearchInput(e.target.value)}
-                        onEndIconClick={handleSearchInputChange}
-                        onKeyDown={e => {
-                            if (e.key == "Enter") {
-                                e.preventDefault();
-                                handleSearchInputChange();
-                            }
-                        }}
-                        className="w-45 shadow-none focus-within:ring-0" />
-                </div>
-            </div>
+            <Import open={open} entityLabel="alumni" importAction={AlumniController.import.form()} setOpen={setOpen} />
 
             {alumni.length > 0 && <AlumniTable selectedData={selectedData} setSelectedData={setSelectedData} key={tableVersion} alumni={alumni} columns={columns} />}
 
-            <Import open={open} table="alumni" setOpen={setOpen} />
+            {
+                props.alumni.data.length > 0 &&
+                <div className="flex w-full h-10 justify-between items-end px-10 mb-2 absolute bottom-9 right-0 space-x-10">
 
-            <div className="flex w-full justify-between items-end px-6 absolute bottom-7 right-0 space-x-10">
-                {
-                    props.alumni.data.length > 0 &&
                     <p className="text-sm">{`Showing
                         ${props.alumni.from} to ${props.alumni.to} out of
                         ${props.alumni.total} entries`}
                     </p>
-                }
-
-
-                <div>
-                    {
-                        selectedData.length > 0 &&
-                        <div className="flex items-end gap-3">
-                            <p className="text-sm">With {selectedData.length} selected:</p>
-                            <div className="flex gap-3">
-
-                                <Button size="sm" className="translate-y-1.5" variant="outline" onClick={() => confirmActionContentCreateModal({
-                                    url: bulk_activate(),
-                                    message: "Are you sure you want to activate this accounts",
-                                    action: "Activate",
-                                    data: { user_ids: selectedData }
-
-                                })}>
-                                    <BadgeCheck className="text-green-500" />Activate
-                                </Button>
-
-                                <Button size="sm" className="translate-y-1.5" variant="outline" onClick={() => confirmActionContentCreateModal({
-                                    url: bulk_deactivate(),
-                                    message: "Are you sure you want to deactivate this accounts",
-                                    action: "Deactivate",
-                                    data: { user_ids: selectedData }
-
-                                })}>
-                                    <Ban className="text-red-500" />Deactivate
-                                </Button>
-
-                                <Button size="sm" className="translate-y-1.5" variant="outline">
-                                    <Upload />Export
-                                </Button>
-
-                                <Button size="sm" className="translate-y-1.5 bg-rose-100 text-red" onClick={() => confirmActionContentCreateModal({
-                                    url: bulk_delete(),
-                                    message: "Are you sure you want to delete this accounts?",
-                                    action: "Delete",
-                                    data: { user_ids: selectedData },
-                                    promptPassword: true,
-                                })}>
-                                    <Trash />Delete
-                                </Button>
-                            </div>
-
-                        </div>
-                    }
+                    <TablePagination data={props.alumni} />
                 </div>
-                {props.alumni.data.length > 0 && <TablePagination data={props.alumni} />}
-            </div>
-
-
-
-
+            }
         </div>
-
-
-
     );
 }

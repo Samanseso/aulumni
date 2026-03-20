@@ -4,20 +4,30 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CourseRequest;
 use App\Models\Course;
+use App\Models\Department;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\View\View;
 
 class CourseController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $courses = Course::with('department')
-            ->orderBy('course_id', 'asc')
-            ->paginate(15)
-            ->withQueryString();
+        $search = trim((string) $request->input('search', ''));
 
-        return Inertia::render('courses/Index', ['courses' => $courses]);
+        $query = Course::with('department')->orderBy('course_id', 'asc');
+
+        if ($search !== '') {
+            $query->where(function ($inner) use ($search) {
+                $inner->where('name', 'like', "%{$search}%")
+                    ->orWhere('code', 'like', "%{$search}%");
+            });
+        }
+
+        return Inertia::render('admin/courses', [
+            'courses' => $query->paginate(15)->withQueryString(),
+            'departments' => Department::orderBy('name')->get(),
+        ]);
     }
 
     public function store(CourseRequest $request): RedirectResponse
