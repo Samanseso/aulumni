@@ -1,15 +1,15 @@
 import { useConfirmAction } from '@/components/context/confirm-action-context';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Department } from '@/types';
+import { Batch } from '@/types';
 import { EllipsisVertical, PenBox, Trash } from 'lucide-react';
 
-interface DepartmentsTableProps {
-    departments: Department[];
-    onEdit: (department: Department) => void;
+interface BatchTableProps {
+    batches: Batch[];
+    onEdit: (batch: Batch) => void;
 }
 
-export default function DepartmentsTable({ departments, onEdit }: DepartmentsTableProps) {
+export default function BatchTable({ batches, onEdit }: BatchTableProps) {
     const { confirmActionContentCreateModal } = useConfirmAction();
 
     return (
@@ -17,34 +17,26 @@ export default function DepartmentsTable({ departments, onEdit }: DepartmentsTab
             <table className="w-full">
                 <thead>
                     <tr className="border-t">
-                        <th className="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-500">Department ID</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Branch</th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-500">Year</th>
                         <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Name</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Courses</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Employees</th>
                         <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Alumni</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Description</th>
                         <th className="px-6 py-3 text-right text-xs font-semibold uppercase text-gray-500">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {departments.length === 0 && (
+                    {batches.length === 0 && (
                         <tr className="border-t">
-                            <td colSpan={8} className="px-6 py-10 text-center text-sm text-gray-500">
-                                No departments found.
+                            <td colSpan={4} className="px-6 py-10 text-center text-sm text-gray-500">
+                                No batches found.
                             </td>
                         </tr>
                     )}
 
-                    {departments.map((department, index) => (
-                        <tr key={department.department_id} className={`border-t border-t-gray-300 ${index % 2 === 0 ? 'bg-stone-100' : ''}`}>
-                            <td className="px-6 py-3 text-sm">{department.department_id}</td>
-                            <td className="px-4 py-3 text-sm">{department.branch?.name ?? '-'}</td>
-                            <td className="px-4 py-3 text-sm font-semibold">{department.name}</td>
-                            <td className="px-4 py-3 text-sm">{department.courses_count ?? 0}</td>
-                            <td className="px-4 py-3 text-sm">{department.employees_count ?? 0}</td>
-                            <td className="px-4 py-3 text-sm">{department.alumni_count ?? 0}</td>
-                            <td className="px-4 py-3 text-sm whitespace-pre-line">{department.description ?? '-'}</td>
+                    {batches.map((batch, index) => (
+                        <tr key={batch.year} className={`border-t border-t-gray-300 ${index % 2 === 0 ? 'bg-stone-100' : ''}`}>
+                            <td className="px-6 py-3 text-sm font-semibold">{batch.year}</td>
+                            <td className="px-4 py-3 text-sm">{batch.name}</td>
+                            <td className="px-4 py-3 text-sm">{batch.alumni_count ?? 0}</td>
                             <td className="px-6 py-3 text-sm">
                                 <div className="flex justify-end">
                                     <DropdownMenu>
@@ -55,7 +47,7 @@ export default function DepartmentsTable({ departments, onEdit }: DepartmentsTab
                                         </DropdownMenuTrigger>
 
                                         <DropdownMenuContent align="end">
-                                            <DropdownMenuItem onClick={() => onEdit(department)}>
+                                            <DropdownMenuItem onClick={() => onEdit(batch)}>
                                                 <PenBox className="size-4 text-blue-500" /> Edit
                                             </DropdownMenuItem>
 
@@ -64,8 +56,8 @@ export default function DepartmentsTable({ departments, onEdit }: DepartmentsTab
                                             <DropdownMenuItem
                                                 onClick={() =>
                                                     confirmActionContentCreateModal({
-                                                        url: { url: `/utility/department/${department.department_id}`, method: 'delete' },
-                                                        message: `Are you sure you want to delete ${department.name}?`,
+                                                        url: { url: `/utility/batch/${batch.year}`, method: 'delete' },
+                                                        message: `Are you sure you want to delete batch ${batch.year}?`,
                                                         action: 'Delete',
                                                     })
                                                 }

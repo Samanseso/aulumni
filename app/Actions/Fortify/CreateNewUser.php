@@ -42,7 +42,6 @@ class CreateNewUser implements CreatesNewUsers
             $suffix++;
         }
 
-
         return User::create([
             'user_name' => $uniqueUserName,
             'name' => $input['name'],

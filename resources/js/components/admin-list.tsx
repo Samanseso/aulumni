@@ -7,7 +7,7 @@ import { TablePagination } from "./table-pagination";
 import { Import } from "./import";
 import { Input } from "./ui/input";
 import { useModal } from "./context/modal-context";
-import { Admin, ColumnType, Filter } from "@/types";
+import { Admin, ColumnType, Filter, Pagination } from "@/types";
 import { export_admin, index } from "@/routes/admin";
 import { bulk_activate, bulk_deactivate, bulk_delete } from "@/routes/user";
 import { useConfirmAction } from "./context/confirm-action-context";
@@ -114,7 +114,7 @@ export default function AdminUserList() {
 				<div className="flex items-center gap-2">
 					<div className="flex items-center gap-2">
 						<Input
-							startIcon={<Search size={20} color='gray' />}
+							startIcon={<Search size={18} color='gray' />}
 							type="text"
 							placeholder="Search here"
 							onChange={e => setSearchInput(e.target.value)}
@@ -126,12 +126,12 @@ export default function AdminUserList() {
 								}
 							}}
 							className="w-45 shadow-none focus-within:ring-0" />
-							
+
 						<SortCollapsible columns={sortableColumns} setOrRemoveFilter={setOrRemoveFilter} />
 
 						<Input
 							prefix="Show"
-							suffix="rows"	
+							suffix="rows"
 							id="rows"
 							type="number"
 							className="w-32 gap-2"
@@ -147,14 +147,16 @@ export default function AdminUserList() {
 					</div>
 				</div>
 
-				<div className="flex gap-4 items-center">
+				<div className="flex gap-2 items-center">
 					<DropdownMenu>
-						<DropdownMenuTrigger className="focus:outline-0 cursor-pointer">
-							<ChevronDown size={18} />
+						<DropdownMenuTrigger className="focus:outline-0 cursor-pointer" asChild>
+							<Button variant="ghost" className="">
+								More
+								<ChevronDown size={18} />
+							</Button>
 						</DropdownMenuTrigger>
-
 						<DropdownMenuContent align="start" sideOffset={16}>
-							<DropdownMenuItem onClick={() => { }}>
+							<DropdownMenuItem onClick={() => window.location.href = export_admin().url}>
 								<Download /> Export
 							</DropdownMenuItem>
 							<DropdownMenuSeparator />

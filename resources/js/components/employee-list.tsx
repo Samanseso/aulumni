@@ -1,4 +1,4 @@
-import { ModalType, Employee, Filter, Branch, Department, ColumnType } from "@/types";
+import { ModalType, Employee, Filter, Branch, Department, ColumnType, Pagination } from "@/types";
 import { router, usePage } from "@inertiajs/react";
 import { Button } from "./ui/button";
 import { useCallback, useEffect, useState } from "react";
@@ -8,6 +8,7 @@ import { EmployeeTable } from "./employee-table";
 import { Import } from "./import";
 import { export_employee, index } from "@/routes/employee";
 import { Input } from "./ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { useConfirmAction } from "./context/confirm-action-context";
 import { useModal } from "./context/modal-context";
 import { bulk_activate, bulk_deactivate, bulk_delete } from "@/routes/user";
@@ -38,6 +39,10 @@ export default function EmployeeList() {
     const params = new URLSearchParams(window.location.search);
     const initialFilters: Filter[] = Array.from(params.entries()).map(([property, value]) => ({ property, value }));
     const [filter, setFilter] = useState<Filter[]>(initialFilters);
+    const selectedBranchFilter = filter.find((item) => item.property === "branch")?.value;
+    const filteredDepartments = selectedBranchFilter
+        ? props.departments.filter((department) => department.branch?.name === selectedBranchFilter)
+        : props.departments;
 
     const [open, setOpen] = useState(false);
 
@@ -76,7 +81,27 @@ export default function EmployeeList() {
         applyFilters(pageRemoved);
     };
 
-    const handleBranchChange = (branch: string) => setOrRemoveFilter("branch", branch);
+    const handleBranchChange = (branch: string) => {
+        const nextBranchFilters = branch === "none"
+            ? filter.filter((item) => item.property !== "branch")
+            : [...filter.filter((item) => item.property !== "branch"), { property: "branch", value: branch }];
+
+        const selectedDepartment = nextBranchFilters.find((item) => item.property === "department")?.value;
+        const departmentStillValid = selectedDepartment
+            ? props.departments.some(
+                (department) => department.branch?.name === branch && department.name === selectedDepartment,
+            )
+            : true;
+
+        const nextFilters = departmentStillValid || ! selectedDepartment
+            ? nextBranchFilters
+            : nextBranchFilters.filter((item) => item.property !== "department");
+
+        const pageRemoved = nextFilters.filter((item) => item.property !== "page");
+
+        setFilter(nextFilters);
+        applyFilters(pageRemoved);
+    };
     const handleDepartmentChange = (department: string) => setOrRemoveFilter("department", department);
     const handleSearchInputChange = () => setOrRemoveFilter("search", searchInput || undefined);
     const handleRowsInputChange = () => {
@@ -102,7 +127,7 @@ export default function EmployeeList() {
 
                 <div className="flex items-center gap-2">
 
-                    {/* <Select defaultValue={filter.find(f => f.property === "branch")?.value || ""} onValueChange={handleBranchChange}>
+                    <Select value={filter.find(f => f.property === "branch")?.value || ""} onValueChange={handleBranchChange}>
                         <SelectTrigger className="text-black gap-2 !text-black text-nowrap">
                             <SelectValue placeholder="Branch" />
                         </SelectTrigger>
@@ -117,7 +142,7 @@ export default function EmployeeList() {
                             ))}
                         </SelectContent>
                     </Select>
-                    <Select defaultValue={filter.find(f => f.property === "department")?.value || ""} onValueChange={handleDepartmentChange}>
+                    <Select value={filter.find(f => f.property === "department")?.value || ""} onValueChange={handleDepartmentChange}>
                         <SelectTrigger className="text-black gap-2 !text-black text-nowrap">
                             <SelectValue placeholder="Department" />
                         </SelectTrigger>
@@ -127,14 +152,14 @@ export default function EmployeeList() {
                                     <SelectItem value="none" className="text-red">Reset</SelectItem> :
                                     <SelectItem value="none" className="hidden">Department</SelectItem>
                             }
-                            {props.departments.map(department => (
+                            {filteredDepartments.map(department => (
                                 <SelectItem key={department.name} value={department.name}>{department.name}</SelectItem>
                             ))}
                         </SelectContent>
-                    </Select> */}
+                    </Select>
 
                     <Input
-                        startIcon={<Search size={20} color='gray' />}
+                        startIcon={<Search size={18} color='gray' />}
                         type="text"
                         placeholder="Search here"
                         onChange={e => setSearchInput(e.target.value)}

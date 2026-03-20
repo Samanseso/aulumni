@@ -20,6 +20,7 @@ use App\Models\AlumniPersonalDetails;
 use App\Models\Batch;
 use App\Models\Branch;
 use App\Models\Course;
+use App\Models\Department;
 use App\Models\Post;
 use App\Models\User;
 use App\Notifications\ImportReportNotification;
@@ -28,6 +29,7 @@ use Inertia\Inertia;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Validators\Failure;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -55,6 +57,8 @@ class AlumniController extends Controller
             ->leftJoin('users', 'alumni.user_id', '=', 'users.user_id')
             ->leftJoin('alumni_personal_details', 'alumni.alumni_id', '=', 'alumni_personal_details.alumni_id')
             ->leftJoin('alumni_academic_details', 'alumni.alumni_id', '=', 'alumni_academic_details.alumni_id')
+            ->leftJoin('branches as academic_branches', 'alumni_academic_details.branch_id', '=', 'academic_branches.branch_id')
+            ->leftJoin('courses as academic_courses', 'alumni_academic_details.course_id', '=', 'academic_courses.course_id')
             ->select([
                 'alumni.alumni_id as alumni_id',             // alumni table
                 'users.user_id as user_id',
@@ -65,15 +69,21 @@ class AlumniController extends Controller
                 'alumni_personal_details.last_name as last_name',   // personal_details table
                 'alumni_academic_details.student_number as student_number', // academic_details table
                 'alumni_academic_details.school_level as school_level',     // academic_details table
-                'alumni_academic_details.course as course',                 // academic_details table
-                'alumni_academic_details.branch as branch',                 // academic_details table
                 'alumni_academic_details.batch as batch',                   // academic_details table
+                DB::raw('COALESCE(academic_courses.code, academic_courses.name, alumni_academic_details.course) as course'),
+                DB::raw('COALESCE(academic_branches.name, alumni_academic_details.branch) as branch'),
                 'alumni.created_at as created_at'                    // keep for default ordering
             ])
             ->whereNotNull('alumni.alumni_id');
 
         if (!empty($validated['branch'])) {
-            $query->where('alumni_academic_details.branch', $validated['branch']);
+            $query->where(function ($inner) use ($validated) {
+                $inner->where('academic_branches.name', $validated['branch'])
+                    ->orWhere(function ($legacy) use ($validated) {
+                        $legacy->whereNull('alumni_academic_details.branch_id')
+                            ->where('alumni_academic_details.branch', $validated['branch']);
+                    });
+            });
         }
 
         if (!empty($validated['school_level'])) {
@@ -81,7 +91,14 @@ class AlumniController extends Controller
         }
 
         if (!empty($validated['course'])) {
-            $query->where('alumni_academic_details.course', $validated['course']);
+            $query->where(function ($inner) use ($validated) {
+                $inner->where('academic_courses.code', $validated['course'])
+                    ->orWhere('academic_courses.name', $validated['course'])
+                    ->orWhere(function ($legacy) use ($validated) {
+                        $legacy->whereNull('alumni_academic_details.course_id')
+                            ->where('alumni_academic_details.course', $validated['course']);
+                    });
+            });
         }
 
         if (!empty($validated['batch'])) {
@@ -149,8 +166,8 @@ class AlumniController extends Controller
 
         return Inertia::render('admin/alumni', [
             'alumni'      => $alumni_row,
-            'branches'    => Branch::all(),
-            'courses'     => Course::all(),
+            'branches'    => $this->branchCatalog(),
+            'courses'     => Course::query()->with(['branch', 'department'])->orderBy('name')->get(),
             'batches'     => Batch::all(),
             'sortConfig'  => $sortConfig,
         ]);
@@ -158,7 +175,7 @@ class AlumniController extends Controller
 
     public function show($user_name)
     {
-        $alumni = Alumni::with(['personal_details', 'academic_details', 'contact_details', 'employment_details'])
+        $alumni = Alumni::with(['personal_details', 'academic_details.branchRelation', 'academic_details.departmentRelation', 'academic_details.courseRelation', 'contact_details', 'employment_details'])
             ->leftJoin('users', 'alumni.user_id', '=', 'users.user_id')
             ->where('users.user_name', $user_name)
             ->select('alumni.*', 'users.status', 'users.user_name', 'users.email', 'users.name')
@@ -174,7 +191,7 @@ class AlumniController extends Controller
 
     public function show_personal($alumni)
     {
-        $alumni = Alumni::with(['personal_details', 'academic_details', 'contact_details', 'employment_details'])
+        $alumni = Alumni::with(['personal_details', 'academic_details.branchRelation', 'academic_details.departmentRelation', 'academic_details.courseRelation', 'contact_details', 'employment_details'])
             ->where('alumni_id', $alumni)
             ->leftJoin('users', 'alumni.user_id', '=', 'users.user_id')
             ->select('alumni.*', 'users.status', 'users.user_name', 'users.name')
@@ -188,7 +205,7 @@ class AlumniController extends Controller
 
     public function show_academic($alumni)
     {
-        $alumni = Alumni::with(['personal_details', 'academic_details', 'contact_details', 'employment_details'])
+        $alumni = Alumni::with(['personal_details', 'academic_details.branchRelation', 'academic_details.departmentRelation', 'academic_details.courseRelation', 'contact_details', 'employment_details'])
             ->where('alumni_id', $alumni)
             ->leftJoin('users', 'alumni.user_id', '=', 'users.user_id')
             ->select('alumni.*', 'users.status', 'users.user_name', 'users.name')
@@ -201,7 +218,7 @@ class AlumniController extends Controller
 
     public function show_contact($alumni)
     {
-        $alumni = Alumni::with(['personal_details', 'academic_details', 'contact_details', 'employment_details'])
+        $alumni = Alumni::with(['personal_details', 'academic_details.branchRelation', 'academic_details.departmentRelation', 'academic_details.courseRelation', 'contact_details', 'employment_details'])
             ->where('alumni_id', $alumni)
             ->leftJoin('users', 'alumni.user_id', '=', 'users.user_id')
             ->select('alumni.*', 'users.status', 'users.user_name', 'users.name')
@@ -214,7 +231,7 @@ class AlumniController extends Controller
 
     public function show_employment($alumni)
     {
-        $alumni = Alumni::with(['personal_details', 'academic_details', 'contact_details', 'employment_details'])
+        $alumni = Alumni::with(['personal_details', 'academic_details.branchRelation', 'academic_details.departmentRelation', 'academic_details.courseRelation', 'contact_details', 'employment_details'])
             ->where('alumni_id', $alumni)
             ->leftJoin('users', 'alumni.user_id', '=', 'users.user_id')
             ->select('alumni.*', 'users.status', 'users.user_name', 'users.name')
@@ -269,7 +286,9 @@ class AlumniController extends Controller
     {
         return Inertia::render('admin/create-alumni/academic', [
             'step' => 2,
-            'alumni_academic_details' => session('alumni_academic_details', [])
+            'alumni_academic_details' => session('alumni_academic_details', []),
+            'branches' => $this->branchCatalog(),
+            'batches' => Batch::query()->orderByDesc('year')->get(),
         ]);
     }
 
@@ -300,8 +319,7 @@ class AlumniController extends Controller
 
     public function process_academic_details(AcademicDetailsRequest $request): RedirectResponse
     {
-
-        session(['alumni_academic_details' => $request->all()]);
+        session(['alumni_academic_details' => $this->hydrateAcademicDetails($request->validated())]);
         session(['current_step' => 3]);
         return redirect()->route('alumni.step', ['step' => 3]);
     }
@@ -481,7 +499,7 @@ class AlumniController extends Controller
     {
 
         $academicDetails = AlumniAcademicDetails::findOrFail($alumni->alumni_id);
-        $academicDetails->update($request->all());
+        $academicDetails->update($this->hydrateAcademicDetails($request->validated()));
 
         return back()->with([
             'modal_status' => "success",
@@ -520,6 +538,53 @@ class AlumniController extends Controller
     }
 
 
+
+    protected function branchCatalog(): Collection
+    {
+        return Branch::query()
+            ->with([
+                'departments' => fn ($query) => $query
+                    ->orderBy('name')
+                    ->with(['courses' => fn ($courseQuery) => $courseQuery->orderBy('name')]),
+            ])
+            ->orderBy('name')
+            ->get();
+    }
+
+    protected function hydrateAcademicDetails(array $validated): array
+    {
+        $requiresAcademicProgram = in_array($validated['school_level'] ?? '', ['College', 'Graduate'], true);
+
+        if (! $requiresAcademicProgram) {
+            $validated['department_id'] = null;
+            $validated['course_id'] = null;
+        }
+
+        $branch = Branch::query()->find($validated['branch_id']);
+        $department = ! empty($validated['department_id'])
+            ? Department::query()->find($validated['department_id'])
+            : null;
+        $course = ! empty($validated['course_id'])
+            ? Course::query()->find($validated['course_id'])
+            : null;
+
+        if ($course) {
+            $department = $department ?: Department::query()->find($course->department_id);
+            $branch = $branch ?: Branch::query()->find($course->branch_id);
+        }
+
+        if ($department && ! $branch) {
+            $branch = Branch::query()->find($department->branch_id);
+        }
+
+        return array_merge($validated, [
+            'branch_id' => $branch?->branch_id,
+            'department_id' => $department?->department_id,
+            'course_id' => $course?->course_id,
+            'branch' => $branch?->name,
+            'course' => $course ? ($course->code ?: $course->name) : null,
+        ]);
+    }
 
     function num_to_words($number)
     {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Branch;
 use App\Http\Requests\CourseRequest;
 use App\Models\Course;
 use App\Models\Department;
@@ -14,8 +15,10 @@ class CourseController extends Controller
     public function index(Request $request)
     {
         $search = trim((string) $request->input('search', ''));
+        $branchId = $request->integer('branch_id');
+        $departmentId = $request->integer('department_id');
 
-        $query = Course::with('department')->orderBy('course_id', 'asc');
+        $query = Course::with(['branch', 'department.branch'])->orderBy('name', 'asc');
 
         if ($search !== '') {
             $query->where(function ($inner) use ($search) {
@@ -24,9 +27,21 @@ class CourseController extends Controller
             });
         }
 
+        if ($branchId) {
+            $query->where('branch_id', $branchId);
+        }
+
+        if ($departmentId) {
+            $query->where('department_id', $departmentId);
+        }
+
         return Inertia::render('admin/courses', [
             'courses' => $query->paginate(15)->withQueryString(),
-            'departments' => Department::orderBy('name')->get(),
+            'branches' => Branch::query()
+                ->with(['departments' => fn ($query) => $query->orderBy('name')])
+                ->orderBy('name')
+                ->get(),
+            'departments' => Department::with('branch')->orderBy('name')->get(),
         ]);
     }
 

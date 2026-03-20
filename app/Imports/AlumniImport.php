@@ -3,6 +3,8 @@
 namespace App\Imports;
 
 use App\Actions\Alumni\CreateAlumni;
+use App\Models\Branch;
+use App\Models\Course;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -250,6 +252,27 @@ class AlumniImport implements ToCollection, WithHeadingRow, WithValidation, Skip
             $schoolLevel = $row['school_level'] ?? null;
             $batch = $row['year_graduated'] ?? null;
             $course = $row['degree_earned'] ?? null;
+            $branchModel = $branch
+                ? Branch::query()->whereRaw('LOWER(name) = ?', [strtolower(trim((string) $branch))])->first()
+                : null;
+            $courseQuery = Course::query();
+
+            if ($branchModel) {
+                $courseQuery->where('branch_id', $branchModel->branch_id);
+            }
+
+            $courseModel = $course
+                ? $courseQuery->where(function ($query) use ($course) {
+                    $value = strtolower(trim((string) $course));
+
+                    $query->whereRaw('LOWER(code) = ?', [$value])
+                        ->orWhereRaw('LOWER(name) = ?', [$value]);
+                })->first()
+                : null;
+
+            if ($courseModel && ! $branchModel && $courseModel->branch_id) {
+                $branchModel = Branch::query()->find($courseModel->branch_id);
+            }
 
             $email = $row['email_address'] ?? null;
             $contact = $row['contact_number'] ?? null;
@@ -304,8 +327,11 @@ class AlumniImport implements ToCollection, WithHeadingRow, WithValidation, Skip
                     'student_number' => $studentNumber,
                     'school_level' => $schoolLevel,
                     'batch' => $batch,
-                    'branch' => $branch,
-                    'course' => $course,
+                    'branch_id' => $branchModel?->branch_id,
+                    'department_id' => $courseModel?->department_id,
+                    'course_id' => $courseModel?->course_id,
+                    'branch' => $branchModel?->name ?? $branch,
+                    'course' => $courseModel ? ($courseModel->code ?: $courseModel->name) : $course,
                 ],
                 'contact' => [
                     'email' => $email,

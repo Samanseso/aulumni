@@ -14,10 +14,16 @@ class Course extends Model
     public $timestamps = true;
 
     protected $fillable = [
+        'branch_id',
         'department_id',
         'name',
         'code',
     ];
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class, 'branch_id', 'branch_id');
+    }
 
     public function department(): BelongsTo
     {

@@ -3,8 +3,9 @@
 namespace App\Imports;
 
 use App\Actions\Fortify\CreateNewUser;
+use App\Models\Branch;
+use App\Models\Department;
 use App\Models\Employee;
-use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -25,6 +26,18 @@ class EmployeeImport implements ToCollection, WithHeadingRow
             $contact    = $row['contact'] ?? null;
             $branch     = $row['branch'] ?? null;
             $department = $row['department'] ?? null;
+            $branchModel = $branch
+                ? Branch::query()->whereRaw('LOWER(name) = ?', [strtolower(trim((string) $branch))])->first()
+                : null;
+            $departmentQuery = Department::query();
+
+            if ($branchModel) {
+                $departmentQuery->where('branch_id', $branchModel->branch_id);
+            }
+
+            $departmentModel = $department
+                ? $departmentQuery->whereRaw('LOWER(name) = ?', [strtolower(trim((string) $department))])->first()
+                : null;
 
             $attempt = 0;
             do {
@@ -54,12 +67,14 @@ class EmployeeImport implements ToCollection, WithHeadingRow
                 ],
                 [
                     'user_id'     => $user->user_id,
+                    'branch_id'   => $branchModel?->branch_id,
+                    'department_id' => $departmentModel?->department_id,
                     'first_name'  => $firstName,
                     'middle_name' => $middleName,
                     'last_name'   => $lastName,
                     'contact'     => $contact,
-                    'branch'      => $branch,
-                    'department'  => $department,
+                    'branch'      => $branchModel?->name ?? $branch,
+                    'department'  => $departmentModel?->name ?? $department,
                 ],
             );
         }

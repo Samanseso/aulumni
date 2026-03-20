@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\CreateEmployee;
 
+use App\Models\Department;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -20,9 +21,30 @@ class EmployeeDetailsRequest extends FormRequest
             'last_name'   => ['required', 'string', 'max:255'],
             'email'       => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
             'contact'     => ['required', 'string', 'max:50'],
-            'branch'      => ['required', 'string', 'max:255'],
-            'department'  => ['required', 'string', 'max:255'],
+            'branch_id'   => ['required', 'integer', Rule::exists('branches', 'branch_id')],
+            'department_id' => ['required', 'integer', Rule::exists('departments', 'department_id')],
         ];
+    }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            $branchId = $this->integer('branch_id');
+            $departmentId = $this->integer('department_id');
+
+            if (! $branchId || ! $departmentId) {
+                return;
+            }
+
+            $matchesBranch = Department::query()
+                ->where('department_id', $departmentId)
+                ->where('branch_id', $branchId)
+                ->exists();
+
+            if (! $matchesBranch) {
+                $validator->errors()->add('department_id', 'Selected department does not belong to the selected branch.');
+            }
+        });
     }
 
     public function messages(): array
@@ -48,13 +70,13 @@ class EmployeeDetailsRequest extends FormRequest
             'contact.string'       => 'Contact must be a string.',
             'contact.max'          => 'Contact may not be greater than 50 characters.',
 
-            'branch.required'      => 'Branch is required.',
-            'branch.string'        => 'Branch must be a string.',
-            'branch.max'           => 'Branch may not be greater than 255 characters.',
+            'branch_id.required'   => 'Branch is required.',
+            'branch_id.integer'    => 'Branch must be a valid branch.',
+            'branch_id.exists'     => 'Selected branch does not exist.',
 
-            'department.required'  => 'Department is required.',
-            'department.string'    => 'Department must be a string.',
-            'department.max'       => 'Department may not be greater than 255 characters.',
+            'department_id.required' => 'Department is required.',
+            'department_id.integer'  => 'Department must be a valid department.',
+            'department_id.exists'   => 'Selected department does not exist.',
         ];
     }
 }

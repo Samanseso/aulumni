@@ -95,7 +95,27 @@ export default function AlumniList() {
     };
 
     // handlers
-    const handleBranchChange = (e: string) => setOrRemoveFilter("branch", e);
+    const handleBranchChange = (branch: string) => {
+        const nextBranchFilters = branch === "none"
+            ? filter.filter((item) => item.property !== "branch")
+            : [...filter.filter((item) => item.property !== "branch"), { property: "branch", value: branch }];
+
+        const selectedCourse = nextBranchFilters.find((item) => item.property === "course")?.value;
+        const courseStillValid = selectedCourse
+            ? props.courses.some(
+                (course) => course.branch?.name === branch && (course.code === selectedCourse || course.name === selectedCourse),
+            )
+            : true;
+
+        const nextFilters = courseStillValid || ! selectedCourse
+            ? nextBranchFilters
+            : nextBranchFilters.filter((item) => item.property !== "course");
+
+        const pageRemoved = nextFilters.filter((item) => item.property !== "page");
+
+        setFilter(nextFilters);
+        applyFilters(pageRemoved);
+    };
     const handleSchoolLevelChange = (e: string) => setOrRemoveFilter("school_level", e);
     const handleCourseChange = (e: string) => setOrRemoveFilter("course", e);
     const handleBatchChange = (e: string) => setOrRemoveFilter("batch", e);
@@ -175,7 +195,7 @@ export default function AlumniList() {
                         </div> :
                         <div className="flex gap-2">
                             <Input
-                                startIcon={<Search size={20} color='gray' />}
+                                startIcon={<Search size={18} color='gray' />}
                                 type="text"
                                 placeholder="Search here"
                                 onChange={e => setSearchInput(e.target.value)}
@@ -192,6 +212,7 @@ export default function AlumniList() {
                                     branches={props.branches}
                                     courses={props.courses}
                                     batches={props.batches}
+                                    selectedBranch={urlParams.get("branch") ?? undefined}
                                     handleSchoolLevelChange={handleSchoolLevelChange}
                                     handleBatchChange={handleBatchChange}
                                     handleBranchChange={handleBranchChange}
@@ -258,7 +279,7 @@ export default function AlumniList() {
                             </Button>
                         </DropdownMenuTrigger>
 
-                        <DropdownMenuContent align="start">
+                        <DropdownMenuContent>
                             <DropdownMenuItem onClick={() => window.location.href = export_alumni().url}>
                                 <Download /> Export
                             </DropdownMenuItem>
@@ -281,7 +302,7 @@ export default function AlumniList() {
 
             {
                 props.alumni.data.length > 0 &&
-                <div className="flex w-full h-10 justify-between items-end px-10 mb-2 absolute bottom-9 right-0 space-x-10">
+                <div className="flex w-full h-10 justify-between items-end px-5 mt-2">
 
                     <p className="text-sm">{`Showing
                         ${props.alumni.from} to ${props.alumni.to} out of

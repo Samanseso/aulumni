@@ -9,12 +9,15 @@ class Employee extends Model
 {
     protected $table = 'employees';
     protected $primaryKey = 'employee_id';
-    public $incrementing = true;
+    public $incrementing = false;
+    protected $keyType = 'string';
     public $timestamps = true;
 
     protected $fillable = [
         'employee_id',
         'user_id',
+        'branch_id',
+        'department_id',
         'employee_number',
         'first_name',
         'middle_name',
@@ -27,5 +30,15 @@ class Employee extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');
+    }
+
+    public function branchRelation(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class, 'branch_id', 'branch_id');
+    }
+
+    public function departmentRelation(): BelongsTo
+    {
+        return $this->belongsTo(Department::class, 'department_id', 'department_id');
     }
 }

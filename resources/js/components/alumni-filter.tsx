@@ -3,6 +3,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal
 import { Button } from "./ui/button";
 import { ChevronDown } from "lucide-react";
 import { Separator } from "./ui/separator";
+import { Course } from "@/types";
 
 type Filters = {
     school_level?: string;
@@ -14,8 +15,9 @@ type Filters = {
 
 interface AlumniFilterProps {
     branches: { name: string }[];
-    courses: { code: string }[];
+    courses: Course[];
     batches: { year: string }[];
+    selectedBranch?: string;
     handleSchoolLevelChange: (school_level: string) => void;
     handleBranchChange: (branch: string) => void;
     handleCourseChange: (course: string) => void;
@@ -27,12 +29,16 @@ export default function AlumniFilter({
     branches, 
     courses, 
     batches, 
+    selectedBranch,
     handleSchoolLevelChange,
     handleBranchChange, 
     handleCourseChange, 
     handleBatchChange, 
     handleStatusChange
 }: AlumniFilterProps) {
+    const visibleCourses = selectedBranch
+        ? courses.filter((course) => course.branch?.name === selectedBranch)
+        : courses;
 
     return (
         <DropdownMenu>
@@ -73,8 +79,10 @@ export default function AlumniFilter({
                             Course
                         </DropdownMenuSubTrigger>
                         <DropdownMenuSubContent className="ml-4 mt-1 p-2 bg-white rounded shadow max-h-48 overflow-auto">
-                            {courses.map(c => (
-                                <DropdownMenuItem key={c.code} onSelect={() => handleCourseChange(c.code)}>{c.code}</DropdownMenuItem>
+                            {visibleCourses.map(c => (
+                                <DropdownMenuItem key={c.course_id} onSelect={() => handleCourseChange(c.code || c.name)}>
+                                    {c.code ? `${c.code} - ${c.name}` : c.name}
+                                </DropdownMenuItem>
                             ))}
                         </DropdownMenuSubContent>
                     </DropdownMenuSub>

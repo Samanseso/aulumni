@@ -1,4 +1,4 @@
-import React, { SetStateAction } from 'react'
+import React, { SetStateAction, useEffect, useState } from 'react'
 import { Dialog, DialogContent, DialogFooter, DialogTitle } from './ui/dialog';
 import { Form, usePage } from '@inertiajs/react';
 import { store } from '@/actions/App/Http/Controllers/User/EmployeeController';
@@ -17,6 +17,25 @@ interface CreateEmployeeModalProps {
 const CreateEmployeeModal = ({ setAddEmployeeModal }: CreateEmployeeModalProps) => {
 
     const { props } = usePage<{ branches: Branch[], departments: Department[] }>();
+    const [selectedBranchId, setSelectedBranchId] = useState<string>('');
+    const [selectedDepartmentId, setSelectedDepartmentId] = useState<string>('');
+    const filteredDepartments = selectedBranchId
+        ? props.departments.filter((department) => department.branch_id === Number(selectedBranchId))
+        : [];
+
+    useEffect(() => {
+        if (! selectedDepartmentId) {
+            return;
+        }
+
+        const departmentStillVisible = filteredDepartments.some(
+            (department) => department.department_id === Number(selectedDepartmentId),
+        );
+
+        if (! departmentStillVisible) {
+            setSelectedDepartmentId('');
+        }
+    }, [filteredDepartments, selectedDepartmentId]);
 
     return (
         <Dialog open={true} onOpenChange={setAddEmployeeModal}>
@@ -143,19 +162,19 @@ const CreateEmployeeModal = ({ setAddEmployeeModal }: CreateEmployeeModalProps) 
                                     </Label>
 
                                     <div className='w-full'>
-                                        <Select name="branch">
+                                        <Select name="branch_id" value={selectedBranchId} onValueChange={setSelectedBranchId}>
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Select Branch" />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {props.branches.map((branch) => (
-                                                    <SelectItem key={branch.name} value={branch.name}>
+                                                    <SelectItem key={branch.branch_id} value={branch.branch_id.toString()}>
                                                         {branch.name}
                                                     </SelectItem>
                                                 ))}
                                             </SelectContent>
                                         </Select>
-                                        <InputError className="mt-2" message={errors.branch} />
+                                        <InputError className="mt-2" message={errors.branch_id} />
                                     </div>
 
                                 </div>
@@ -169,19 +188,24 @@ const CreateEmployeeModal = ({ setAddEmployeeModal }: CreateEmployeeModalProps) 
                                         Department <span className="text-red">*</span>
                                     </Label>
                                     <div className="w-full">
-                                        <Select name="department">
+                                        <Select
+                                            name="department_id"
+                                            value={selectedDepartmentId}
+                                            onValueChange={setSelectedDepartmentId}
+                                            disabled={! selectedBranchId}
+                                        >
                                             <SelectTrigger>
-                                                <SelectValue placeholder="Select Department" />
+                                                <SelectValue placeholder={selectedBranchId ? "Select Department" : "Select Branch first"} />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {props.departments.map((department) => (
-                                                    <SelectItem key={department.name} value={department.name}>
+                                                {filteredDepartments.map((department) => (
+                                                    <SelectItem key={department.department_id} value={department.department_id.toString()}>
                                                         {department.name}
                                                     </SelectItem>
                                                 ))}
                                             </SelectContent>
                                         </Select>
-                                        <InputError className="mt-2" message={errors.department} />
+                                        <InputError className="mt-2" message={errors.department_id} />
                                     </div>
                                 </div>
                             </div>

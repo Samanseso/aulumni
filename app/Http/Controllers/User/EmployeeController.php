@@ -10,6 +10,7 @@ use App\Imports\EmployeeImport;
 use App\Models\Branch;
 use App\Models\Department;
 use App\Models\Employee;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -30,15 +31,45 @@ class EmployeeController extends Controller
 
         $query = Employee::query()
             ->leftJoin('users', 'employees.user_id', '=', 'users.user_id')
-            ->select('employees.*', 'users.name', 'users.user_name', 'users.email', 'users.status')
+            ->leftJoin('branches', 'employees.branch_id', '=', 'branches.branch_id')
+            ->leftJoin('departments', 'employees.department_id', '=', 'departments.department_id')
+            ->select(
+                'employees.employee_id',
+                'employees.user_id',
+                'employees.branch_id',
+                'employees.department_id',
+                'employees.first_name',
+                'employees.middle_name',
+                'employees.last_name',
+                'employees.contact',
+                'employees.created_at',
+                'users.name',
+                'users.user_name',
+                'users.email',
+                'users.status',
+                DB::raw('COALESCE(branches.name, employees.branch) as branch'),
+                DB::raw('COALESCE(departments.name, employees.department) as department')
+            )
             ->whereNotNull('employees.employee_id');
 
         if (! empty($validated['branch'])) {
-            $query->where('employees.branch', $validated['branch']);
+            $query->where(function ($inner) use ($validated) {
+                $inner->where('branches.name', $validated['branch'])
+                    ->orWhere(function ($legacy) use ($validated) {
+                        $legacy->whereNull('employees.branch_id')
+                            ->where('employees.branch', $validated['branch']);
+                    });
+            });
         }
 
         if (! empty($validated['department'])) {
-            $query->where('employees.department', $validated['department']);
+            $query->where(function ($inner) use ($validated) {
+                $inner->where('departments.name', $validated['department'])
+                    ->orWhere(function ($legacy) use ($validated) {
+                        $legacy->whereNull('employees.department_id')
+                            ->where('employees.department', $validated['department']);
+                    });
+            });
         }
 
         if (! empty($validated['search'])) {
@@ -91,8 +122,11 @@ class EmployeeController extends Controller
 
         return Inertia::render('admin/employees', [
             'employees' => $employees,
-            'branches' => Branch::all(),
-            'departments' => Department::all(),
+            'branches' => Branch::query()
+                ->with(['departments' => fn ($query) => $query->orderBy('name')])
+                ->orderBy('name')
+                ->get(),
+            'departments' => Department::with('branch')->orderBy('name')->get(),
             'sortConfig' => $sortConfig,
         ]);
     }
@@ -121,6 +155,7 @@ class EmployeeController extends Controller
 
     public function store(EmployeeDetailsRequest $request): RedirectResponse
     {
+        $validated = $request->validated();
         $attempt = 0;
 
         do {
@@ -131,6 +166,8 @@ class EmployeeController extends Controller
         $firstName = $request->string('first_name')->toString();
         $middleName = $request->string('middle_name')->toString();
         $lastName = $request->string('last_name')->toString();
+        $branch = Branch::query()->findOrFail($validated['branch_id']);
+        $department = Department::query()->findOrFail($validated['department_id']);
 
         $password = Str::upper($firstName[0]).Str::lower($middleName[0]).Str::lower($lastName[0]).'@'.date('Y');
 
@@ -148,12 +185,14 @@ class EmployeeController extends Controller
         $employee->fill([
             'employee_id' => $employeeId,
             'user_id' => $user->user_id,
+            'branch_id' => $branch->branch_id,
+            'department_id' => $department->department_id,
             'first_name' => $firstName,
             'middle_name' => $middleName,
             'last_name' => $lastName,
             'contact' => $request->string('contact')->toString(),
-            'branch' => $request->string('branch')->toString(),
-            'department' => $request->string('department')->toString(),
+            'branch' => $branch->name,
+            'department' => $department->name,
         ]);
         $employee->save();
 

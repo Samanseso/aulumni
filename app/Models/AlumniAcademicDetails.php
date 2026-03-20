@@ -17,6 +17,9 @@ class AlumniAcademicDetails extends Model
         'student_number',
         'school_level',
         'batch',
+        'branch_id',
+        'department_id',
+        'course_id',
         'branch',
         'course',
     ];
@@ -24,5 +27,20 @@ class AlumniAcademicDetails extends Model
     public function alumni(): BelongsTo
     {
         return $this->belongsTo(Alumni::class, 'alumni_id', 'alumni_id');
+    }
+
+    public function branchRelation(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class, 'branch_id', 'branch_id');
+    }
+
+    public function departmentRelation(): BelongsTo
+    {
+        return $this->belongsTo(Department::class, 'department_id', 'department_id');
+    }
+
+    public function courseRelation(): BelongsTo
+    {
+        return $this->belongsTo(Course::class, 'course_id', 'course_id');
     }
 }

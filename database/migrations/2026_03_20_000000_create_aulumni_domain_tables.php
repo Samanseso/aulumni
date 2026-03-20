@@ -4,13 +4,14 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        $this->createAlumniTables();
         $this->createUtilityTables();
+        $this->createAlumniTables();
         $this->createEmployeeTables();
         $this->createContentTables();
         $this->alignExistingTables();
@@ -78,6 +79,9 @@ return new class extends Migration
                 $table->string('student_number', 100)->nullable();
                 $table->enum('school_level', ['Elementary', 'High School', 'College', 'Graduate'])->nullable();
                 $table->string('batch', 50)->nullable();
+                $table->unsignedInteger('branch_id')->nullable();
+                $table->unsignedInteger('department_id')->nullable();
+                $table->unsignedInteger('course_id')->nullable();
                 $table->string('branch', 100)->nullable();
                 $table->string('course', 100)->nullable();
                 $table->timestamps();
@@ -86,6 +90,18 @@ return new class extends Migration
                     ->references('alumni_id')
                     ->on('alumni')
                     ->cascadeOnDelete();
+                $table->foreign('branch_id')
+                    ->references('branch_id')
+                    ->on('branches')
+                    ->nullOnDelete();
+                $table->foreign('department_id')
+                    ->references('department_id')
+                    ->on('departments')
+                    ->nullOnDelete();
+                $table->foreign('course_id')
+                    ->references('course_id')
+                    ->on('courses')
+                    ->nullOnDelete();
             });
         }
 
@@ -162,20 +178,33 @@ return new class extends Migration
         if (! Schema::hasTable('departments')) {
             Schema::create('departments', function (Blueprint $table) {
                 $table->increments('department_id');
+                $table->unsignedInteger('branch_id');
                 $table->string('name', 200);
                 $table->text('description')->nullable();
                 $table->timestamps();
+
+                $table->foreign('branch_id')
+                    ->references('branch_id')
+                    ->on('branches')
+                    ->cascadeOnDelete()
+                    ->cascadeOnUpdate();
             });
         }
 
         if (! Schema::hasTable('courses')) {
             Schema::create('courses', function (Blueprint $table) {
                 $table->increments('course_id');
+                $table->unsignedInteger('branch_id');
                 $table->unsignedInteger('department_id');
                 $table->string('name', 200);
                 $table->string('code', 100)->nullable();
                 $table->timestamps();
 
+                $table->foreign('branch_id')
+                    ->references('branch_id')
+                    ->on('branches')
+                    ->cascadeOnDelete()
+                    ->cascadeOnUpdate();
                 $table->foreign('department_id')
                     ->references('department_id')
                     ->on('departments')
@@ -191,6 +220,8 @@ return new class extends Migration
             Schema::create('employees', function (Blueprint $table) {
                 $table->string('employee_id', 50)->primary();
                 $table->unsignedBigInteger('user_id');
+                $table->unsignedInteger('branch_id')->nullable();
+                $table->unsignedInteger('department_id')->nullable();
                 $table->string('first_name', 255)->nullable();
                 $table->string('middle_name', 255)->nullable();
                 $table->string('last_name', 255)->nullable();
@@ -204,6 +235,14 @@ return new class extends Migration
                     ->on('users')
                     ->cascadeOnDelete()
                     ->cascadeOnUpdate();
+                $table->foreign('branch_id')
+                    ->references('branch_id')
+                    ->on('branches')
+                    ->nullOnDelete();
+                $table->foreign('department_id')
+                    ->references('department_id')
+                    ->on('departments')
+                    ->nullOnDelete();
             });
         }
     }
@@ -336,6 +375,57 @@ return new class extends Migration
             }
         }
 
+        if (Schema::hasTable('departments') && ! Schema::hasColumn('departments', 'branch_id')) {
+            Schema::table('departments', function (Blueprint $table) {
+                $table->unsignedInteger('branch_id')->nullable()->after('department_id');
+            });
+        }
+
+        if (Schema::hasTable('courses') && ! Schema::hasColumn('courses', 'branch_id')) {
+            Schema::table('courses', function (Blueprint $table) {
+                $table->unsignedInteger('branch_id')->nullable()->after('course_id');
+            });
+        }
+
+        if (Schema::hasTable('employees')) {
+            $needsEmployeeBranchId = ! Schema::hasColumn('employees', 'branch_id');
+            $needsEmployeeDepartmentId = ! Schema::hasColumn('employees', 'department_id');
+
+            if ($needsEmployeeBranchId || $needsEmployeeDepartmentId) {
+                Schema::table('employees', function (Blueprint $table) use ($needsEmployeeBranchId, $needsEmployeeDepartmentId) {
+                    if ($needsEmployeeBranchId) {
+                        $table->unsignedInteger('branch_id')->nullable()->after('user_id');
+                    }
+
+                    if ($needsEmployeeDepartmentId) {
+                        $table->unsignedInteger('department_id')->nullable()->after('branch_id');
+                    }
+                });
+            }
+        }
+
+        if (Schema::hasTable('alumni_academic_details')) {
+            $needsAcademicBranchId = ! Schema::hasColumn('alumni_academic_details', 'branch_id');
+            $needsAcademicDepartmentId = ! Schema::hasColumn('alumni_academic_details', 'department_id');
+            $needsAcademicCourseId = ! Schema::hasColumn('alumni_academic_details', 'course_id');
+
+            if ($needsAcademicBranchId || $needsAcademicDepartmentId || $needsAcademicCourseId) {
+                Schema::table('alumni_academic_details', function (Blueprint $table) use ($needsAcademicBranchId, $needsAcademicDepartmentId, $needsAcademicCourseId) {
+                    if ($needsAcademicBranchId) {
+                        $table->unsignedInteger('branch_id')->nullable()->after('batch');
+                    }
+
+                    if ($needsAcademicDepartmentId) {
+                        $table->unsignedInteger('department_id')->nullable()->after('branch_id');
+                    }
+
+                    if ($needsAcademicCourseId) {
+                        $table->unsignedInteger('course_id')->nullable()->after('department_id');
+                    }
+                });
+            }
+        }
+
         if (! Schema::hasTable('posts')) {
             return;
         }
@@ -382,9 +472,17 @@ return new class extends Migration
             ]);
         }
 
-        DB::table('posts')->whereNull('post_uuid')->update([
-            'post_uuid' => DB::raw("(lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))), 2) || '-' || substr('89ab', abs(random()) % 4 + 1, 1) || substr(lower(hex(randomblob(2))), 2) || '-' || lower(hex(randomblob(6))))"),
-        ]);
+        DB::table('posts')
+            ->whereNull('post_uuid')
+            ->orderBy('post_id')
+            ->select(['post_id'])
+            ->chunkById(100, function ($posts) {
+                foreach ($posts as $post) {
+                    DB::table('posts')
+                        ->where('post_id', $post->post_id)
+                        ->update(['post_uuid' => (string) Str::uuid()]);
+                }
+            }, 'post_id');
 
         DB::table('posts')->whereNull('job_title')->update(['job_title' => 'Legacy Job Post']);
         DB::table('posts')->whereNull('company')->update(['company' => 'Unknown company']);

@@ -53,8 +53,11 @@ export interface AlumniAcademicDetails {
 	student_number: string;
 	school_level: string;
 	batch: string;
-	branch: string;
-	course: string;
+	branch_id?: number | null;
+	department_id?: number | null;
+	course_id?: number | null;
+	branch?: string | null;
+	course?: string | null;
 	created_at?: string | null;
 	updated_at?: string | null;
 }
@@ -110,6 +113,8 @@ export interface User {
 
 export interface Employee extends User {
 	employee_id: string;
+	branch_id?: number | null;
+	department_id?: number | null;
 	first_name: string;
 	middle_name: string;
 	last_name: string;
@@ -180,25 +185,38 @@ export interface Branch {
 	name: string;
 	address: string;
 	contact: string;
+	departments?: Department[];
+	departments_count?: number;
+	courses_count?: number;
+	employees_count?: number;
+	alumni_count?: number;
 	created_at?: string;
 	updated_at?: string;
 }
 
 export interface Department {
 	department_id: number
+	branch_id: number
 	name: string;
 	description?: string | null;
+	branch?: Branch;
+	courses?: Course[];
+	courses_count?: number;
+	employees_count?: number;
+	alumni_count?: number;
 	created_at?: string;
 	updated_at?: string;
 }
 
 export interface Course {
 	course_id: number
+	branch_id: number
 	department_id: number
 	name: string;
 	code: string;
 	created_at?: string;
 	updated_at?: string;
+	branch?: Branch
 	department?: Department
 }
 
@@ -206,8 +224,9 @@ export interface Course {
 export interface Batch {
 	year: string;
 	name: string;
-	created_at: string;
-	updated_at: string;
+	alumni_count?: number;
+	created_at?: string;
+	updated_at?: string;
 }
 
 export interface Filter {

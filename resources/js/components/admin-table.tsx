@@ -27,7 +27,6 @@ const columns = [
 	"Name",
 	"User Name",
 	"Email",
-	"User Type",
 	"Status",
 	"Created At",
 ];
@@ -103,9 +102,6 @@ export function AdminTable({ admins, selectedData, setSelectedData }: AdminTable
 							<td className="px-4 py-2 text-sm">
 								<span className="text-xs text-gray-600 break-words">{user.email}</span>
 							</td>
-
-							<td className="px-4 py-2 text-sm">{user.user_type}</td>
-
 							<td className="px-4 py-2 text-sm">
 								<StatusTag text={user.status} />
 							</td>

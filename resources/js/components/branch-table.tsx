@@ -1,84 +1,63 @@
-import { Checkbox } from "./ui/checkbox";
-import { Button } from "./ui/button";
-import { Trash2, Eye, EllipsisVertical, Check, Ban, Trash, PenBox } from "lucide-react";
-import { useState, useEffect } from "react";
-import { CheckedState } from "@radix-ui/react-checkbox";
-import { Branch } from "@/types";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent } from "./ui/dropdown-menu";
-import { Separator } from "./ui/separator";
-import StatusTag from "./status-tag";
-import { Link } from "@inertiajs/react";
+import { useConfirmAction } from '@/components/context/confirm-action-context';
+import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Branch } from '@/types';
+import { EllipsisVertical, PenBox, Trash } from 'lucide-react';
+import { Checkbox } from './ui/checkbox';
 
-interface branchTableProps {
-    branch: Branch[];
-    columns: string[];
-    onDelete?: (id: number) => void;
-    onEdit?: (id: number) => void;
-    onView?: (id: number) => void;
+interface BranchTableProps {
+    branches: Branch[];
+    onEdit: (branch: Branch) => void;
 }
 
-export default function BranchTable({ branch, columns, onDelete, onEdit, onView }: branchTableProps) {
-    const [filteredData, setFilteredData] = useState<Branch[]>(branch);
-    const [selectedData, setSelectedData] = useState<number[]>([]);
-
-    useEffect(() => {
-        setFilteredData(branch);
-    }, [branch]);
-
-    const updatedSelectedData = (id: number) => {
-        if (selectedData.includes(id)) {
-            setSelectedData(selectedData => selectedData.filter(d => d !== id));
-        } else {
-            setSelectedData([...selectedData, id]);
-        }
-    };
-
-    const selectAllData = (checked: CheckedState) => {
-        if (checked === true) {
-            setSelectedData(filteredData.map(b => b.branch_id));
-        } else {
-            setSelectedData([]);
-        }
-    };
+export default function BranchTable({ branches, onEdit }: BranchTableProps) {
+    const { confirmActionContentCreateModal } = useConfirmAction();
 
     return (
-        <div className="table-fixed w-full h-full">
+        <div className="table-fixed w-full h-full max-h-[63vh] overflow-auto [&::-webkit-scrollbar]:w-0">
             <table className="w-full">
                 <thead>
                     <tr className="border-t">
                         <th className="rounded-l-md ps-7 pe-2">
-                            <Checkbox onCheckedChange={(checked) => selectAllData(checked)} checked={selectedData.length === filteredData.length && filteredData.length > 0} />
+                            <Checkbox className="size-5 mt-1.25 cursor-pointer" />
                         </th>
-                        {columns.map((col) => (
-                            <th key={col} className="px-4 py-2 text-left text-xs text-gray-500 font-semibold whitespace-nowrap uppercase">
-                                {col}
-                            </th>
-                        ))}
-                        <th className="ps-2 pe-7"></th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-500">Branch ID</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Name</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Address</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Contact</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Departments</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Courses</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Employees</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Alumni</th>
+                        <th className="px-6 py-3 text-right text-xs font-semibold uppercase text-gray-500"></th>
                     </tr>
                 </thead>
                 <tbody>
-                    {filteredData.map((branch, idx) => (
-                        <tr key={branch.branch_id} className={`border-t border-t-gray-300 ${idx % 2 === 0 ? "bg-stone-100" : ""}`}>
+                    {branches.length === 0 && (
+                        <tr className="border-t">
+                            <td colSpan={9} className="px-6 py-10 text-center text-sm text-gray-500">
+                                No branches found.
+                            </td>
+                        </tr>
+                    )}
+
+                    {branches.map((branch, index) => (
+                        <tr key={branch.branch_id} className={`border-t border-t-gray-300 ${index % 2 === 0 ? 'bg-stone-100' : ''}`}>
                             <td className="ps-7 pe-2">
                                 <div className="flex items-center justify-center">
-                                    <Checkbox checked={selectedData.includes(branch.branch_id)} onCheckedChange={(c) => updatedSelectedData(branch.branch_id)} />
+                                    <Checkbox className="size-5 cursor-pointer bg-white" />
                                 </div>
                             </td>
-
-                            <td className="px-4 py-2 text-sm">{branch.branch_id}</td>
-
-                            <td className="px-4 py-2 text-sm">
-                                <span className="font-bold">{branch.name}</span>
-                            </td>
-
-                            <td className="px-4 py-2 text-sm">{branch.address}</td>
-
-                            <td className="px-4 py-2 text-sm">{branch.contact}</td>
-
-
-                            <td data-label="Actions" className="ps-2 pe-7 py-0.25 text-sm">
-                                <div className="flex items-center lg:justify-center space-x-1">
+                            <td className="px-6 py-3 text-sm">{branch.branch_id}</td>
+                            <td className="px-4 py-3 text-sm font-semibold">{branch.name}</td>
+                            <td className="px-4 py-3 text-sm">{branch.address}</td>
+                            <td className="px-4 py-3 text-sm">{branch.contact || '-'}</td>
+                            <td className="px-4 py-3 text-sm">{branch.departments_count ?? 0}</td>
+                            <td className="px-4 py-3 text-sm">{branch.courses_count ?? 0}</td>
+                            <td className="px-4 py-3 text-sm">{branch.employees_count ?? 0}</td>
+                            <td className="px-4 py-3 text-sm">{branch.alumni_count ?? 0}</td>
+                            <td className="px-6 py-3 text-sm">
+                                <div className="flex justify-end">
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button size="sm" variant="ghost" className="text-xs">
@@ -86,18 +65,24 @@ export default function BranchTable({ branch, columns, onDelete, onEdit, onView 
                                             </Button>
                                         </DropdownMenuTrigger>
 
-                                        <DropdownMenuContent className="flex flex-col items-start gap-1 mt-1 p-2 rounded-xl border border-white/5 bg-white shadow" align="end">
-                                            <Separator />
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onClick={() => onEdit(branch)}>
+                                                <PenBox className="size-4 text-blue-500" /> Edit
+                                            </DropdownMenuItem>
 
-                                            <Button variant="ghost" size="sm" className="text-xs">
-                                                <PenBox className="size-4 text-blue-500" />Edit
-                                            </Button>
+                                            <DropdownMenuSeparator />
 
-                                            <Separator />
-
-                                            <Button variant="ghost" size="sm" className="text-xs">
-                                                <Trash className="size-4 text-rose-500" />Delete
-                                            </Button>
+                                            <DropdownMenuItem
+                                                onClick={() =>
+                                                    confirmActionContentCreateModal({
+                                                        url: { url: `/utility/branch/${branch.branch_id}`, method: 'delete' },
+                                                        message: `Are you sure you want to delete ${branch.name}?`,
+                                                        action: 'Delete',
+                                                    })
+                                                }
+                                            >
+                                                <Trash className="size-4 text-rose-500" /> Delete
+                                            </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </div>

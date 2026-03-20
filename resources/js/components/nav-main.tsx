@@ -4,6 +4,7 @@ import {
     LayoutGrid,
     Bell,
     BriefcaseBusiness,
+    CalendarDays,
     GraduationCap,
     IdCard,
     UserCog,
@@ -143,6 +144,19 @@ export function NavMain() {
 
             <SidebarGroupLabel className="mt-5">Utilities</SidebarGroupLabel>
             <SidebarMenu>
+                <SidebarMenuItem>
+                    <SidebarMenuButton
+                        asChild
+                        isActive={urlIsActive("/utility/batch")}
+                        tooltip={{ children: "Batch" }}
+                    >
+                        <Link href="/utility/batch" prefetch>
+                            <CalendarDays />
+                            <span>Batch</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+
                 <SidebarMenuItem>
                     <SidebarMenuButton
                         asChild

@@ -1,97 +1,174 @@
-import AppLayout from "@/layouts/app-layout";
-import { BreadcrumbItem, Pagination, ModalType, Branch } from "@/types";
-import { router, usePage } from "@inertiajs/react";
-import { useEffect, useState } from "react";
-import { Plus, ListFilter } from "lucide-react";
-import { Link } from "@inertiajs/react";
-import { Button } from "@/components/ui/button";
-import SearchBar from "@/components/search-bar";
-import { Modal } from "@/components/modal";
-import BranchTable from "@/components/branch-table";
-import { Filter } from "@/types";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { index } from "@/routes/branch";
+import BranchFormModal from '@/components/branch-form-modal';
+import BranchTable from '@/components/branch-table';
+import { useModal } from '@/components/context/modal-context';
+import { TablePagination } from '@/components/table-pagination';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import AppLayout from '@/layouts/app-layout';
+import { index } from '@/routes/branch';
+import { Branch, BreadcrumbItem, Pagination } from '@/types';
+import { Head, router, usePage } from '@inertiajs/react';
+import { Plus, Search } from 'lucide-react';
+import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Branch',
-        href: '',
+        href: index().url,
     },
-
 ];
 
-
-export const columns: string[] = [
-    "Branch_id",
-    "Name",
-    "Address",
-    "Contact"
-]
-
-
-
 export default function Branches() {
-    const { props } = usePage<{ branches: Branch[], modal: ModalType, addresses: string[] }>();
+    const { props } = usePage<{ branches: Pagination<Branch[]>; addresses: string[] }>();
+    const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+    const [searchInput, setSearchInput] = useState(params.get('search') ?? '');
+    const [rowsInput, setRowsInput] = useState((params.get('rows') ?? props.branches.per_page.toString()) || '10');
+    const [selectedAddress, setSelectedAddress] = useState(params.get('address') ?? 'all');
+    const [editingBranch, setEditingBranch] = useState<Branch | null>(null);
+    const [formOpen, setFormOpen] = useState(false);
+    const { createModal } = useModal();
 
-    const [branches, setBranches] = useState<Branch[]>(props.branches);
-    const [searchInput, setSearchInput] = useState('');
-    const [selectedStudent, setSelectedStudent] = useState<string>('');
-    const [isOpenDeleteModal, setIsOpenDeleteModal] = useState<boolean>(false);
+    const applyFilters = (next: { search?: string; address?: string; rows?: string }) => {
+        router.get(
+            index().url,
+            {
+                search: next.search || undefined,
+                address: next.address && next.address !== 'all' ? next.address : undefined,
+                rows: next.rows || undefined,
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+            },
+        );
+    };
 
-    const [tableVersion, setTableVersion] = useState(0);
+    const handleSearch = () => {
+        applyFilters({
+            search: searchInput.trim(),
+            address: selectedAddress,
+            rows: rowsInput,
+        });
+    };
 
-    const [filter, setFilter] = useState<string | undefined>(undefined);
+    const handleRows = () => {
+        const parsed = Number(rowsInput);
 
+        if (!Number.isInteger(parsed) || parsed < 1 || parsed > 100) {
+            createModal({
+                status: 'error',
+                action: 'get',
+                title: 'Invalid Rows',
+                message: 'Rows should be from 1 to 100 only.',
+            });
+            return;
+        }
 
-    const [open, setOpen] = useState(false);
+        applyFilters({
+            search: searchInput.trim(),
+            address: selectedAddress,
+            rows: rowsInput,
+        });
+    };
 
-    const doDelete = (id: string) => {
-        setIsOpenDeleteModal(true);
-        setSelectedStudent(id)
-    }
+    const handleAddressChange = (value: string) => {
+        setSelectedAddress(value);
+        applyFilters({
+            search: searchInput.trim(),
+            address: value,
+            rows: rowsInput,
+        });
+    };
 
-    useEffect(() => {
-        setOpen(false);
-        setBranches(props.branches);
-    }, [props.branches]);
+    const openCreate = () => {
+        setEditingBranch(null);
+        setFormOpen(true);
+    };
 
-    const updateTable = (newReservation: Pagination<Branch[]>) => {
-        setBranches(newReservation.data);
-    }
+    const openEdit = (branch: Branch) => {
+        setEditingBranch(branch);
+        setFormOpen(true);
+    };
 
-    useEffect(() => {
-        setTableVersion(v => v + 1);
-    }, [branches])
-
-
-
+    const closeForm = () => {
+        setEditingBranch(null);
+        setFormOpen(false);
+    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <div className="m-4 bg-white shadow rounded-lg h-[100%] overflow-hidden">
-                <div className="flex p-5 pb-2 justify-between mb-6">
-                    <p className="font-bold text-xl text-gray-600">List of Branches</p>
-                    <div className="flex gap-2">
-                        <SearchBar />
-                        <Link href={''} as="div">
-                            <Button variant="outline" size="default" className="text-xs text-white bg-blue hover:bg-red hover:text-white"><Plus />Add Branch</Button>
-                        </Link>
+            <Head title="Branches" />
+
+            {formOpen && <BranchFormModal branch={editingBranch} onClose={closeForm} />}
+
+            <div className="m-4 h-[100%] overflow-hidden rounded-lg bg-white shadow">
+                <div className="flex flex-wrap items-center justify-between gap-3 py-3 px-5 rounded-t-lg mt-3 mb-3">
+
+                    <div className="flex flex-wrap items-center gap-2">
+                        <Input
+                            startIcon={<Search size={18} color="gray" />}
+                            type="text"
+                            placeholder="Search branches"
+                            value={searchInput}
+                            onChange={(event) => setSearchInput(event.target.value)}
+                            onEndIconClick={handleSearch}
+                            onKeyDown={(event) => {
+                                if (event.key === 'Enter') {
+                                    event.preventDefault();
+                                    handleSearch();
+                                }
+                            }}
+                            className="w-56 shadow-none focus-within:ring-0"
+                        />
+
+                        <Select value={selectedAddress} onValueChange={handleAddressChange}>
+                            <SelectTrigger className="w-fit gap-2">
+                                <SelectValue placeholder="Address" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All addresses</SelectItem>
+                                {props.addresses.map((address) => (
+                                    <SelectItem key={address} value={address}>
+                                        {address}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+
+                        <Input
+                            prefix="Show"
+                            suffix="rows"
+                            type="number"
+                            value={rowsInput}
+                            onChange={(event) => setRowsInput(event.target.value)}
+                            onKeyDown={(event) => {
+                                if (event.key === 'Enter') {
+                                    event.preventDefault();
+                                    handleRows();
+                                }
+                            }}
+                            className="w-32 gap-2"
+                        />
+
+
                     </div>
+                    <Button onClick={openCreate}>
+                        <Plus /> Add Branch
+                    </Button>
                 </div>
 
-                {/* <div className="m-4 mt-0 grid grid-cols-3 gap-4">
-                    {branches.map((branch) => {
-                        return (
-                            <BranchCard branch={branch} key={branch.name} />
-                        )
-                    })}
+                <BranchTable branches={props.branches.data ?? []} onEdit={openEdit} />
 
-                </div> */}
+                <div className="flex w-full h-10 justify-between items-end px-5 mt-2">
+                    <p className="text-sm text-gray-600">
+                        {props.branches.total > 0
+                            ? `Showing ${props.branches.from} to ${props.branches.to} out of ${props.branches.total} entries`
+                            : 'No branch records available.'}
+                    </p>
 
-                <BranchTable columns={columns} branch={branches} />
-
-
-
+                    <TablePagination data={props.branches} />
+                </div>
             </div>
         </AppLayout>
     );
