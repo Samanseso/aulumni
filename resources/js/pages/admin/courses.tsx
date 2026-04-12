@@ -23,6 +23,7 @@ export default function Courses() {
     const [openCreate, setOpenCreate] = useState(false);
 
     useEffect(() => {
+        console.log(props.courses)
         setCourses(props.courses.data ?? []);
     }, [props.courses]);
 
@@ -32,8 +33,8 @@ export default function Courses() {
 
             {openCreate && <CreateCourseModal branches={props.branches} departments={props.departments} setOpen={setOpenCreate} />}
 
-            <div className="m-4 bg-white shadow rounded-lg h-[100%] overflow-hidden">
-                <div className="flex p-5 pb-2 justify-between mb-6">
+            <div className="m-4 h-[100%] overflow-hidden rounded-lg bg-white shadow">
+                <div className="flex flex-wrap items-center justify-between gap-3 py-3 px-5 rounded-t-lg mt-3 mb-3">
                     <div className="flex gap-2">
                         <SearchBar />
                     </div>
@@ -48,7 +49,7 @@ export default function Courses() {
                 </div>
 
                 <CourseTable courses={courses} />
-                <div className="flex w-full h-10 justify-between items-end px-5 mt-2">
+                <div className="flex w-full h-10 justify-between items-center px-5 mt-4">
                     <p className="text-sm text-gray-600">
                         {props.courses.total > 0
                             ? `Showing ${props.courses.from} to ${props.courses.to} out of ${props.courses.total} entries`

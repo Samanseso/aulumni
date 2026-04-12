@@ -10,25 +10,29 @@ interface BranchTableProps {
     onEdit: (branch: Branch) => void;
 }
 
+const columns = [
+    "Name",
+    "Departments",
+    "Courses",
+    "Employees",
+    "Alumni",
+]
 export default function BranchTable({ branches, onEdit }: BranchTableProps) {
     const { confirmActionContentCreateModal } = useConfirmAction();
 
     return (
-        <div className="table-fixed w-full h-full max-h-[63vh] overflow-auto [&::-webkit-scrollbar]:w-0">
+        <div className="table-fixed w-full h-full max-h-[63vh] overflow-auto [&::-webkit-scrollbar]:w-0 border-b">
             <table className="w-full">
                 <thead>
                     <tr className="border-t">
                         <th className="rounded-l-md ps-7 pe-2">
                             <Checkbox className="size-5 mt-1.25 cursor-pointer" />
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-500">Branch ID</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Name</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Address</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Contact</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Departments</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Courses</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Employees</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Alumni</th>
+                        {columns.map((col) => (
+                            <th key={col} className="px-4 py-2 text-left text-xs text-gray-500 font-semibold whitespace-nowrap uppercase">
+                                {col}
+                            </th>
+                        ))}
                         <th className="px-6 py-3 text-right text-xs font-semibold uppercase text-gray-500"></th>
                     </tr>
                 </thead>
@@ -48,16 +52,17 @@ export default function BranchTable({ branches, onEdit }: BranchTableProps) {
                                     <Checkbox className="size-5 cursor-pointer bg-white" />
                                 </div>
                             </td>
-                            <td className="px-6 py-3 text-sm">{branch.branch_id}</td>
-                            <td className="px-4 py-3 text-sm font-semibold">{branch.name}</td>
-                            <td className="px-4 py-3 text-sm">{branch.address}</td>
-                            <td className="px-4 py-3 text-sm">{branch.contact || '-'}</td>
+                            <td className="px-4 py-2 text-sm">
+                                <span className="font-bold">{branch.name}</span> <br />
+                                <span className="text-xs text-gray-500">{branch.contact}</span> <br />
+                                <span className="text-xs text-gray-500">{branch.address}</span> <br />
+                            </td>
                             <td className="px-4 py-3 text-sm">{branch.departments_count ?? 0}</td>
                             <td className="px-4 py-3 text-sm">{branch.courses_count ?? 0}</td>
                             <td className="px-4 py-3 text-sm">{branch.employees_count ?? 0}</td>
                             <td className="px-4 py-3 text-sm">{branch.alumni_count ?? 0}</td>
-                            <td className="px-6 py-3 text-sm">
-                                <div className="flex justify-end">
+                            <td className="px-4 py-3 text-sm">
+                                <div className="flex justify-enter">
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button size="sm" variant="ghost" className="text-xs">

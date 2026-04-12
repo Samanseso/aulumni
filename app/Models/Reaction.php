@@ -11,11 +11,12 @@ class Reaction extends Model
     protected $primaryKey = 'reaction_id';
     public $incrementing = true;
     protected $keyType = 'int';
-    public $timestamps = true;
+    public const UPDATED_AT = null;
 
     protected $fillable = [
         'post_id',
         'user_id',
+        'type',
     ];
 
     protected $casts = [

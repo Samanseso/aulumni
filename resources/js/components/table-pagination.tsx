@@ -44,7 +44,7 @@ export function TablePagination({ data }: TablePaginationProps) {
     const visiblePages = getVisiblePages(data.links, data.current_page, data.last_page, 2);
 
     return (
-        <div className="flex justify-between gap-2 translate-y-2">
+        <div className="flex justify-between gap-2">
 
             {
                 data.prev_page_url &&

@@ -1,11 +1,11 @@
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { AppNotification, ImportReportNotificationPayload, User, type BreadcrumbItem as BreadcrumbItemType } from '@/types';
+import { AppNotification, User, type BreadcrumbItem as BreadcrumbItemType } from '@/types';
 import { ReactNode, useEffect, useState } from 'react';
 import { NavUser } from './nav-user';
 import SearchBar from './search-bar';
 import { TopNavUser } from './top-nav-user';
-import { Bell, MessageCircle, MessageSquare } from 'lucide-react';
+import { Bell, Briefcase, BriefcaseBusiness, Building2, HandHelping, Home, MessageCircle, MessageSquare, Network } from 'lucide-react';
 import { usePage } from '@inertiajs/react';
 import aulogo from "../../../public/assets/images/aulogo.png";
 import { cn } from '@/lib/utils';
@@ -16,14 +16,12 @@ import NotificationsListener from './notification-listener';
 
 export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbItemType[] }) {
 
-    const { props } = usePage<{ auth: { user: User }, notifications: AppNotification<ImportReportNotificationPayload>[] }>();
+    const { props } = usePage<{ auth: { user: User }, notifications: AppNotification<any>[] }>();
+    const isAlumni = props.auth.user.user_type === 'alumni';
     const isAdmin = props.auth.user.user_type === 'admin';
-    const [notifs, setNotifs] = useState(
-        props.notifications.map((notification) => ({
-            ...notification.data,
-            read_at: notification.read_at,
-        })),
-    );
+
+    const hasSidebar = ['admin', 'employee'].includes(props.auth.user.user_type);
+    const [notifs, setNotifs] = useState<AppNotification<any>[]>(props.notifications);
     const [newNotifsCount, setNewNotifsCount] = useState(0);
 
 
@@ -31,28 +29,43 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
         setNewNotifsCount(notifs.filter(n => n && n.read_at == null).length);
     }, [notifs]);
 
+    useEffect(() => {
+        setNotifs(props.notifications);
+    }, [props.notifications]);
+
 
     return (
         <header className={cn(
-            "flex bg-white rounded-lg shadow m-4 mb-0 justify-between h-16 shrink-0 items-center gap-2 border-b border-sidebar-border/50 px-3 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:px-4",
+            "flex bg-white rounded-lg shadow m-4 mb-0 justify-between h-16 shrink-0 items-center gap-2 border-b border-sidebar-border/50 px-3 transition-[width,height] ease-linear md:px-4",
             !isAdmin && "rounded-none m-0"
         )}>
 
-            <div className="flex items-center gap-2">
-                {!isAdmin ?
+            <div className="relative flex items-center gap-2">
+                {hasSidebar && <SidebarTrigger className="-ml-1" />}
+                {isAlumni ?
                     <>
-                        <div className="flex aspect-square size-12 items-center justify-center text-sidebar-primary-foreground">
+                        <div className="flex aspect-square size-10 items-center justify-center text-sidebar-primary-foreground">
                             <img src={aulogo} alt="aulumni logo" />
                         </div>
                         <div className="ml-1 grid flex-1 text-left text-sm">
-                            <span className="mb-0.5 truncate leading-tight font-semibold text-xl text-black">
-                                aulumni
-                            </span>
+                            <SearchBar classname="bg-muted" />
                         </div>
-                    </> : <SidebarTrigger className="-ml-1" />
+                    </> : null
                 }
                 <Breadcrumbs breadcrumbs={breadcrumbs} />
             </div>
+
+            {
+                isAlumni &&
+                <div className='absolute w-[33vw] left-[50%] -translate-x-[50%] flex gap-2'>
+                    <div className='flex-1 cursor-pointer py-2 border-b-3 border-blue'><Home size={20} className='mx-auto text-blue' /></div>
+                    <div className='flex-1 cursor-pointer hover:bg-muted py-2 rounded-lg'><BriefcaseBusiness size={20} className='mx-auto' /></div>
+                    <div className='flex-1 cursor-pointer hover:bg-muted py-2 rounded-lg'><Network size={20} className='mx-auto' /></div>
+                    <div className='flex-1 cursor-pointer hover:bg-muted py-2 rounded-lg'><Building2 size={20} className='mx-auto' /></div>
+                </div>
+            }
+
+
             <div className='flex items-center justify-between gap-2'>
                 <div className='flex items-center justify-center w-10 h-10 rounded-full bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white'>
                     <MessageSquare size={18} className='mt-0.25' />

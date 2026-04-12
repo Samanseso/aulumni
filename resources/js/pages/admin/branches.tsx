@@ -14,6 +14,10 @@ import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
+        title: 'Utilities',
+        href: "",
+    },
+    {
         title: 'Branch',
         href: index().url,
     },
@@ -160,7 +164,7 @@ export default function Branches() {
 
                 <BranchTable branches={props.branches.data ?? []} onEdit={openEdit} />
 
-                <div className="flex w-full h-10 justify-between items-end px-5 mt-2">
+                <div className="flex w-full h-10 justify-between items-center px-5 mt-4 mt-2">
                     <p className="text-sm text-gray-600">
                         {props.branches.total > 0
                             ? `Showing ${props.branches.from} to ${props.branches.to} out of ${props.branches.total} entries`

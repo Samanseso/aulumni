@@ -24,12 +24,9 @@ class AdminImport implements ToCollection, WithHeadingRow
             if ($name === '' || $email === '') {
                 continue;
             }
-
-            $password = (string) ($row['password'] ?? '');
-
-            if ($password === '') {
-                $password = Str::slug($name, '').'@'.date('Y');
-            }
+            
+            $password = Str::slug($name, '').'@'.date('Y');
+            
 
             app(CreateNewUser::class)->create([
                 'name' => $name,

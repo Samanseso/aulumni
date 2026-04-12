@@ -18,7 +18,7 @@ const StatusTag = ({ text }: { text: string }) => {
             case "WAITING":
             case "rejected":
             case "CANCELLED": return "#e98780ff";   
-            default: return "#e6e6e6";
+            default: return "#84b8ef";
         }
     }
     

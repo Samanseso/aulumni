@@ -151,7 +151,7 @@ const SortCollapsible = ({ columns, setOrRemoveFilter }: SortCollapsibleProps) =
                 </table>
 
                 <Button className="w-full mt-3" onClick={handleSubmit}>
-                    GO
+                    Apply
                 </Button>
             </DropdownMenuContent>
         </DropdownMenu>

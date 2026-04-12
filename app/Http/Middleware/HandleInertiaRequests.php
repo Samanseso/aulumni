@@ -48,6 +48,9 @@ class HandleInertiaRequests extends Middleware
                 'title' => fn () => $request->session()->get('modal_title'),
                 'message' => fn () => $request->session()->get('modal_message')
             ],
+            'signals' => [
+                'deselect' => fn () => $request->session()->get('signal_deselect'),
+            ],
             'notifications' => $request->user()
                 ? $request->user()->notifications()->latest()->get()
                 : [],

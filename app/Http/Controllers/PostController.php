@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Concerns\PasswordValidationRules;
 use App\Events\PostsUpdated;
 use App\Http\Requests\PostRequest;
 use App\Models\Post;
@@ -18,6 +19,8 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class PostController extends Controller
 {
+    use PasswordValidationRules;
+
     public function index(Request $request)
     {
         $validated = $request->validate([
@@ -176,6 +179,65 @@ class PostController extends Controller
             'modal_action'  => 'update',
             'modal_title'   => 'Rejection successful!',
             'modal_message' => 'Post was rejected successfully.',
+        ]);
+    }
+
+    public function bulk_approve(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'post_ids' => ['required', 'array', 'min:1'],
+            'post_ids.*' => ['integer', 'exists:posts,post_id'],
+        ]);
+
+        Post::query()
+            ->whereIn('post_id', $validated['post_ids'])
+            ->update(['status' => 'approved']);
+
+        return back()->with([
+            'modal_status'  => 'success',
+            'modal_action'  => 'update',
+            'modal_title'   => 'Approval successful!',
+            'modal_message' => 'Selected job posts were approved successfully.',
+            'signal_deselect' => (string) Str::uuid(),
+        ]);
+    }
+
+    public function bulk_reject(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'post_ids' => ['required', 'array', 'min:1'],
+            'post_ids.*' => ['integer', 'exists:posts,post_id'],
+        ]);
+
+        Post::query()
+            ->whereIn('post_id', $validated['post_ids'])
+            ->update(['status' => 'rejected']);
+
+        return back()->with([
+            'modal_status'  => 'success',
+            'modal_action'  => 'update',
+            'modal_title'   => 'Rejection successful!',
+            'modal_message' => 'Selected job posts were rejected successfully.',
+            'signal_deselect' => (string) Str::uuid(),
+        ]);
+    }
+
+    public function bulk_delete(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'password' => $this->currentPasswordRules(),
+            'post_ids' => ['required', 'array', 'min:1'],
+            'post_ids.*' => ['integer', 'exists:posts,post_id'],
+        ]);
+
+        Post::destroy($validated['post_ids']);
+
+        return back()->with([
+            'modal_status'  => 'success',
+            'modal_action'  => 'delete',
+            'modal_title'   => 'Deletion successful!',
+            'modal_message' => 'Selected job posts were deleted successfully.',
+            'signal_deselect' => (string) Str::uuid(),
         ]);
     }
 

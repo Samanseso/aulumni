@@ -1,87 +1,128 @@
-import type { Alumni } from '@/types'
-
-import { Link2, SquareArrowOutUpRight } from "lucide-react";
-import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
-import Heading from '@/components/heading';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { PropsWithChildren, useEffect, useState } from 'react';
 import { Link } from '@inertiajs/react';
-import { show_academic, show_contact, show_employment, show_personal, show } from '@/routes/alumni';
+import { BriefcaseBusiness, Building2, Copy, ExternalLink, GraduationCap } from 'lucide-react';
+import { PropsWithChildren, useState } from 'react';
+
+import Heading from '@/components/heading';
+import { Button } from '@/components/ui/button';
 import { useActiveUrl } from '@/hooks/use-active-url';
 import { cn } from '@/lib/utils';
+import type { Alumni } from '@/types';
 
-interface AlumniProfileLayout extends PropsWithChildren {
-    alumni: {
-        alumni_id: string;
-        user_name: string;
-        name: string;
-        email: string;
-    };
+interface AlumniProfileLayoutProps extends PropsWithChildren {
+    alumni: Alumni;
 }
 
-const tabs = [
-    { text: 'All', url: show, value: "all" },
-    { text: 'Personal', url: show_personal, value: "personal" },
-    { text: 'Academic', url: show_academic, value: "academic" },
-    { text: 'Contact', url: show_contact, value: "contact" },
-    { text: 'Employment', url: show_employment, value: "employment" },
-]
-
-
-const AlumniProfileLayout = ({ alumni, children }: AlumniProfileLayout) => {
-
+export default function AlumniProfileLayout({ alumni, children }: AlumniProfileLayoutProps) {
     const { urlIsActive } = useActiveUrl();
+    const [copied, setCopied] = useState(false);
+
+    const publicProfileUrl = `/${alumni.user_name}`;
+    const tabs = [
+        { text: 'All', href: `/user/alumni/${alumni.user_name}` },
+        { text: 'Personal', href: `/user/alumni/${alumni.user_name}/personal` },
+        { text: 'Academic', href: `/user/alumni/${alumni.user_name}/academic` },
+        { text: 'Contact', href: `/user/alumni/${alumni.user_name}/contact` },
+        { text: 'Employment', href: `/user/alumni/${alumni.user_name}/employment` },
+    ];
+
+    const quickFacts = [
+        {
+            label: 'Education',
+            value: alumni.academic_details?.school_level,
+            icon: <GraduationCap className="size-4" />,
+        },
+        {
+            label: 'Branch',
+            value: alumni.academic_details?.branch,
+            icon: <Building2 className="size-4" />,
+        },
+        {
+            label: 'Current work',
+            value: alumni.employment_details?.current_work_company,
+            icon: <BriefcaseBusiness className="size-4" />,
+        },
+    ].filter((item) => item.value);
+
+    const handleCopy = async () => {
+        await navigator.clipboard.writeText(window.location.origin + publicProfileUrl);
+        setCopied(true);
+        window.setTimeout(() => setCopied(false), 1800);
+    };
 
     return (
-        <div className='m-4 p-5 relative bg-white shadow rounded-lg h-[100%] overflow-hidden'>
-            <div className='max-w-4xl mx-auto mb-3'>
-                <div className="mb-8">
-                    <div className="mb-3">
-                        <Skeleton className="w-full h-70" />
-                        <div className="absolute border rounded-full ms-3 -translate-y-[50%] z-10">
-                            <img className="h-35 w-35 rounded-full border-3 border-white" src="/assets/images/default-profile.png" alt="My Image" />
+        <div className="m-4 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+            <div className="h-56 bg-slate-200" />
+
+            <div className="mx-auto max-w-5xl px-6 pb-8">
+                <div className="-mt-14 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="w-full flex flex-col gap-5 sm:flex-row sm:items-end">
+                        <div className="rounded-full border-4 border-white bg-white shadow-xl">
+                            <img
+                                className="h-42 w-42 rounded-full object-cover"
+                                src="/assets/images/default-profile.png"
+                                alt={`${alumni.name} profile`}
+                            />
                         </div>
+                        
 
+                        <div className='flex-1 flex justify-between'>
+                            <div className="pb-1">
+                                <Heading
+                                    title={alumni.name}
+                                    description={`${alumni.email} | @${alumni.user_name}`}
+                                    classname="mb-0"
+                                />
+
+                                {quickFacts.length > 0 && (
+                                    <div className="mt-4 flex flex-wrap gap-2">
+                                        {quickFacts.map((fact) => (
+                                            <div
+                                                key={fact.label}
+                                                className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-600"
+                                            >
+                                                {fact.icon}
+                                                <span>{fact.value}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                            <div className="flex flex-wrap gap-3">
+                                <Button variant="outline" onClick={handleCopy}>
+                                    <Copy className="size-4" />
+                                    {copied ? 'Copied' : 'Copy public link'}
+                                </Button>
+                                <Button asChild>
+                                    <Link href={publicProfileUrl}>
+                                        <ExternalLink className="size-4" />
+                                        View public profile
+                                    </Link>
+                                </Button>
+                            </div>
+                        </div>
                     </div>
+                </div>
 
-                    <div className="flex justify-end gap-2 me-3">
-                        <Button variant="outline"><Link2 />Copy Link</Button>
-                        <Button variant="outline"><SquareArrowOutUpRight />View Profile</Button>
+                <div className="mt-8 border-t border-slate-100 pt-3">
+                    <div className="flex flex-wrap gap-2 mb-5">
+                        {tabs.map((tab) => (
+                            <Link
+                                key={tab.text}
+                                href={tab.href}
+                                className={cn(
+                                    'rounded-full px-4 py-2 text-sm font-medium transition',
+                                    urlIsActive(tab.href)
+                                        ? 'bg-blue text-white shadow-sm'
+                                        : 'text-slate-600 hover:bg-slate-100'
+                                )}
+                            >
+                                {tab.text}
+                            </Link>
+                        ))}
                     </div>
+                    {children}
                 </div>
-
-                <div className="p-3">
-                    <Heading
-                        title={`${alumni.name}`}
-                        description={alumni.email}
-                        classname="mb-0"
-                    />
-
-                </div>
-            </div>
-
-            <div className='max-w-4xl mx-auto'>
-                <div className='flex mb-5 border-t-1 pt-1'>
-                    {tabs.map(tab => (
-                        <Link key={tab.value} href={tab.url(alumni.user_name)}
-                            className={cn(
-                                "py-2 px-4",
-                                urlIsActive(tab.url(alumni.user_name).url) ? "border-b-2 border-blue text-blue":
-                                "rounded-md hover:bg-muted"
-                            )}
-                            
-                        >
-                            {tab.text}
-                        </Link>
-                    ))}
-                </div>
-                {children}
             </div>
         </div>
-
-
-    )
+    );
 }
-
-export default AlumniProfileLayout

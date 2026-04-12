@@ -10,7 +10,7 @@ const PostActionComment = ({ post_id }: { post_id: number }) => {
     return (
         <>
             {postViewId && <PostModal post_id={post_id} setViewPostId={setViewPostId} />}
-            <Link href={""}>
+            <Link className='flex-1 hover:bg-mute' href={""} as={"div"}>
                 <Button variant="ghost" className="flex-1 hover:bg-muted" onClick={() => { }}>
                     <MessageCircle className="size-4" /> Comment
                 </Button>

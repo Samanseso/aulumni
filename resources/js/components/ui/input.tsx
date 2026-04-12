@@ -60,7 +60,7 @@ export function Input({
         data-slot="input"
         className={cn(
           "w-full bg-transparent outline-none text-base md:text-sm",
-          "placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
+          "placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground file:outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
         )}
         onChange={onChange}
         {...props}

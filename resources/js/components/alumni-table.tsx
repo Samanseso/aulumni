@@ -47,7 +47,7 @@ export function AlumniTable({ alumni, columns, selectedData, setSelectedData }: 
     }
 
     return (
-        <div className="table-fixed w-full h-full  max-h-[63vh] overflow-auto [&::-webkit-scrollbar]:w-0">
+        <div className="table-fixed w-full h-full  max-h-[63vh] overflow-auto [&::-webkit-scrollbar]:w-0 border-b">
             {/* {viewAlumni && <AlumniModal alumni_id={viewAlumni} setViewAlumni={setViewAlumni} />} */}
 
             <table className="w-full">

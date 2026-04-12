@@ -12,6 +12,10 @@ import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
+        title: 'Utilities',
+        href: '',
+    },
+    {
         title: 'Batch',
         href: '/utility/batch',
     },
@@ -87,9 +91,8 @@ export default function Batches() {
 
             {formOpen && <BatchFormModal batch={editingBatch} onClose={closeForm} />}
 
-            <div className="m-4 overflow-hidden rounded-lg bg-white shadow">
-                <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
-                    <p className="text-xl font-bold text-gray-600">Batch Directory</p>
+            <div className="m-4 h-[100%] overflow-hidden rounded-lg bg-white shadow">
+                <div className="flex flex-wrap items-center justify-between gap-3 py-3 px-5 rounded-t-lg mt-3 mb-3">
 
                     <div className="flex flex-wrap items-center gap-2">
                         <Input
@@ -122,23 +125,22 @@ export default function Batches() {
                             }}
                             className="w-32 gap-2"
                         />
-
-                        <Button onClick={openCreate}>
-                            <Plus /> Add Batch
-                        </Button>
                     </div>
+                    <Button onClick={openCreate}>
+                        <Plus /> Add Batch
+                    </Button>
                 </div>
 
                 <BatchTable batches={props.batches.data ?? []} onEdit={openEdit} />
 
-                <div className="flex flex-wrap items-center justify-between gap-3 border-t px-6 py-4">
+                <div className="flex w-full h-10 justify-between items-center px-5 mt-4 mt-2">
                     <p className="text-sm text-gray-600">
                         {props.batches.total > 0
                             ? `Showing ${props.batches.from} to ${props.batches.to} out of ${props.batches.total} entries`
                             : 'No batch records available.'}
                     </p>
 
-                    {props.batches.last_page > 1 && <TablePagination data={props.batches} />}
+                    {props.batches.last_page > 0 && <TablePagination data={props.batches} />}
                 </div>
             </div>
         </AppLayout>

@@ -26,6 +26,7 @@ export interface SharedData {
 	name: string;
 	auth: Auth;
 	sidebarOpen: boolean;
+	signals?: OperationSignals;
 	[key: string]: unknown;
 }
 
@@ -270,7 +271,7 @@ export interface Post {
 }
 
 
-interface CompletePost extends Post {
+export interface CompletePost extends Post {
 	attachments: Attachment[];
 	comments?: Comment[];
 	liked_by_user: boolean;
@@ -298,10 +299,61 @@ export type GroupedPost = {
 	[key: string]: PostRow[];
 }
 
+export interface Announcement {
+	announcement_id: number;
+	announcement_uuid: string;
+	user_id: number;
+	title: string;
+	event_type: 'Seminar' | 'Workshop' | 'Webinar' | 'Career Fair' | 'Alumni Gathering' | 'General Event';
+	organizer?: string | null;
+	venue: string;
+	starts_at: string;
+	ends_at?: string | null;
+	description: string;
+	registration_link?: string | null;
+	privacy: 'public' | 'friends' | 'only_me';
+	status: string;
+	created_at: string;
+	updated_at: string;
+}
+
+export interface CompleteAnnouncement extends Announcement {
+	attachments: AnnouncementAttachment[];
+	author: { user_id: number; name?: string; user_name?: string; email?: string };
+}
+
+export type AnnouncementRow = {
+	announcement_id: number;
+	announcement_uuid: string;
+	user_id: number;
+	title: string;
+	event_type: Announcement['event_type'];
+	venue: string;
+	starts_at: string;
+	status: string;
+	created_at: string;
+	updated_at: string;
+	author: { user_id: number; name?: string; user_name?: string; email?: string };
+	attachments?: AnnouncementAttachment[];
+};
+
+export type GroupedAnnouncement = {
+	[key: string]: AnnouncementRow[];
+}
+
 
 export interface Attachment {
 	attachment_id: number;
 	post_id: number;
+	url: string;
+	type: 'image' | 'video' | 'file';
+	created_at: string;
+	updated_at: string;
+}
+
+export interface AnnouncementAttachment {
+	announcement_attachment_id: number;
+	announcement_id: number;
 	url: string;
 	type: 'image' | 'video' | 'file';
 	created_at: string;
@@ -408,28 +460,140 @@ export interface ImportReportNotificationPayload {
   title: string;
   message: string;
   report: ImportReport;
-  read_at: string | null;
   timestamp: string;
 }
 
+export interface PostLikedNotificationPayload {
+  title: string;
+  message: string;
+  actor_name: string;
+  actor_user_name?: string | null;
+  post_id: number;
+  job_title: string;
+  timestamp: string;
+  action_url?: string | null;
+}
+
+export interface EmploymentSurveySubmittedNotificationPayload {
+  title: string;
+  message: string;
+  alumni_name: string;
+  alumni_user_name?: string | null;
+  current_employed?: string | null;
+  current_work_company?: string | null;
+  timestamp: string;
+  action_url?: string | null;
+}
+
+export interface ReportSummaryMetric {
+    label: string;
+    value: number | string;
+    helper: string;
+}
+
+export interface ReportDatasetColumn {
+    key: string;
+    label: string;
+}
+
+export interface ReportDatasetRow {
+    [key: string]: string | number | null;
+}
+
+export interface ReportDataset {
+    title: string;
+    description: string;
+    columns: ReportDatasetColumn[];
+    rows: ReportDatasetRow[];
+}
+
+export interface ReportDatasetGroup {
+    title: string;
+    description: string;
+    datasets: ReportDataset[];
+}
+
+export interface OperationSignals {
+    deselect?: string | null;
+}
+
+export interface DashboardOverviewCard {
+    id: string;
+    label: string;
+    value: number | string;
+    helper: string;
+    trend_label: string;
+    trend_value: string;
+    sparkline: Array<{
+        label: string;
+        value: number;
+    }>;
+}
+
+export interface DashboardChartSeries {
+    key: string;
+    label: string;
+    color: string;
+}
+
+export interface DashboardChart {
+    id: string;
+    title: string;
+    description: string;
+    type: 'area' | 'bar' | 'pie' | 'line' | 'radar';
+    x_key?: string;
+    name_key?: string;
+    value_key?: string;
+    layout?: 'horizontal' | 'vertical';
+    insight: string;
+    series: DashboardChartSeries[];
+    data: Record<string, string | number | null>[];
+}
+
+export interface DashboardInsight {
+    title: string;
+    value: string | number;
+    description: string;
+    tone: 'blue' | 'red';
+}
+
+export interface SystemLogEntry {
+    id: number;
+    user_id?: number | null;
+    user_name?: string | null;
+    user_type?: string | null;
+    action: string;
+    resource: string;
+    route_name?: string | null;
+    method?: string | null;
+    url?: string | null;
+    ip_address?: string | null;
+    summary: string;
+    metadata?: Record<string, unknown> | null;
+    created_at: string;
+    updated_at: string;
+}
+
 export interface UserMentionPayload {
-  user: string
+  title: string
   message: string
+  user: string
+  timestamp: string
+  action_url?: string | null
 }
 
 export type NotificationPayloadMap = {
   'App\\Notifications\\ImportReportNotification': ImportReportNotificationPayload
+  'App\\Notifications\\PostLikedNotification': PostLikedNotificationPayload
+  'App\\Notifications\\EmploymentSurveySubmittedNotification': EmploymentSurveySubmittedNotificationPayload
   'App\\Notifications\\UserMentionNotification': UserMentionPayload
 }
 
-
-
-
-export interface AppNotification<T> { 
+export interface AppNotification<T = unknown> { 
 	id: string;
 	type: string;
 	data: T;
 	read_at: string | null;
-	created_at: string;
-	updated_at: string;
+	created_at?: string | null;
+	updated_at?: string | null;
 }

@@ -10,21 +10,19 @@ interface CourseTableProps {
 }
 
 const columns = [
-    "Course ID",
-    "Branch",
-    "Department",
     "Name",
+    "Branch",
     "Code"
 ]
 
 export default function CourseTable({ courses }: CourseTableProps) {
     return (
-        <div className="table-fixed w-full h-full max-h-[63vh] overflow-auto [&::-webkit-scrollbar]:w-0">
+        <div className="table-fixed w-full h-full max-h-[63vh] overflow-auto [&::-webkit-scrollbar]:w-0 border-b">
             <table className="w-full">
                 <thead>
                     <tr className="border-t">
                         <th className="rounded-l-md ps-7 pe-2">
-                            <Checkbox/>
+                            <Checkbox />
                         </th>
                         {columns.map((col) => (
                             <th key={col} className="px-4 py-2 text-left text-xs text-gray-500 font-semibold whitespace-nowrap uppercase">
@@ -42,12 +40,13 @@ export default function CourseTable({ courses }: CourseTableProps) {
                                     <Checkbox />
                                 </div>
                             </td>
-                            <td className="px-6 py-2 text-sm">{course.course_id}</td>
-                            <td className="px-4 py-2 text-sm">{course.branch?.name || course.department?.branch?.name || '-'}</td>
-                            <td className="px-4 py-2 text-sm">{course.department?.name || '-'}</td>
-                            <td className="px-4 py-2 text-sm font-semibold">{course.name}</td>
+                            <td className="px-4 py-2 text-sm max-w-55">
+                                <span className="font-bold">{course.name}</span> <br />
+                                <span className="text-xs text-gray-500">{course.department?.name || '-'}</span> <br />
+                            </td>
+                            <td className="px-4 py-2 text-sm">{course.branch?.name || '-'}</td>
                             <td className="px-4 py-2 text-sm">{course.code || '-'}</td>
-                             <td data-label="Actions" className="ps-2 pe-7 py-0.25 text-sm">
+                            <td data-label="Actions" className="ps-2 pe-7 py-0.25 text-sm">
                                 <div className="flex items-center lg:justify-center space-x-1">
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
@@ -73,7 +72,7 @@ export default function CourseTable({ courses }: CourseTableProps) {
                                 </div>
                             </td>
                         </tr>
-                        
+
                     ))}
                 </tbody>
             </table>

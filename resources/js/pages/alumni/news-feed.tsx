@@ -1,3 +1,7 @@
+import { Head, Link, usePage } from '@inertiajs/react'
+import { Bell, BriefcaseBusiness, Building2, CalendarDays, Globe, GraduationCap, Image, MapPin, Sparkles, UserCircle2 } from 'lucide-react'
+import { useState } from 'react'
+
 import PostCreateModal from '@/components/post-create-modal'
 import PostItem from '@/components/post-item'
 import { Button } from '@/components/ui/button'
@@ -5,56 +9,258 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import UserAvatar from '@/components/user-avatar'
 import AppLayout from '@/layouts/app-layout'
-import { CompletePost, User } from '@/types'
-import { usePage } from '@inertiajs/react'
-import { Globe, Image, BriefcaseBusiness } from 'lucide-react'
-import { useState } from 'react'
+import { Alumni, CompleteAnnouncement, CompletePost, User } from '@/types'
+import { PlaceholderPattern } from '@/components/ui/placeholder-pattern'
 
 const NewsFeed = () => {
-    const { props } = usePage<{ posts: CompletePost[], auth: { user: User } }>();
+    const { props } = usePage<{
+        posts: CompletePost[]
+        announcements: CompleteAnnouncement[]
+        auth: { user: User }
+        viewerProfile: Alumni | null
+        feedSummary: {
+            profile_completion: number
+            approved_posts: number
+            approved_announcements: number
+            upcoming_events: number
+            companies_hiring: number
+            unread_notifications: number
+        }
+    }>()
 
-    const [createPostModal, setCreatePostModal] = useState(false);
-
+    const [createPostModal, setCreatePostModal] = useState(false)
+    const profileUrl = `/${props.auth.user.user_name}`
 
     return (
         <AppLayout>
-            <div className='mt-3 w-full lg:max-w-xl mx-auto'>
+            <Head title="Home" />
+
+            <div className="flex justify-center gap-6 pb-0">
                 {createPostModal && <PostCreateModal setCreatePostModal={setCreatePostModal} />}
-                <div className='w-full p-3 pb-1 shadow bg-white lg:rounded-lg mb-3'>
-                    <div className='flex gap-2 items-center mb-1'>
-                        <UserAvatar user={props.auth.user} />
-                        <Input
-                            onClick={() => setCreatePostModal(true)}
-                            readOnly
-                            endIcon={<BriefcaseBusiness size={20} />}
-                            placeholder='Post a job opportunity...'
-                            className='border-0 bg-muted rounded-full'
-                        />
+
+                <aside className="hidden lg:block min-w-[20rem]">
+                    <div className="sticky pt-4 top-4 space-y-4">
+                        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                            <div className="h-25 bg-[radial-gradient(circle_at_top_left,_rgba(1,78,168,0.24),_transparent_38%),linear-gradient(135deg,#014ea8,#3d7bd2)]" />
+                            <div className="px-5 pb-5">
+                                <div className="-mt-8 flex items-end gap-3">
+                                    <div className="rounded-full border-4 border-white bg-white shadow-md">
+                                        <img
+                                            className="h-20 w-20 rounded-full object-cover"
+                                            src="/assets/images/default-profile.png"
+                                            alt={props.auth.user.name}
+                                        />
+                                    </div>
+                                    <div className="pb-1">
+                                        <p className="text-base font-semibold text-slate-900">{props.auth.user.name}</p>
+                                        <p className="text-sm text-slate-500">@{props.auth.user.user_name}</p>
+                                    </div>
+                                </div>
+
+                                <div className="mt-5 space-y-3">
+                                    <div className="rounded-2xl py-3">
+                                        <div className="flex items-center justify-between text-sm">
+                                            <span className="font-medium text-slate-700">Profile completion</span>
+                                            <span className="font-semibold text-blue-700">{props.feedSummary.profile_completion}%</span>
+                                        </div>
+                                        <div className="mt-3 h-2 rounded-full bg-slate-200">
+                                            <div
+                                                className="h-2 rounded-full bg-blue transition-all"
+                                                style={{ width: `${props.feedSummary.profile_completion}%` }}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid gap-2 text-sm text-slate-600 mb-5">
+                                        <div className='flex items-center gap-3'>
+                                            <GraduationCap className='size-5' />
+                                            <p>{props.viewerProfile?.academic_details?.school_level ?? 'Level not set yet'}</p>
+                                        </div>
+
+                                        <div className='flex items-center gap-3'>
+                                            <Building2 className='size-4 mx-0.5' />
+                                            <p>{props.viewerProfile?.academic_details?.branch ?? 'Branch not set yet'}</p>
+                                        </div>
+                                        <div className='flex items-center gap-3'>
+                                            <BriefcaseBusiness className='size-4.5 mx-0.25' />
+                                            <p>{props.viewerProfile?.employment_details?.current_work_company ?? 'Current company not added yet'}</p>
+                                        </div>
+                                        <div className='flex items-center gap-3'>
+                                            <CalendarDays className='size-4.5 mx-0.25' />
+                                            <p>{props.feedSummary.upcoming_events} upcoming event{props.feedSummary.upcoming_events === 1 ? '' : 's'}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-2">
+                                        <Button asChild className="flex-1">
+                                            <Link href={profileUrl}>View profile</Link>
+                                        </Button>
+                                        <Button asChild variant="outline" className="flex-1">
+                                            <Link href="/notifications">Notifications</Link>
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div className='flex items-center justify-between ps-12.5'>
-                        <div className='flex items-center gap-4 text-muted-foreground'>
-                            <Button variant="ghost" className='!px-0 text-sm'><Image />Image</Button>
+
+                    <div className="mt-3 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <div className="flex items-center gap-2 text-slate-900">
+                            <p className="text-md font-semibold">Important actions</p>
                         </div>
 
-                        <div className='flex items-center'>
-                            <Globe size={20} className='text-muted-foreground' />
-                            <Select defaultValue='public'>
-                                <SelectTrigger className='border-0 shadow-none px-1.5 outline-0'>
-                                    <SelectValue placeholder="privacy" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value='public'>Public</SelectItem>
-                                </SelectContent>
-                            </Select>
+                        <div className="mt-4 grid gap-2">
+                            <Button asChild variant="outline" className="justify-start">
+                                <Link href={profileUrl}>Two-Factor Authentication</Link>
+                            </Button>
+                            <Button asChild variant="outline" className="justify-start">
+                                <Link href="/survey/employment">
+                                    <Bell className="size-4" />
+                                    Alumni survey
+                                </Link>
+                            </Button>
                         </div>
                     </div>
-                </div>
+                </aside>
 
-                <div className='w-full'>
-                    <div className='grid gap-3'>
-                        {props.posts.map(post => <div className='bg-white shadow lg:rounded-lg' key={post.post_uuid}><PostItem post={post} /></div>)}
+                <div className="w-full max-w-xl  pt-4 max-h-[calc(100vh-65px)] overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                    <div className="mb-4 overflow-hidden border border-slate-200 bg-white shadow-sm md:rounded-xl">
+                        <div className="p-4 pb-2">
+                            <div className="mb-2 flex items-center gap-2">
+                                <UserAvatar user={props.auth.user} />
+                                <Input
+                                    onClick={() => setCreatePostModal(true)}
+                                    readOnly
+                                    endIcon={<BriefcaseBusiness size={20} />}
+                                    placeholder="Share a job opportunity with the alumni network..."
+                                    className="rounded-full border-0 bg-muted"
+                                />
+                            </div>
+                            <div className="flex items-center justify-between ps-12.5">
+                                <div className="flex items-center gap-4 text-muted-foreground">
+                                    <Button variant="ghost" className="!px-0 text-sm"><Image />Image</Button>
+                                </div>
+
+                                <div className="flex items-center">
+                                    <Globe size={20} className="text-muted-foreground" />
+                                    <Select defaultValue="public">
+                                        <SelectTrigger className="border-0 px-1.5 shadow-none outline-0">
+                                            <SelectValue placeholder="privacy" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="public">Public</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid gap-4">
+                        {props.announcements.length > 0 && (
+                            <div className="overflow-hidden border border-slate-200 bg-white shadow-sm md:rounded-xl">
+                                <div className="border-b border-slate-200 px-4 py-4">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <div>
+                                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-red">Event Announcements</p>
+                                            <h2 className="mt-1 text-lg font-semibold text-slate-950">Upcoming events for alumni</h2>
+                                        </div>
+                                        <span className="rounded-full bg-blue/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-blue">
+                                            {props.feedSummary.approved_announcements} published
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="grid gap-3 p-4">
+                                    {props.announcements.slice(0, 3).map((announcement) => {
+                                        const previewImage = announcement.attachments?.find((attachment) => attachment.type === "image");
+
+                                        return (
+                                            <div key={announcement.announcement_uuid} className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+                                                <div className="grid gap-4 md:grid-cols-[1.2fr_0.8fr]">
+                                                    <div className="p-4">
+                                                        <div className="mb-3 flex flex-wrap items-center gap-2">
+                                                            <span className="rounded-full bg-red/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-red">
+                                                                {announcement.event_type}
+                                                            </span>
+                                                            <span className="rounded-full bg-blue/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-blue">
+                                                                Event
+                                                            </span>
+                                                        </div>
+
+                                                        <h3 className="text-lg font-semibold text-slate-950">{announcement.title}</h3>
+                                                        <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-600">{announcement.description}</p>
+
+                                                        <div className="mt-4 grid gap-2 text-sm text-slate-600">
+                                                            <div className="flex items-center gap-2">
+                                                                <CalendarDays className="size-4 text-blue" />
+                                                                <span>{new Date(announcement.starts_at).toLocaleString()}</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                <MapPin className="size-4 text-red" />
+                                                                <span>{announcement.venue}</span>
+                                                            </div>
+                                                        </div>
+
+                                                        {announcement.registration_link && (
+                                                            <div className="mt-4">
+                                                                <a
+                                                                    href={announcement.registration_link}
+                                                                    target="_blank"
+                                                                    rel="noreferrer"
+                                                                    className="text-sm font-medium text-blue-700 underline-offset-4 hover:underline"
+                                                                >
+                                                                    Open registration link
+                                                                </a>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="min-h-56 bg-white">
+                                                        {previewImage ? (
+                                                            <img
+                                                                src={previewImage.url}
+                                                                alt={announcement.title}
+                                                                className="h-full w-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <div className="flex h-full items-center justify-center bg-[radial-gradient(circle_at_top_left,_rgba(1,78,168,0.16),_transparent_38%),linear-gradient(135deg,#ffffff,#eef4ff,#ffe8e6)] px-6 text-center text-sm font-medium text-slate-500">
+                                                                Event visual will appear here once an image is uploaded.
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+
+                        {props.posts.map((post) => (
+                            <div
+                                className="overflow-hidden border border-slate-200 bg-white shadow-sm md:rounded-xl"
+                                key={post.post_uuid}
+                            >
+                                <PostItem post={post} />
+                            </div>
+                        ))}
                     </div>
                 </div>
+                <aside className="hidden xl:block min-w-[20rem]">
+                    <div className="sticky pt-4 top-4 space-y-4">
+                        <div className='bg-white rounded-xl border border-slate-200 p-4 shadow-sm'>
+
+                            <div className="relative h-[74.5vh] rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                                <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                </aside>
             </div>
         </AppLayout>
     )

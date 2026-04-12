@@ -14,16 +14,16 @@ Route::middleware(['auth', 'role:admin'])->prefix('user')->group(function () {
     Route::get('alumni/{user_name}', [AlumniController::class, 'show'])->name('alumni.show');
 
     // Show personal
-    Route::get('alumni/{alumni}/personal', [AlumniController::class, 'show_personal'])->name('alumni.show_personal');
+    Route::get('alumni/{user_name}/personal', [AlumniController::class, 'show_personal'])->name('alumni.show_personal');
 
     // Show academic
-    Route::get('alumni/{alumni}/academic', [AlumniController::class, 'show_academic'])->name('alumni.show_academic');
+    Route::get('alumni/{user_name}/academic', [AlumniController::class, 'show_academic'])->name('alumni.show_academic');
 
     // Show personal
-    Route::get('alumni/{alumni}/contact', [AlumniController::class, 'show_contact'])->name('alumni.show_contact');
+    Route::get('alumni/{user_name}/contact', [AlumniController::class, 'show_contact'])->name('alumni.show_contact');
 
     // Show personal
-    Route::get('alumni/{alumni}/employment', [AlumniController::class, 'show_employment'])->name('alumni.show_employment');
+    Route::get('alumni/{user_name}/employment', [AlumniController::class, 'show_employment'])->name('alumni.show_employment');
 
     // Render multi-step alumni form
     Route::get('alumni/create/{step}', [AlumniController::class, 'step'])->name('alumni.step');

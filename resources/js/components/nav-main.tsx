@@ -11,6 +11,8 @@ import {
     University,
     BookMarked,
     LayoutPanelLeft,
+    Logs,
+    Megaphone,
 } from "lucide-react";
 import {
     SidebarGroup,
@@ -79,6 +81,20 @@ export function NavMain() {
 
 
             <SidebarGroupLabel className="mt-5">Content Management</SidebarGroupLabel>
+            <SidebarMenu>
+                <SidebarMenuItem>
+                    <SidebarMenuButton
+                        asChild
+                        isActive={urlIsActive("/content/announcement") || currentUrl.includes("/content/announcement")}
+                        tooltip={{ children: "Announcements" }}
+                    >
+                        <Link href={"/content/announcement"} prefetch>
+                            <Megaphone />
+                            <span>Announcements</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+            </SidebarMenu>
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton
@@ -193,6 +209,19 @@ export function NavMain() {
                         <Link href="/utility/course" prefetch>
                             <BookMarked />
                             <span>Course</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+
+                <SidebarMenuItem>
+                    <SidebarMenuButton
+                        asChild
+                        isActive={urlIsActive("/utility/system-logs")}
+                        tooltip={{ children: "System Logs" }}
+                    >
+                        <Link href="/utility/system-logs" prefetch>
+                            <Logs />
+                            <span>System Logs</span>
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>

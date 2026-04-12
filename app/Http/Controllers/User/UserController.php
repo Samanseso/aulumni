@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use App\Concerns\PasswordValidationRules;
 
@@ -41,37 +42,41 @@ class UserController extends Controller
 
     public function bulk_activate(Request $request)
     {
-        foreach ($request->all()["user_ids"] as $user_id) {
-            $user = User::find($user_id);
-            if ($user) {
-                $user->status = 'active';
-                $user->save();
-            }
-        }
+        $validated = $request->validate([
+            'user_ids' => ['required', 'array', 'min:1'],
+            'user_ids.*' => ['integer', 'exists:users,user_id'],
+        ]);
+
+        User::query()
+            ->whereIn('user_id', $validated['user_ids'])
+            ->update(['status' => 'active']);
 
         return back()->with([
             'modal_status' => "success",
             'modal_action' => "update",
             'modal_title' => "Activation successful!",
             'modal_message' => "Users were activated successfully.",
+            'signal_deselect' => (string) Str::uuid(),
         ]);
     }
 
     public function bulk_deactivate(Request $request)
     {
-        foreach ($request->all()["user_ids"] as $user_id) {
-            $user = User::find($user_id);
-            if ($user) {
-                $user->status = 'inactive';
-                $user->save();
-            }
-        }
+        $validated = $request->validate([
+            'user_ids' => ['required', 'array', 'min:1'],
+            'user_ids.*' => ['integer', 'exists:users,user_id'],
+        ]);
+
+        User::query()
+            ->whereIn('user_id', $validated['user_ids'])
+            ->update(['status' => 'inactive']);
 
         return back()->with([
             'modal_status' => "success",
             'modal_action' => "update",
             'modal_title' => "Deactivation successful!",
             'modal_message' => "Users were deactivated successfully.",
+            'signal_deselect' => (string) Str::uuid(),
         ]);
     }
 
@@ -100,24 +105,20 @@ class UserController extends Controller
     }
 
     public function bulk_delete(Request $request) {
-
-        //dd($request->all());
-        $request->validate([
-            'password' => $this->currentPasswordRules()
+        $validated = $request->validate([
+            'password' => $this->currentPasswordRules(),
+            'user_ids' => ['required', 'array', 'min:1'],
+            'user_ids.*' => ['integer', 'exists:users,user_id'],
         ]);
 
-        foreach ($request->all()["user_ids"] as $user_id) {
-            $user = User::find($user_id);
-            if ($user) {
-                User::destroy($user->user_id);
-            }
-        }
+        User::destroy($validated['user_ids']);
 
         return back()->with([
             'modal_status' => "success",
             'modal_action' => "update",
             'modal_title' => "Deletion successful!",
             'modal_message' => "Users were deleted successfully.",
+            'signal_deselect' => (string) Str::uuid(),
         ]);
     }
 }

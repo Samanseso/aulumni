@@ -219,3 +219,8 @@ input[type='number'] {
     /* optional: avoid layout shift when scrollbar appears */
     scrollbar-gutter: stable; /* reserves space (not overlay) */
 }
+
+input[type="file"]:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}

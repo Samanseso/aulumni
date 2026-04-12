@@ -39,14 +39,21 @@ export function Import({ open, setOpen, entityLabel, importAction }: AlumniImpor
                             <DialogDescription>
                                 Select an Excel or CSV file to import {entityLabel} data.
                             </DialogDescription>
+                            <div className="relative rounded-lg bg-blue/20 mt-4 h-35">
+                                <input
+                                    type="file"
+                                    name="file"
+                                    accept=".xlsx,.xls,.csv"
+                                    onChange={handleFileChange}
+                                    autoFocus={false}
+                                    className="h-full w-full rounded-lg border-2 border-blue border-dashed text-transparent cursor-pointer
+                                    focus:outline-none focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0"
+                                />
+                                <p className="absolute top-[50%] left-[49%] -translate-[50%]">
+                                    Select a file
+                                </p>
+                            </div>
 
-                            <Input
-                                type="file"
-                                name="file"
-                                accept=".xlsx,.xls,.csv"
-                                onChange={handleFileChange}
-                                className="block w-full mt-4 text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer focus:outline-none"
-                            />
                             {file && (
                                 <p className="mt-2 text-sm text-gray-600">Selected: {file.name}</p>
                             )}
@@ -57,7 +64,7 @@ export function Import({ open, setOpen, entityLabel, importAction }: AlumniImpor
                                         Cancel
                                     </Button>
                                 </DialogClose>
-                                <Button type="submit" disabled={processing}>
+                                <Button className="selected" type="submit" disabled={processing}>
                                     Upload
                                 </Button>
                             </DialogFooter>

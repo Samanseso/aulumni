@@ -1,9 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, FileClock, Folder, LayoutGrid, UserIcon, Wrench } from 'lucide-react';
-
-import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
-import { NavUser } from '@/components/nav-user';
 import {
     Sidebar,
     SidebarContent,
@@ -13,27 +9,20 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import type { User, NavItem } from '@/types';
+import type { User } from '@/types';
 import AppLogo from './app-logo';
 import { home } from '@/routes';
 import { NavAlumni } from './nav-alumni';
-
-
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
-    },
-];
+import { NavUser } from './nav-user';
 
 export function AppSidebar() {
+    const { props } = usePage<{ auth: { user: User } }>();
+    const isAdmin = props.auth.user.user_type === 'admin';
+    const isAlumni = props.auth.user.user_type === 'alumni';
 
+    if (isAlumni) {
+        return;
+    }
 
     return (
         <Sidebar collapsible="icon" variant="inset" className=''>
@@ -50,13 +39,9 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent> 
-                <NavMain />
+                {isAdmin && <NavMain />}
+                {isAlumni && <NavAlumni />}
             </SidebarContent>
-
-            {/* <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
-                <NavUser />
-            </SidebarFooter> */}
         </Sidebar>
     );
 }

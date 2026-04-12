@@ -15,7 +15,7 @@ export default function CreateAlumniLayout({ children }: PropsWithChildren) {
     }
 
     return (
-        <div className="mx-4 my-6 bg-white shadow rounded-lg">
+        <div className="mx-4 my-4 bg-white shadow rounded-lg">
             <CreateAlumniStepper step={props.step} />
             <div className="">
                {children}

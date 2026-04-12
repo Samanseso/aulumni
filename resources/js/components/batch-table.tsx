@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Batch } from '@/types';
 import { EllipsisVertical, PenBox, Trash } from 'lucide-react';
+import { Checkbox } from './ui/checkbox';
 
 interface BatchTableProps {
     batches: Batch[];
@@ -13,10 +14,13 @@ export default function BatchTable({ batches, onEdit }: BatchTableProps) {
     const { confirmActionContentCreateModal } = useConfirmAction();
 
     return (
-        <div className="w-full overflow-x-auto">
+        <div className="table-fixed w-full h-full max-h-[63vh] overflow-auto [&::-webkit-scrollbar]:w-0 border-b">
             <table className="w-full">
                 <thead>
                     <tr className="border-t">
+                        <th className="rounded-l-md ps-7 pe-2">
+                            <Checkbox className="size-5 mt-1.25 cursor-pointer" />
+                        </th>
                         <th className="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-500">Year</th>
                         <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Name</th>
                         <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Alumni</th>
@@ -34,6 +38,11 @@ export default function BatchTable({ batches, onEdit }: BatchTableProps) {
 
                     {batches.map((batch, index) => (
                         <tr key={batch.year} className={`border-t border-t-gray-300 ${index % 2 === 0 ? 'bg-stone-100' : ''}`}>
+                            <td className="ps-7 pe-2">
+                                <div className="flex items-center justify-center">
+                                    <Checkbox className="size-5 cursor-pointer bg-white" />
+                                </div>
+                            </td>
                             <td className="px-6 py-3 text-sm font-semibold">{batch.year}</td>
                             <td className="px-4 py-3 text-sm">{batch.name}</td>
                             <td className="px-4 py-3 text-sm">{batch.alumni_count ?? 0}</td>

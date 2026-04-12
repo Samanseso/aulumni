@@ -1,5 +1,5 @@
 import AppLayout from "@/layouts/app-layout";
-import { BreadcrumbItem, Pagination, Alumni, AlumniRow, Course, Batch, ColumnType, Branch } from "@/types";
+import { BreadcrumbItem, Pagination, Alumni, AlumniRow, Course, Batch, ColumnType, Branch, OperationSignals } from "@/types";
 import { router, usePage } from "@inertiajs/react";
 import { Button } from "./ui/button";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -21,6 +21,7 @@ import NotificationsListener from "./notification-listener";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import AlumniFilter from "./alumni-filter";
 import AlumniController from "@/actions/App/Http/Controllers/User/AlumniController";
+import BulkSelectionToolbar from "./bulk-selection-toolbar";
 
 const columns = [
     'Alumni ID',
@@ -42,7 +43,7 @@ const sortableColumns: ColumnType[] = [
 
 
 export default function AlumniList() {
-    const { props } = usePage<{ alumni: Pagination<AlumniRow[]>, branches: Branch[], courses: Course[], batches: Batch[] }>();
+    const { props } = usePage<{ alumni: Pagination<AlumniRow[]>, branches: Branch[], courses: Course[], batches: Batch[], signals?: OperationSignals }>();
     const [alumni, setAlumni] = useState<AlumniRow[]>(props.alumni.data);
     const [rowsInput, setRowsInput] = useState(props.alumni.per_page.toString() ?? 10);
     const [searchInput, setSearchInput] = useState('');
@@ -68,6 +69,12 @@ export default function AlumniList() {
         setOpen(false);
         setAlumni(props.alumni.data);
     }, [props.alumni]);
+
+    useEffect(() => {
+        if (props.signals?.deselect) {
+            setSelectedData([]);
+        }
+    }, [props.signals?.deselect]);
 
     const applyFilters = useCallback((nextFilters: Filter[]) => {
         sessionStorage.setItem("filters", JSON.stringify(nextFilters.filter((f => f.property !== "page"))));
@@ -148,56 +155,53 @@ export default function AlumniList() {
                 <div className="flex items-center gap-2">
 
                     {selectedData.length > 0 ?
-                        <div className="flex pe-2 bg-gray-100 rounded-full">
-                            <div className="flex items-center me-2">
-                                <Button variant="ghost" size="icon" className="rounded-full hover:bg-gray-300" onClick={() => setSelectedData([])}>
-                                    <X size={18} />
-                                </Button>
+                        <BulkSelectionToolbar
+                            count={selectedData.length}
+                            onClear={() => setSelectedData([])}
+                            actions={[
+                                {
+                                    label: "Activate",
+                                    icon: BadgeCheck,
+                                    iconClassName: "text-green-500",
+                                    onClick: () => confirmActionContentCreateModal({
+                                        url: bulk_activate(),
+                                        message: "Are you sure you want to activate this accounts",
+                                        action: "Activate",
+                                        data: { user_ids: selectedData }
 
-                                <p className="text-sm text-muted-foreground">
-                                    {selectedData.length} selected
-                                </p>
-                            </div>
+                                    }),
+                                },
+                                {
+                                    label: "Deactivate",
+                                    icon: Ban,
+                                    iconClassName: "text-orange-500",
+                                    onClick: () => confirmActionContentCreateModal({
+                                        url: bulk_deactivate(),
+                                        message: "Are you sure you want to deactivate this accounts",
+                                        action: "Deactivate",
+                                        data: { user_ids: selectedData }
 
-                            <Button variant="ghost" className="rounded-full hover:bg-gray-300" onClick={() => confirmActionContentCreateModal({
-                                url: bulk_activate(),
-                                message: "Are you sure you want to activate this accounts",
-                                action: "Activate",
-                                data: { user_ids: selectedData }
-
-                            })}>
-                                <BadgeCheck className="text-green-500" />Activate
-                            </Button>
-
-                            <Button variant="ghost" className="rounded-full hover:bg-gray-300" onClick={() => confirmActionContentCreateModal({
-                                url: bulk_deactivate(),
-                                message: "Are you sure you want to deactivate this accounts",
-                                action: "Deactivate",
-                                data: { user_ids: selectedData }
-
-                            })}>
-                                <Ban className="text-orange-500" />Deactivate
-                            </Button>
-
-                            <Button variant="ghost" className="rounded-full hover:bg-gray-300">
-                                <Upload />Export
-                            </Button>
-
-                            <Button variant="ghost" className="text-red rounded-full hover:bg-gray-300" onClick={() => confirmActionContentCreateModal({
-                                url: bulk_delete(),
-                                message: "Are you sure you want to delete this accounts?",
-                                action: "Delete",
-                                data: { user_ids: selectedData },
-                                promptPassword: true,
-                            })}>
-                                <Trash />Delete
-                            </Button>
-                        </div> :
+                                    }),
+                                },
+                                {
+                                    label: "Delete",
+                                    icon: Trash,
+                                    className: "text-red",
+                                    onClick: () => confirmActionContentCreateModal({
+                                        url: bulk_delete(),
+                                        message: "Are you sure you want to delete this accounts?",
+                                        action: "Delete",
+                                        data: { user_ids: selectedData },
+                                        promptPassword: true,
+                                    }),
+                                },
+                            ]}
+                        /> :
                         <div className="flex gap-2">
                             <Input
                                 startIcon={<Search size={18} color='gray' />}
                                 type="text"
-                                placeholder="Search here"
+                                placeholder="Search alumni"
                                 onChange={e => setSearchInput(e.target.value)}
                                 onEndIconClick={handleSearchInputChange}
                                 onKeyDown={e => {
@@ -302,7 +306,7 @@ export default function AlumniList() {
 
             {
                 props.alumni.data.length > 0 &&
-                <div className="flex w-full h-10 justify-between items-end px-5 mt-2">
+                <div className="flex w-full h-10 justify-between items-center px-5 mt-4">
 
                     <p className="text-sm">{`Showing
                         ${props.alumni.from} to ${props.alumni.to} out of

@@ -173,15 +173,10 @@ class AlumniController extends Controller
         ]);
     }
 
-    public function show($user_name)
+    public function show(Request $request, $user_name)
     {
-        $alumni = Alumni::with(['personal_details', 'academic_details.branchRelation', 'academic_details.departmentRelation', 'academic_details.courseRelation', 'contact_details', 'employment_details'])
-            ->leftJoin('users', 'alumni.user_id', '=', 'users.user_id')
-            ->where('users.user_name', $user_name)
-            ->select('alumni.*', 'users.status', 'users.user_name', 'users.email', 'users.name')
-            ->firstOrFail();
-
-        $posts = Post::with(['author', 'attachments'])->where('user_id', $alumni->user_id)->get();
+        $alumni = $this->findAlumniByUsername($user_name);
+        $posts = $this->postsForProfile($request->user()->user_id, $alumni->user_id);
 
         return Inertia::render('admin/alumni-profile/all', [
             'alumni' => $alumni,
@@ -189,13 +184,9 @@ class AlumniController extends Controller
         ]);
     }
 
-    public function show_personal($alumni)
+    public function show_personal($user_name)
     {
-        $alumni = Alumni::with(['personal_details', 'academic_details.branchRelation', 'academic_details.departmentRelation', 'academic_details.courseRelation', 'contact_details', 'employment_details'])
-            ->where('alumni_id', $alumni)
-            ->leftJoin('users', 'alumni.user_id', '=', 'users.user_id')
-            ->select('alumni.*', 'users.status', 'users.user_name', 'users.name')
-            ->firstOrFail();
+        $alumni = $this->findAlumniByUsername($user_name);
 
         return Inertia::render('admin/alumni-profile/personal', [
             'alumni' => $alumni,
@@ -203,39 +194,27 @@ class AlumniController extends Controller
     }
 
 
-    public function show_academic($alumni)
+    public function show_academic($user_name)
     {
-        $alumni = Alumni::with(['personal_details', 'academic_details.branchRelation', 'academic_details.departmentRelation', 'academic_details.courseRelation', 'contact_details', 'employment_details'])
-            ->where('alumni_id', $alumni)
-            ->leftJoin('users', 'alumni.user_id', '=', 'users.user_id')
-            ->select('alumni.*', 'users.status', 'users.user_name', 'users.name')
-            ->firstOrFail();
+        $alumni = $this->findAlumniByUsername($user_name);
 
         return Inertia::render('admin/alumni-profile/academic', [
             'alumni' => $alumni,
         ]);
     }
 
-    public function show_contact($alumni)
+    public function show_contact($user_name)
     {
-        $alumni = Alumni::with(['personal_details', 'academic_details.branchRelation', 'academic_details.departmentRelation', 'academic_details.courseRelation', 'contact_details', 'employment_details'])
-            ->where('alumni_id', $alumni)
-            ->leftJoin('users', 'alumni.user_id', '=', 'users.user_id')
-            ->select('alumni.*', 'users.status', 'users.user_name', 'users.name')
-            ->firstOrFail();
+        $alumni = $this->findAlumniByUsername($user_name);
 
         return Inertia::render('admin/alumni-profile/contact', [
             'alumni' => $alumni,
         ]);
     }
 
-    public function show_employment($alumni)
+    public function show_employment($user_name)
     {
-        $alumni = Alumni::with(['personal_details', 'academic_details.branchRelation', 'academic_details.departmentRelation', 'academic_details.courseRelation', 'contact_details', 'employment_details'])
-            ->where('alumni_id', $alumni)
-            ->leftJoin('users', 'alumni.user_id', '=', 'users.user_id')
-            ->select('alumni.*', 'users.status', 'users.user_name', 'users.name')
-            ->firstOrFail();
+        $alumni = $this->findAlumniByUsername($user_name);
 
         return Inertia::render('admin/alumni-profile/employment', [
             'alumni' => $alumni,
@@ -549,6 +528,43 @@ class AlumniController extends Controller
             ])
             ->orderBy('name')
             ->get();
+    }
+
+    protected function findAlumniByUsername(string $userName): Alumni
+    {
+        return Alumni::with([
+            'personal_details',
+            'academic_details.branchRelation',
+            'academic_details.departmentRelation',
+            'academic_details.courseRelation',
+            'contact_details',
+            'employment_details',
+        ])
+            ->leftJoin('users', 'alumni.user_id', '=', 'users.user_id')
+            ->where('users.user_name', $userName)
+            ->where('users.user_type', 'alumni')
+            ->select('alumni.*', 'users.status', 'users.user_name', 'users.email', 'users.name')
+            ->firstOrFail();
+    }
+
+    protected function postsForProfile(int $viewerUserId, int $profileUserId, ?array $statuses = null): Collection
+    {
+        $query = Post::with(['author', 'attachments'])
+            ->where('user_id', $profileUserId)
+            ->withCount(['reactions as liked_by_user' => function ($q) use ($viewerUserId) {
+                $q->where('user_id', $viewerUserId);
+            }])
+            ->orderBy('created_at', 'desc');
+
+        if ($statuses !== null) {
+            $query->whereIn('status', $statuses);
+        }
+
+        return $query->get()->map(function ($post) {
+            $post->setAttribute('liked_by_user', (bool) $post->liked_by_user);
+
+            return $post;
+        });
     }
 
     protected function hydrateAcademicDetails(array $validated): array

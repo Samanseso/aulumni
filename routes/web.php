@@ -13,6 +13,7 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 # All routes
 require __DIR__. '/notification.php';
+require __DIR__. '/report.php';
 
 # Admin routes
 require __DIR__.'/settings.php';
@@ -24,7 +25,9 @@ require __DIR__.'/branch.php';
 require __DIR__.'/department.php';
 require __DIR__.'/batch.php';
 require __DIR__.'/course.php';
+require __DIR__.'/system-log.php';
 require __DIR__.'/post.php';
+require __DIR__.'/announcement.php';
 
 # Alumni  routes
 require __DIR__.'/news-feed.php';

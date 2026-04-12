@@ -47,7 +47,7 @@ export default function AlumniFilter({
             </DropdownMenuTrigger>
 
             <DropdownMenuPortal >
-                <DropdownMenuContent align="start" className="w-64 p-2 bg-white shadow rounded">
+                <DropdownMenuContent align="start" className="w-64 p-2 bg-white shadow">
                     {/* School Level submenu */}
                     <DropdownMenuSub>
                         <DropdownMenuSubTrigger className="text-left px-2 py-2 hover:bg-gray-100 rounded">

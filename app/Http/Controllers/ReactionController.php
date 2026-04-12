@@ -4,9 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Reaction;
 use App\Models\Post;
+use App\Models\User;
+use App\Notifications\PostLikedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
@@ -27,6 +28,7 @@ class ReactionController extends Controller
     {
         $data = $request->validate([
             'post_id' => ['required', 'integer'],
+            'type' => ['nullable', Rule::in(['like', 'love', 'haha', 'wow', 'sad', 'angry'])],
         ]);
 
         $userId = $request->user()->user_id;
@@ -63,10 +65,20 @@ class ReactionController extends Controller
             $newReaction = Reaction::create([
                 'post_id' => $post->post_id,
                 'user_id' => $userId,
+                'type' => $data['type'] ?? 'like',
             ]);
 
             // Increment counter
             $post->increment('reactions_count');
+
+            if ($post->user_id !== $userId) {
+                $actor = User::query()->find($userId);
+                $recipient = User::query()->find($post->user_id);
+
+                if ($actor && $recipient) {
+                    $recipient->notify(new PostLikedNotification($actor, $post->fresh()));
+                }
+            }
 
             return response()->json([
                 'action' => 'created',

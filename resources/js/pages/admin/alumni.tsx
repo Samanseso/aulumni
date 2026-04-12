@@ -1,5 +1,5 @@
 import { Head } from '@inertiajs/react'
-import type { Alumni, BreadcrumbItem, ModalType, Pagination } from '@/types'
+import type { BreadcrumbItem } from '@/types'
 import AppLayout from '@/layouts/app-layout';
 import { index } from '@/routes/alumni';
 import AlumniList from '@/components/alumni-list';

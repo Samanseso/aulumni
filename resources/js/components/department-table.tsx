@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Department } from '@/types';
 import { EllipsisVertical, PenBox, Trash } from 'lucide-react';
+import { Checkbox } from './ui/checkbox';
 
 interface DepartmentsTableProps {
     departments: Department[];
@@ -13,18 +14,17 @@ export default function DepartmentsTable({ departments, onEdit }: DepartmentsTab
     const { confirmActionContentCreateModal } = useConfirmAction();
 
     return (
-        <div className="w-full overflow-x-auto">
+        <div className="table-fixed w-full h-full max-h-[63vh] overflow-auto [&::-webkit-scrollbar]:w-0 border-b">
             <table className="w-full">
                 <thead>
                     <tr className="border-t">
-                        <th className="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-500">Department ID</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Branch</th>
+                        <th className="rounded-l-md ps-7 pe-2">
+                            <Checkbox className="size-5 mt-1.25 cursor-pointer" />
+                        </th>
                         <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Name</th>
                         <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Courses</th>
                         <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Employees</th>
                         <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Alumni</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Description</th>
-                        <th className="px-6 py-3 text-right text-xs font-semibold uppercase text-gray-500">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -38,15 +38,20 @@ export default function DepartmentsTable({ departments, onEdit }: DepartmentsTab
 
                     {departments.map((department, index) => (
                         <tr key={department.department_id} className={`border-t border-t-gray-300 ${index % 2 === 0 ? 'bg-stone-100' : ''}`}>
-                            <td className="px-6 py-3 text-sm">{department.department_id}</td>
-                            <td className="px-4 py-3 text-sm">{department.branch?.name ?? '-'}</td>
-                            <td className="px-4 py-3 text-sm font-semibold">{department.name}</td>
+                            <td className="ps-7 pe-2">
+                                <div className="flex items-center justify-center">
+                                    <Checkbox className="size-5 cursor-pointer bg-white" />
+                                </div>
+                            </td>
+                            <td className="px-4 py-2 text-sm max-w-60">
+                                <span className="font-bold">{department.name}</span> <br />
+                                <span className="text-xs text-gray-500">{department.branch?.name ?? '-'}</span> <br />
+                            </td>
                             <td className="px-4 py-3 text-sm">{department.courses_count ?? 0}</td>
                             <td className="px-4 py-3 text-sm">{department.employees_count ?? 0}</td>
                             <td className="px-4 py-3 text-sm">{department.alumni_count ?? 0}</td>
-                            <td className="px-4 py-3 text-sm whitespace-pre-line">{department.description ?? '-'}</td>
                             <td className="px-6 py-3 text-sm">
-                                <div className="flex justify-end">
+                                <div className="flex justify-center">
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button size="sm" variant="ghost" className="text-xs">

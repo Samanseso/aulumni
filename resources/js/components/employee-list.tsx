@@ -1,4 +1,4 @@
-import { ModalType, Employee, Filter, Branch, Department, ColumnType, Pagination } from "@/types";
+import { ModalType, Employee, Filter, Branch, Department, ColumnType, Pagination, OperationSignals } from "@/types";
 import { router, usePage } from "@inertiajs/react";
 import { Button } from "./ui/button";
 import { useCallback, useEffect, useState } from "react";
@@ -16,6 +16,7 @@ import SortCollapsible from "./sort-collapsible";
 import CreateEmployeeModal from "./create-employee-modal";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import EmployeeController from "@/actions/App/Http/Controllers/User/EmployeeController";
+import BulkSelectionToolbar from "./bulk-selection-toolbar";
 
 
 const sortableColumns: ColumnType[] = [
@@ -26,7 +27,7 @@ const sortableColumns: ColumnType[] = [
 
 
 export default function EmployeeList() {
-    const { props } = usePage<{ employees: Pagination<Employee[]>, branches: Branch[], departments: Department[], modal: ModalType }>();
+    const { props } = usePage<{ employees: Pagination<Employee[]>, branches: Branch[], departments: Department[], modal: ModalType, signals?: OperationSignals }>();
 
     const [employees, setEmployees] = useState<Employee[]>(props.employees.data);
     const [rowsInput, setRowsInput] = useState(props.employees.per_page.toString() ?? 10);
@@ -55,6 +56,12 @@ export default function EmployeeList() {
         setEmployees(props.employees.data);
         setTableVersion(v => v + 1);
     }, [props.employees]);
+
+    useEffect(() => {
+        if (props.signals?.deselect) {
+            setSelectedData([]);
+        }
+    }, [props.signals?.deselect]);
 
     const applyFilters = useCallback((nextFilters: Filter[]) => {
         sessionStorage.setItem("filters", JSON.stringify(nextFilters.filter((f => f.property !== "page"))));
@@ -126,70 +133,114 @@ export default function EmployeeList() {
             <div className="justify-between flex items-center py-3 px-5 rounded-t-lg mt-3 mb-3">
 
                 <div className="flex items-center gap-2">
-
-                    <Select value={filter.find(f => f.property === "branch")?.value || ""} onValueChange={handleBranchChange}>
-                        <SelectTrigger className="text-black gap-2 !text-black text-nowrap">
-                            <SelectValue placeholder="Branch" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {
-                                filter.find(f => f.property === "branch")?.value ?
-                                    <SelectItem value="none" className="text-red">Reset</SelectItem> :
-                                    <SelectItem value="none" className="hidden">Branch</SelectItem>
-                            }
-                            {props.branches.map(branch => (
-                                <SelectItem key={branch.name} value={branch.name}>{branch.name}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    <Select value={filter.find(f => f.property === "department")?.value || ""} onValueChange={handleDepartmentChange}>
-                        <SelectTrigger className="text-black gap-2 !text-black text-nowrap">
-                            <SelectValue placeholder="Department" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {
-                                filter.find(f => f.property === "department")?.value ?
-                                    <SelectItem value="none" className="text-red">Reset</SelectItem> :
-                                    <SelectItem value="none" className="hidden">Department</SelectItem>
-                            }
-                            {filteredDepartments.map(department => (
-                                <SelectItem key={department.name} value={department.name}>{department.name}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-
-                    <Input
-                        startIcon={<Search size={18} color='gray' />}
-                        type="text"
-                        placeholder="Search here"
-                        onChange={e => setSearchInput(e.target.value)}
-                        onEndIconClick={handleSearchInputChange}
-                        onKeyDown={e => {
-                            if (e.key == "Enter") {
-                                e.preventDefault();
-                                handleSearchInputChange();
-                            }
-                        }}
-                        className="w-45 shadow-none focus-within:ring-0" />
-
-                    <div className="flex justify-center gap-2">
-                        <SortCollapsible columns={sortableColumns} setOrRemoveFilter={setOrRemoveFilter} />
-                        <Input
-                            prefix="Show"
-                            suffix="rows"
-                            id="rows"
-                            type="number"
-                            className="w-32 gap-2"
-                            defaultValue={props.employees.per_page}
-                            onChange={(e) => setRowsInput(e.target.value)}
-                            onKeyDown={e => {
-                                if (e.key == "Enter") {
-                                    e.preventDefault();
-                                    handleRowsInputChange();
-                                }
-                            }}
+                    {selectedData.length > 0 ? (
+                        <BulkSelectionToolbar
+                            count={selectedData.length}
+                            onClear={() => setSelectedData([])}
+                            actions={[
+                                {
+                                    label: "Activate",
+                                    icon: BadgeCheck,
+                                    iconClassName: "text-green-500",
+                                    onClick: () => confirmActionContentCreateModal({
+                                        url: bulk_activate(),
+                                        message: "Are you sure you want to activate this accounts",
+                                        action: "Activate",
+                                        data: { user_ids: selectedData }
+                                    }),
+                                },
+                                {
+                                    label: "Deactivate",
+                                    icon: Ban,
+                                    iconClassName: "text-orange-500",
+                                    onClick: () => confirmActionContentCreateModal({
+                                        url: bulk_deactivate(),
+                                        message: "Are you sure you want to deactivate this accounts",
+                                        action: "Deactivate",
+                                        data: { user_ids: selectedData }
+                                    }),
+                                },
+                                {
+                                    label: "Delete",
+                                    icon: Trash,
+                                    className: "text-red",
+                                    onClick: () => confirmActionContentCreateModal({
+                                        url: bulk_delete(),
+                                        message: "Are you sure you want to delete this accounts?",
+                                        action: "Delete",
+                                        data: { user_ids: selectedData },
+                                        promptPassword: true,
+                                    }),
+                                },
+                            ]}
                         />
-                    </div>
+                    ) : (
+                        <>
+                            <Input
+                                startIcon={<Search size={18} color='gray' />}
+                                type="text"
+                                placeholder="Search here"
+                                onChange={e => setSearchInput(e.target.value)}
+                                onEndIconClick={handleSearchInputChange}
+                                onKeyDown={e => {
+                                    if (e.key == "Enter") {
+                                        e.preventDefault();
+                                        handleSearchInputChange();
+                                    }
+                                }}
+                                className="w-45 shadow-none focus-within:ring-0" />
+
+                            <Select value={filter.find(f => f.property === "branch")?.value || ""} onValueChange={handleBranchChange}>
+                                <SelectTrigger className="w-35 text-black gap-2 !text-black text-nowrap">
+                                    <SelectValue placeholder="Branch" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {
+                                        filter.find(f => f.property === "branch")?.value ?
+                                            <SelectItem value="none" className="text-red">Reset</SelectItem> :
+                                            <SelectItem value="none" className="hidden">Branch</SelectItem>
+                                    }
+                                    {props.branches.map(branch => (
+                                        <SelectItem key={branch.name} value={branch.name}>{branch.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <Select value={filter.find(f => f.property === "department")?.value || ""} onValueChange={handleDepartmentChange}>
+                                <SelectTrigger className="w-35 text-black gap-2 !text-black text-nowrap">
+                                    <SelectValue placeholder="Department" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {
+                                        filter.find(f => f.property === "department")?.value ?
+                                            <SelectItem value="none" className="text-red">Reset</SelectItem> :
+                                            <SelectItem value="none" className="hidden">Department</SelectItem>
+                                    }
+                                    {filteredDepartments.map(department => (
+                                        <SelectItem key={department.name} value={department.name}>{department.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+
+                            <div className="flex justify-center gap-2">
+                                <SortCollapsible columns={sortableColumns} setOrRemoveFilter={setOrRemoveFilter} />
+                                <Input
+                                    prefix="Show"
+                                    suffix="rows"
+                                    id="rows"
+                                    type="number"
+                                    className="w-32 gap-2"
+                                    defaultValue={props.employees.per_page}
+                                    onChange={(e) => setRowsInput(e.target.value)}
+                                    onKeyDown={e => {
+                                        if (e.key == "Enter") {
+                                            e.preventDefault();
+                                            handleRowsInputChange();
+                                        }
+                                    }}
+                                />
+                            </div>
+                        </>
+                    )}
 
                 </div>
 
@@ -235,51 +286,6 @@ export default function EmployeeList() {
                     </p>
                 }
 
-
-                <div>
-                    {
-                        selectedData.length > 0 &&
-                        <div className="flex items-end gap-3">
-                            <p className="text-sm">With {selectedData.length} selected:</p>
-                            <div className="flex gap-3">
-
-                                <Button size="sm" className="translate-y-1.5" variant="outline" onClick={() => confirmActionContentCreateModal({
-                                    url: bulk_activate(),
-                                    message: "Are you sure you want to activate this accounts",
-                                    action: "Activate",
-                                    data: { user_ids: selectedData }
-
-                                })}>
-                                    <BadgeCheck className="text-green-500" />Activate
-                                </Button>
-
-                                <Button size="sm" className="translate-y-1.5" variant="outline" onClick={() => confirmActionContentCreateModal({
-                                    url: bulk_deactivate(),
-                                    message: "Are you sure you want to deactivate this accounts",
-                                    action: "Deactivate",
-                                    data: { user_ids: selectedData }
-                                })}>
-                                    <Ban className="text-red-500" />Deactivate
-                                </Button>
-
-                                <Button size="sm" className="translate-y-1.5" variant="outline">
-                                    <Upload />Export
-                                </Button>
-
-                                <Button size="sm" className="translate-y-1.5 bg-rose-100 text-red" onClick={() => confirmActionContentCreateModal({
-                                    url: bulk_delete(),
-                                    message: "Are you sure you want to delete this accounts?",
-                                    action: "Delete",
-                                    data: { user_ids: selectedData },
-                                    promptPassword: true,
-                                })}>
-                                    <Trash />Delete
-                                </Button>
-                            </div>
-
-                        </div>
-                    }
-                </div>
                 {props.employees.data.length > 0 && <TablePagination data={props.employees} />}
             </div>
         </div>

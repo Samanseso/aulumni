@@ -47,7 +47,7 @@ const PostCards = ({ posts, selectedData, setSelectedData }: PostCardsProps) => 
                             </tr>
                         </thead>    
                     </table>
-                    <div className="px-5 grid grid-cols-4 gap-3 mb-7">
+                    <div className="px-5 grid grid-cols-3 xl:grid-cols-4 gap-3 mb-7">
                         {grouped_post.map((post) => (
                             <div
                                 onClick={(e) => {
@@ -111,7 +111,7 @@ const PostCards = ({ posts, selectedData, setSelectedData }: PostCardsProps) => 
                                     </div>
 
                                     <div className="mb-3">
-                                        <h4 className="text-sm text-gray-900 line-clamp-2 mb-2">
+                                        <h4 className="text-sm text-gray-900 line-clamp-2 my-3">
                                             {post.job_title}
                                         </h4>
                                         {post.attachments && post.attachments.length > 0 && (

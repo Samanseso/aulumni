@@ -36,7 +36,7 @@ class CourseController extends Controller
         }
 
         return Inertia::render('admin/courses', [
-            'courses' => $query->paginate(15)->withQueryString(),
+            'courses' => $query->paginate(10)->withQueryString(),
             'branches' => Branch::query()
                 ->with(['departments' => fn ($query) => $query->orderBy('name')])
                 ->orderBy('name')
