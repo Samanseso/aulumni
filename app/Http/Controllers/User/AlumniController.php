@@ -46,7 +46,7 @@ class AlumniController extends Controller
             'batch'        => 'nullable|string',
             'status'       => 'nullable|string',
             'search'       => 'nullable|string|max:255',
-            'rows'         => 'nullable|integer|min:1|max:99',
+            'rows'         => 'nullable|integer|min:1|max:999',
             'sort'         => 'nullable|string|max:1000',
         ]);
 
@@ -70,7 +70,7 @@ class AlumniController extends Controller
                 'alumni_academic_details.student_number as student_number', // academic_details table
                 'alumni_academic_details.school_level as school_level',     // academic_details table
                 'alumni_academic_details.batch as batch',                   // academic_details table
-                DB::raw('COALESCE(academic_courses.code, academic_courses.name, alumni_academic_details.course) as course'),
+                DB::raw('COALESCE(academic_courses.name, alumni_academic_details.course, academic_courses.code) as course'),
                 DB::raw('COALESCE(academic_branches.name, alumni_academic_details.branch) as branch'),
                 'alumni.created_at as created_at'                    // keep for default ordering
             ])
@@ -598,7 +598,7 @@ class AlumniController extends Controller
             'department_id' => $department?->department_id,
             'course_id' => $course?->course_id,
             'branch' => $branch?->name,
-            'course' => $course ? ($course->code ?: $course->name) : null,
+            'course' => $course ? $course->name : null,
         ]);
     }
 

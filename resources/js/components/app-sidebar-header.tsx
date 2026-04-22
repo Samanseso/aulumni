@@ -6,7 +6,7 @@ import { NavUser } from './nav-user';
 import SearchBar from './search-bar';
 import { TopNavUser } from './top-nav-user';
 import { Bell, Briefcase, BriefcaseBusiness, Building2, HandHelping, Home, MessageCircle, MessageSquare, Network } from 'lucide-react';
-import { usePage } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import aulogo from "../../../public/assets/images/aulogo.png";
 import { cn } from '@/lib/utils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from './ui/dropdown-menu';
@@ -58,7 +58,9 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
             {
                 isAlumni &&
                 <div className='absolute w-[33vw] left-[50%] -translate-x-[50%] flex gap-2'>
-                    <div className='flex-1 cursor-pointer py-2 border-b-3 border-blue'><Home size={20} className='mx-auto text-blue' /></div>
+                    <Link href="/" className='flex-1 cursor-pointer py-2 border-b-3 border-blue'>
+                        <Home size={20} className='mx-auto text-blue' />
+                    </Link>
                     <div className='flex-1 cursor-pointer hover:bg-muted py-2 rounded-lg'><BriefcaseBusiness size={20} className='mx-auto' /></div>
                     <div className='flex-1 cursor-pointer hover:bg-muted py-2 rounded-lg'><Network size={20} className='mx-auto' /></div>
                     <div className='flex-1 cursor-pointer hover:bg-muted py-2 rounded-lg'><Building2 size={20} className='mx-auto' /></div>
@@ -67,10 +69,6 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
 
 
             <div className='flex items-center justify-between gap-2'>
-                <div className='flex items-center justify-center w-10 h-10 rounded-full bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white'>
-                    <MessageSquare size={18} className='mt-0.25' />
-                </div>
-
                 <NotificationsListener setNotifs={setNotifs} />
 
                 <DropdownMenu>
@@ -85,7 +83,7 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                             <Bell size={17} />
                         </div>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className='w-sm' align='end'>
+                    <DropdownMenuContent className='w-sm p-0' align='end'>
                         {notifs && <Notifications notifs={notifs} />}
                     </DropdownMenuContent>
                 </DropdownMenu>

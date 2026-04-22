@@ -54,8 +54,6 @@ export default function AlumniFilter({
                             School Level
                         </DropdownMenuSubTrigger>
                         <DropdownMenuSubContent className="ml-4 mt-1 p-2 bg-white rounded shadow">
-                            <DropdownMenuItem onSelect={() => handleSchoolLevelChange("Elementary")}>Elementary</DropdownMenuItem>
-                            <DropdownMenuItem onSelect={() => handleSchoolLevelChange("High School")}>High School</DropdownMenuItem>
                             <DropdownMenuItem onSelect={() => handleSchoolLevelChange("College")}>College</DropdownMenuItem>
                             <DropdownMenuItem onSelect={() => handleSchoolLevelChange("Graduate")}>Graduate</DropdownMenuItem>
                         </DropdownMenuSubContent>

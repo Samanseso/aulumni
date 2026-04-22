@@ -2,15 +2,22 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Auth\Notifications\VerifyEmail as VerifyEmailNotification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use Throwable;
 
-class User extends Authenticatable
+/**
+ * @method \Illuminate\Database\Eloquent\Collection<int, \Illuminate\Notifications\DatabaseNotification> notifications()
+ * @method \Illuminate\Database\Eloquent\Collection<int, \Illuminate\Notifications\DatabaseNotification> unreadNotifications()
+ */
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, TwoFactorAuthenticatable;
@@ -31,6 +38,9 @@ class User extends Authenticatable
         'user_name',
         'name',
         'email',
+        'google_id',
+        'avatar',
+        'show_survey_onboarding',
         'user_type',
         'password',
         'status',
@@ -59,6 +69,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'show_survey_onboarding' => 'boolean',
             'two_factor_confirmed_at' => 'datetime',
         ];
     }
@@ -93,5 +104,31 @@ class User extends Authenticatable
         return $this->hasMany(Share::class, 'user_id', 'user_id');
     }
 
-    
+    public function sendEmailVerificationNotification(): void
+    {
+        $mailer = config('mail.default');
+
+        if ($mailer === 'log') {
+            Log::warning('Verification email was written to the Laravel log because the log mailer is active.', [
+                'user_id' => $this->user_id,
+                'email' => $this->email,
+                'mailer' => $mailer,
+                'log_path' => storage_path('logs/laravel.log'),
+            ]);
+        }
+
+        try {
+            $this->notify(new VerifyEmailNotification);
+        } catch (Throwable $exception) {
+            Log::error('Failed to send verification email.', [
+                'user_id' => $this->user_id,
+                'email' => $this->email,
+                'mailer' => $mailer,
+                'exception' => $exception::class,
+                'message' => $exception->getMessage(),
+            ]);
+
+            throw $exception;
+        }
+    }
 }

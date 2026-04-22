@@ -4,8 +4,13 @@ import { Bell } from 'lucide-react';
 import { AppNotification } from '@/types';
 
 import NotificationItem from './notification-item';
+import { cn } from '@/lib/utils';
+import { useState } from 'react';
 
 export default function Notifications({ notifs }: { notifs: AppNotification<any>[] }) {
+
+    const [hovering, setHovering] = useState(false);
+
     if (notifs.length === 0) {
         return (
             <div className="w-sm px-4 py-8 text-center">
@@ -25,20 +30,29 @@ export default function Notifications({ notifs }: { notifs: AppNotification<any>
                 <p className="text-xs text-slate-500">Recent updates for your account</p>
             </div>
 
-            <div className="max-h-[26rem] overflow-auto p-2">
+            <div
+                onMouseEnter={() => setHovering(true)}
+                onMouseLeave={() => setHovering(false)}
+                className={cn(
+                    "max-h-[26rem] overflow-auto ps-1.5 h-[65vh] overflow-auto scroll-area [&::-webkit-scrollbar]:w-1.5",
+                    "[&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded",
+                    hovering ? "[&::-webkit-scrollbar-thumb]:bg-gray-300" : "[&::-webkit-scrollbar-thumb]:bg-transparent"
+                )}
+
+            >
                 <div className="space-y-1">
                     {notifs.slice(0, 6).map((notification) => (
-                        <div key={notification.id} className="rounded-xl px-2 py-2 transition hover:bg-slate-50">
+                        <Link key={notification.id} href={`/notifications?selected=${notification.id}`} className="hover:bg-slate-50 cursor-pointer" as="div">
                             <NotificationItem notification={notification} />
-                        </div>
+                        </Link>
                     ))}
                 </div>
             </div>
 
-            <div className="border-t border-slate-200 p-2">
+            <div className="border-t border-slate-200">
                 <Link
                     href="/notifications"
-                    className="flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium text-blue transition hover:bg-blue/5"
+                    className="flex items-center justify-center p-3 text-sm font-medium text-blue transition hover:bg-blue/5"
                 >
                     View all notifications
                 </Link>

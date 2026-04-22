@@ -13,12 +13,12 @@ interface AnnouncementItemProps {
 }
 
 
-function formatDate(date : string) {
+function formatDate(date: string) {
     return new Date(date).toLocaleDateString('default', {
-        month: 'short', 
-        day: 'numeric', 
+        month: 'short',
+        day: 'numeric',
         // year: 'numeric',
-        hour: '2-digit', 
+        hour: '2-digit',
         minute: '2-digit'
     })
 }
@@ -36,14 +36,14 @@ export default function AnnouncementItem({ announcement, showStatus = false }: A
 
 
     return (
-        <div 
-        onMouseEnter={() => setHovering(true)}
-        onMouseLeave={() => setHovering(false)}
-        className={cn(
-            "ps-1.5 h-[65vh] overflow-auto scroll-area [&::-webkit-scrollbar]:w-1.5",
-            "[&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded",
-            hovering ? "[&::-webkit-scrollbar-thumb]:bg-gray-300" : "[&::-webkit-scrollbar-thumb]:bg-transparent"
-        )}
+        <div
+            onMouseEnter={() => setHovering(true)}
+            onMouseLeave={() => setHovering(false)}
+            className={cn(
+                "ps-1.5 h-[65vh] overflow-auto scroll-area [&::-webkit-scrollbar]:w-1.5",
+                "[&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded",
+                hovering ? "[&::-webkit-scrollbar-thumb]:bg-gray-300" : "[&::-webkit-scrollbar-thumb]:bg-transparent"
+            )}
         ><div className="p-4 pb-0">
                 <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
@@ -73,7 +73,7 @@ export default function AnnouncementItem({ announcement, showStatus = false }: A
             </div>
 
             <div className="px-4 py-4">
-                <div className="mt-2 mb-5">
+                <div className="mt-1 mb-5">
                     <h2 className="text-xl font-semibold text-slate-950">{announcement.title}</h2>
                 </div>
 
@@ -123,48 +123,15 @@ export default function AnnouncementItem({ announcement, showStatus = false }: A
                     {announcement.description}
                 </div>
 
-                {announcement.registration_link ? (
-                    <div className="mb-4 flex items-center gap-2 rounded-xl border border-blue/10 bg-blue/5 px-3 py-3">
-                        <LinkIcon className="size-4 text-blue" />
-                        <a
-                            href={announcement.registration_link}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="truncate text-sm font-medium text-blue-700 underline-offset-4 hover:underline"
-                        >
-                            {announcement.registration_link}
-                        </a>
-                    </div>
-                ) : null}
-
                 {announcement.attachments && announcement.attachments.length > 0 ? (
                     <div className="grid grid-cols-1 gap-3">
                         {announcement.attachments.map((attachment) =>
-                            attachment.type === "image" ? (
-                                <img
-                                    key={attachment.announcement_attachment_id}
-                                    src={attachment.url}
-                                    alt="announcement attachment"
-                                    className="h-[45vh] w-full rounded-md object-cover"
-                                />
-                            ) : attachment.type === "video" ? (
-                                <video
-                                    key={attachment.announcement_attachment_id}
-                                    src={attachment.url}
-                                    controls
-                                    className="h-[45vh] w-full rounded-md bg-black object-cover"
-                                />
-                            ) : (
-                                <div
-                                    key={attachment.announcement_attachment_id}
-                                    className="flex items-center gap-2 rounded-md border p-3"
-                                >
-                                    <LinkIcon className="size-5" />
-                                    <a href={attachment.url} target="_blank" rel="noreferrer" className="truncate text-sm text-blue-600">
-                                        {attachment.url}
-                                    </a>
-                                </div>
-                            ),
+                            <img
+                                key={attachment.announcement_attachment_id}
+                                src={attachment.url}
+                                alt="announcement attachment"
+                                className="h-full w-full rounded-md object-cover"
+                            />
                         )}
                     </div>
                 ) : null}

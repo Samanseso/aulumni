@@ -26,18 +26,15 @@ class AdminDashboardReportService
             ['active' => 'Active', 'pending' => 'Pending', 'inactive' => 'Inactive']
         );
         $employmentStatuses = $this->distribution('alumni_employment_details', 'current_employed');
-        $jobTypes = $this->distributionForQuery(
-            Post::query()->where('status', 'approved'),
-            'job_type'
-        );
         $branchPerformance = $this->branchPerformance();
         $topEmployers = $this->topEmployers();
         $workTypes = $this->distribution('alumni_employment_details', 'current_work_type');
+        $accountStatusSlices = $this->attachSliceColors($accountStatuses, ['#014EA8', '#DA281C', '#78A8E3']);
+        $employmentStatusSlices = $this->attachSliceColors($employmentStatuses, ['#DA281C', '#014EA8', '#F08D86', '#78A8E3', '#C9DBF5', '#F7C0BB']);
 
         $totalAlumni = Alumni::query()->count();
         $activeAlumni = User::query()->where('user_type', 'alumni')->where('status', 'active')->count();
         $employmentProfiles = AlumniEmploymentDetails::query()->whereNotNull('current_employed')->count();
-        $approvedPosts = Post::query()->where('status', 'approved')->count();
         $contactCoverage = AlumniContactDetails::query()
             ->whereNotNull('contact')
             ->where('contact', '!=', '')
@@ -45,64 +42,39 @@ class AdminDashboardReportService
         $branchLeader = $branchPerformance->sortByDesc('alumni')->first();
         $employerLeader = $topEmployers->first();
         $pendingPosts = Post::query()->where('status', 'pending')->count();
+        $employmentCoverage = $this->formatPercentage($employmentProfiles, $totalAlumni);
 
         $overview = [
             $this->overviewCard(
-                id: 'directory-size',
-                label: 'Alumni overall record',
-                value: $totalAlumni,
-                helper: 'Total alumni records captured in the platform.',
-                trendLabel: $this->trendLabel($monthlyActivity, 'alumni'),
-                trendValue: $this->trendValue($monthlyActivity, 'alumni'),
-                sparkline: $this->sparkline($monthlyActivity, 'alumni', true),
+                id: 'alumni-employment-record',
+                label: 'Alumni employment record',
+                value: $this->formatRatio($employmentProfiles, $totalAlumni),
+                helper: 'Employment records captured over the total alumni records in the platform.',
+                trendLabel: $employmentCoverage . ' of alumni records already contain employment data',
+                trendValue: $employmentCoverage,
+                sparkline: $this->sparkline($monthlyActivity, 'employment_profiles', true),
             ),
             $this->overviewCard(
                 id: 'active-accounts',
                 label: 'Active alumni accounts',
                 value: $activeAlumni,
                 helper: 'Accounts currently marked active and ready to use the system.',
-                trendLabel: $this->trendLabel($accountStatuses->map(fn($item) => ['label' => $item['label'], 'value' => $item['value']]), 'value', false),
+                trendLabel: $this->trendLabel($monthlyActivity, 'active_alumni'),
                 trendValue: $totalAlumni > 0 ? round(($activeAlumni / $totalAlumni) * 100, 1) . '%' : '0%',
                 sparkline: $this->sparkline($monthlyActivity, 'active_alumni', true),
             ),
             $this->overviewCard(
-                id: 'employment-coverage',
-                label: 'Employment data coverage',
-                value: $totalAlumni > 0 ? round(($employmentProfiles / $totalAlumni) * 100, 1) . '%' : '0%',
-                helper: 'Share of alumni profiles that already contain employment outcomes.',
-                trendLabel: $employmentProfiles . ' alumni with employment records',
-                trendValue: $this->trendValue($monthlyActivity, 'employment_profiles'),
-                sparkline: $this->sparkline($monthlyActivity, 'employment_profiles', true),
-            ),
-            $this->overviewCard(
-                id: 'approved-opportunities',
-                label: 'Approved opportunities',
-                value: $approvedPosts,
-                helper: 'Approved job opportunities visible to alumni in the news feed.',
-                trendLabel: $this->trendLabel($postPipeline, 'approved_posts'),
-                trendValue: $this->trendValue($postPipeline, 'approved_posts'),
-                sparkline: $this->sparkline($postPipeline, 'approved_posts'),
+                id: 'pending-opportunities',
+                label: 'Pending job posts',
+                value: $pendingPosts,
+                helper: 'Job opportunities still waiting for review before they go live.',
+                trendLabel: $this->trendLabel($postPipeline, 'pending_posts'),
+                trendValue: $this->trendValue($postPipeline, 'pending_posts'),
+                sparkline: $this->sparkline($postPipeline, 'pending_posts'),
             ),
         ];
 
         $charts = [
-            [
-                'id' => 'monthly-activity',
-                'title' => 'Monthly alumni and opportunity activity',
-                'description' => 'Shows how many alumni were added and how many approved opportunities went live during the last six months.',
-                'type' => 'area',
-                'x_key' => 'month',
-                'series' => [
-                    ['key' => 'alumni', 'label' => 'New alumni', 'color' => '#014EA8'],
-                    ['key' => 'approved_posts', 'label' => 'Approved opportunities', 'color' => '#DA281C'],
-                ],
-                'data' => $monthlyActivity->map(fn($row) => [
-                    'month' => $row['month'],
-                    'alumni' => $row['alumni'],
-                    'approved_posts' => $row['approved_posts'],
-                ])->values()->all(),
-                'insight' => 'Useful for checking whether alumni onboarding and content publishing are growing together.',
-            ],
             // [
             //     'id' => 'school-level-distribution',
             //     'title' => 'School level distribution',
@@ -125,7 +97,7 @@ class AdminDashboardReportService
                 'series' => [
                     ['key' => 'value', 'label' => 'Accounts', 'color' => '#014EA8'],
                 ],
-                'data' => $this->attachSliceColors($accountStatuses, ['#014EA8', '#DA281C', '#78A8E3'])->values()->all(),
+                'data' => $accountStatusSlices->values()->all(),
                 'insight' => 'Useful for activation campaigns and for monitoring whether inactive accounts are growing.',
             ],
             [
@@ -138,7 +110,7 @@ class AdminDashboardReportService
                 'series' => [
                     ['key' => 'value', 'label' => 'Alumni', 'color' => '#DA281C'],
                 ],
-                'data' => $this->attachSliceColors($employmentStatuses, ['#DA281C', '#014EA8', '#F08D86', '#78A8E3', '#C9DBF5', '#F7C0BB'])->values()->all(),
+                'data' => $employmentStatusSlices->values()->all(),
                 'insight' => 'Useful for formal tracer-report summaries around employability and current work outcomes.',
             ],
             [
@@ -181,18 +153,6 @@ class AdminDashboardReportService
             //     'data' => $topEmployers->values()->all(),
             //     'insight' => 'Useful for partnership leads, employer engagement, and showcasing alumni placement clusters.',
             // ],
-            [
-                'id' => 'job-type-demand',
-                'title' => 'Approved opportunity types',
-                'description' => 'Shows the mix of job opportunity formats currently visible in the alumni feed.',
-                'type' => 'bar',
-                'x_key' => 'label',
-                'series' => [
-                    ['key' => 'value', 'label' => 'Posts', 'color' => '#014EA8'],
-                ],
-                'data' => $jobTypes->values()->all(),
-                'insight' => 'Useful for understanding whether the feed is heavy on full-time, remote, internship, or contract roles.',
-            ],
             [
                 'id' => 'work-type-mix',
                 'title' => 'Current work type mix',
@@ -391,6 +351,23 @@ class AdminDashboardReportService
         });
     }
 
+    protected function formatRatio(int $numerator, int $denominator): string
+    {
+        return number_format($numerator) . ' / ' . number_format($denominator);
+    }
+
+    protected function formatPercentage(int $numerator, int $denominator, int $precision = 1): string
+    {
+        if ($denominator <= 0) {
+            return '0%';
+        }
+
+        $percentage = round(($numerator / $denominator) * 100, $precision);
+        $formatted = number_format($percentage, $precision, '.', '');
+
+        return rtrim(rtrim($formatted, '0'), '.') . '%';
+    }
+
     protected function trendLabel(Collection $series, string $key, bool $monthly = true): string
     {
         if ($series->count() < 2) {
@@ -436,4 +413,5 @@ class AdminDashboardReportService
             ];
         })->all();
     }
+
 }

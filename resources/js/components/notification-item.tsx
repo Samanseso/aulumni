@@ -31,7 +31,7 @@ export default function NotificationItem({ notification }: { notification: AppNo
     const Icon = config?.icon ?? Bell;
 
     return (
-        <div className="flex items-start gap-3">
+        <div className="flex items-start gap-3 p-3">
             <div className={`mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full ${config?.iconClassName ?? 'bg-slate-100 text-slate-600'}`}>
                 <Icon size={18} className={notification.type === 'App\\Notifications\\PostLikedNotification' ? 'fill-current' : undefined} />
             </div>

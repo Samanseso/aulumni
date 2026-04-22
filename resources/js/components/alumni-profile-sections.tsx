@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 
 import PostItem from './post-item'
+import { InfoRow } from './info-row'
 
 type AlumniProfileSectionsProps = {
     alumni: Alumni
@@ -57,28 +58,6 @@ function SocialLink({ label, href }: { label: string; href?: string | null }) {
     )
 }
 
-function InfoRow({
-    icon,
-    label,
-    value,
-    valueClassName = '',
-}: {
-    icon: ReactNode
-    label: string
-    value?: string | null
-    valueClassName?: string
-}) {
-    return (
-        <div className="flex items-start gap-3 rounded-2xl bg-slate-50 px-4 py-3">
-            <div className="mt-0.5 rounded-xl bg-white p-2 text-slate-500 shadow-sm">{icon}</div>
-            <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">{label}</p>
-                <p className={`mt-1 text-sm text-slate-700 ${valueClassName}`}>{formatValue(value)}</p>
-            </div>
-        </div>
-    )
-}
-
 function SectionCard({
     title,
     subtitle,
@@ -99,6 +78,7 @@ function SectionCard({
     )
 }
 
+
 export function ProfileSummaryCard({ alumni }: AlumniProfileSectionsProps) {
     const introStats = [
         {
@@ -118,15 +98,8 @@ export function ProfileSummaryCard({ alumni }: AlumniProfileSectionsProps) {
     return (
         <SectionCard
             title="Intro"
-            subtitle="A quick summary of this alumni's background and current status."
+            subtitle="Summary of this alumni's background and current status."
         >
-            <p className="rounded-2xl bg-blue-50 px-4 py-3 text-sm leading-6 text-slate-700">
-                {formatValue(
-                    alumni.personal_details?.bio,
-                    'This alumni has not added a personal bio yet.'
-                )}
-            </p>
-
             <div className="grid gap-3">
                 {introStats.map((item) => (
                     <InfoRow
@@ -137,130 +110,6 @@ export function ProfileSummaryCard({ alumni }: AlumniProfileSectionsProps) {
                     />
                 ))}
             </div>
-        </SectionCard>
-    )
-}
-
-export function PersonalDetailsCard({ alumni }: AlumniProfileSectionsProps) {
-    const personal = alumni.personal_details
-
-    return (
-        <SectionCard
-            title="Personal details"
-            subtitle="Core identity, story, and personal background."
-        >
-            <InfoRow icon={<UserRound className="size-4" />} label="Full name" value={alumni.name} />
-            <InfoRow icon={<UserRound className="size-4" />} label="Username" value={alumni.user_name} />
-            <InfoRow icon={<Cake className="size-4" />} label="Birthday" value={personal?.birthday} />
-            <InfoRow icon={<Heart className="size-4" />} label="Interests" value={personal?.interest} />
-            <InfoRow icon={<MapPinned className="size-4" />} label="Address" value={personal?.address} />
-            <InfoRow
-                icon={<FileText className="size-4" />}
-                label="Bio"
-                value={personal?.bio}
-                valueClassName="leading-6"
-            />
-        </SectionCard>
-    )
-}
-
-export function AcademicDetailsCard({ alumni }: AlumniProfileSectionsProps) {
-    const academic = alumni.academic_details
-
-    return (
-        <SectionCard
-            title="Academic details"
-            subtitle="Education history and campus affiliation."
-        >
-            <InfoRow
-                icon={<GraduationCap className="size-4" />}
-                label="School level"
-                value={academic?.school_level}
-            />
-            <InfoRow
-                icon={<School className="size-4" />}
-                label="Student number"
-                value={academic?.student_number}
-            />
-            <InfoRow icon={<BookMarked className="size-4" />} label="Course" value={academic?.course} />
-            <InfoRow icon={<Sparkles className="size-4" />} label="Batch" value={academic?.batch} />
-            <InfoRow icon={<Building2 className="size-4" />} label="Branch" value={academic?.branch} />
-        </SectionCard>
-    )
-}
-
-export function ContactDetailsCard({ alumni }: AlumniProfileSectionsProps) {
-    const contact = alumni.contact_details
-
-    return (
-        <SectionCard
-            title="Contact details"
-            subtitle="Ways to reach this alumni on and off the platform."
-        >
-            <InfoRow icon={<Mail className="size-4" />} label="Email" value={contact?.email || alumni.email} />
-            <InfoRow icon={<Phone className="size-4" />} label="Mobile" value={contact?.contact} />
-            <InfoRow icon={<Phone className="size-4" />} label="Telephone" value={contact?.telephone} />
-            <InfoRow
-                icon={<MapPinned className="size-4" />}
-                label="Present address"
-                value={contact?.present_address}
-            />
-            <InfoRow
-                icon={<MapPinned className="size-4" />}
-                label="Mailing address"
-                value={contact?.mailing_address}
-            />
-
-            <div className="flex flex-wrap gap-2 pt-2">
-                <SocialLink label="Facebook" href={contact?.facebook_url} />
-                <SocialLink label="Twitter" href={contact?.twitter_url} />
-                <SocialLink label="LinkedIn" href={contact?.link_url} />
-                <SocialLink label="Gmail" href={contact?.gmail_url} />
-                <SocialLink label="Other link" href={contact?.other_url} />
-            </div>
-        </SectionCard>
-    )
-}
-
-export function EmploymentDetailsCard({ alumni }: AlumniProfileSectionsProps) {
-    const employment = alumni.employment_details
-
-    return (
-        <SectionCard
-            title="Employment details"
-            subtitle="Career outcomes and current work information."
-        >
-            <InfoRow
-                icon={<BriefcaseBusiness className="size-4" />}
-                label="Employment status"
-                value={employment?.current_employed}
-            />
-            <InfoRow
-                icon={<Building2 className="size-4" />}
-                label="Current company"
-                value={employment?.current_work_company}
-            />
-            <InfoRow
-                icon={<BriefcaseBusiness className="size-4" />}
-                label="Current position"
-                value={employment?.current_work_position}
-            />
-            <InfoRow
-                icon={<Sparkles className="size-4" />}
-                label="Work type"
-                value={employment?.current_work_type}
-            />
-            <InfoRow
-                icon={<BadgeDollarSign className="size-4" />}
-                label="Monthly income"
-                value={employment?.current_work_monthly_income}
-            />
-            <InfoRow
-                icon={<LinkIcon className="size-4" />}
-                label="AU skills used"
-                value={employment?.au_skills}
-                valueClassName="leading-6"
-            />
         </SectionCard>
     )
 }

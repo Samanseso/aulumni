@@ -42,13 +42,15 @@ export default function JobPostModal({ setCreatePostModal }: JobPostModalProps) 
             <DialogContent className="max-w-2xl">
                 <DialogTitle>Create Job Posting</DialogTitle>
                 <DialogDescription className="mb-4 text-sm text-muted-foreground">
-                    Fill out the details below to publish a new job posting.
+                    Fill out the details below to publish a new job postng.
                 </DialogDescription>
 
-                <Form {...PostController.store.form()} className="space-y-5"
+                <Form {...PostController.store()} className="space-y-5"
                     options={{
                         preserveState: true
                     }}
+
+                    onError={(err) => console.log(err)}
 
                     onSuccess={() => setCreatePostModal(false)}
                 >

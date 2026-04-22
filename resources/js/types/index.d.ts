@@ -103,6 +103,7 @@ export interface User {
 	name: string;
 	user_name: string;
 	email: string;
+	email_verified_at?: string | null;
 	avatar?: string;
 	user_type: string;
 	password: string;
@@ -310,7 +311,6 @@ export interface Announcement {
 	starts_at: string;
 	ends_at?: string | null;
 	description: string;
-	registration_link?: string | null;
 	privacy: 'public' | 'friends' | 'only_me';
 	status: string;
 	created_at: string;

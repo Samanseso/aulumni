@@ -3,13 +3,15 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { useState } from "react";
 import { Input } from "./ui/input";
 import { Form } from "@inertiajs/react";
-import { RouteFormDefinition } from "@/wayfinder";
+import { RouteDefinition, RouteFormDefinition } from "@/wayfinder";
+import { Spinner } from "./ui/spinner";
+import { Upload } from "lucide-react";
 
 interface AlumniImportProps {
     open: boolean;
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
     entityLabel: string;
-    importAction: RouteFormDefinition<"post">;
+    importAction: RouteDefinition<"post">;
 }
 
 export function Import({ open, setOpen, entityLabel, importAction }: AlumniImportProps) {
@@ -47,16 +49,15 @@ export function Import({ open, setOpen, entityLabel, importAction }: AlumniImpor
                                     onChange={handleFileChange}
                                     autoFocus={false}
                                     className="h-full w-full rounded-lg border-2 border-blue border-dashed text-transparent cursor-pointer
-                                    focus:outline-none focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0"
+                                        focus:outline-none focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0"
                                 />
-                                <p className="absolute top-[50%] left-[49%] -translate-[50%]">
-                                    Select a file
-                                </p>
+                                <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 pointer-events-none">
+                                    <Upload className="w-5 h-5 text-blue-500" />
+                                    <p className="text-sm text-muted-foreground">
+                                        {file ? file.name : "Select a file"}
+                                    </p>
+                                </div>
                             </div>
-
-                            {file && (
-                                <p className="mt-2 text-sm text-gray-600">Selected: {file.name}</p>
-                            )}
 
                             <DialogFooter className="gap-2 mt-6">
                                 <DialogClose asChild>
@@ -65,6 +66,7 @@ export function Import({ open, setOpen, entityLabel, importAction }: AlumniImpor
                                     </Button>
                                 </DialogClose>
                                 <Button className="selected" type="submit" disabled={processing}>
+                                    {processing && <Spinner />}
                                     Upload
                                 </Button>
                             </DialogFooter>

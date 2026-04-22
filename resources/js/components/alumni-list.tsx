@@ -1,23 +1,19 @@
-import AppLayout from "@/layouts/app-layout";
-import { BreadcrumbItem, Pagination, Alumni, AlumniRow, Course, Batch, ColumnType, Branch, OperationSignals } from "@/types";
+import { BreadcrumbItem, Pagination, AlumniRow, Course, Batch, ColumnType, Branch, OperationSignals } from "@/types";
 import { router, usePage } from "@inertiajs/react";
 import { Button } from "./ui/button";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Download, Plus, Upload, ChevronDown, ListFilter, Search, BadgeCheck, Ban, Trash, ArrowDownWideNarrow, X } from "lucide-react";
 import { Link } from "@inertiajs/react";
 import { TablePagination } from "./table-pagination";
-import SearchBar from "./search-bar";
 import { AlumniTable } from "./alumni-table";
 import { export_alumni, index, step } from "@/routes/alumni";
 import { Import } from "./import";
-import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from "./ui/select";
 import { Input } from "./ui/input";
 import { bulk_activate, bulk_deactivate, bulk_delete } from "@/routes/user";
 import { useConfirmAction } from "./context/confirm-action-context";
 import { Filter } from "@/types";
 import { useModal } from "./context/modal-context";
 import SortCollapsible from "./sort-collapsible";
-import NotificationsListener from "./notification-listener";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import AlumniFilter from "./alumni-filter";
 import AlumniController from "@/actions/App/Http/Controllers/User/AlumniController";
@@ -26,7 +22,7 @@ import BulkSelectionToolbar from "./bulk-selection-toolbar";
 const columns = [
     'Alumni ID',
     'Name',
-    'Student #',
+    // 'Student #',
     'School Level',
     'Course',
     'Branch',
@@ -300,7 +296,7 @@ export default function AlumniList() {
                 </div>
             </div>
 
-            <Import open={open} entityLabel="alumni" importAction={AlumniController.import.form()} setOpen={setOpen} />
+            <Import open={open} entityLabel="alumni" importAction={AlumniController.import()} setOpen={setOpen} />
 
             {alumni.length > 0 && <AlumniTable selectedData={selectedData} setSelectedData={setSelectedData} key={tableVersion} alumni={alumni} columns={columns} />}
 

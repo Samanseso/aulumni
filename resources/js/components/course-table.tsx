@@ -1,12 +1,13 @@
+import { useConfirmAction } from '@/components/context/confirm-action-context';
 import { Course } from '@/types';
 import { Checkbox } from "./ui/checkbox";
 import { Button } from "./ui/button";
-import { Trash2, Eye, EllipsisVertical, Check, Ban, Trash, PenBox } from "lucide-react";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent } from "./ui/dropdown-menu";
-import { Separator } from "./ui/separator";
+import { Trash, EllipsisVertical, PenBox } from "lucide-react";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "./ui/dropdown-menu";
 
 interface CourseTableProps {
     courses: Course[];
+    onEdit: (course: Course) => void;
 }
 
 const columns = [
@@ -15,7 +16,8 @@ const columns = [
     "Code"
 ]
 
-export default function CourseTable({ courses }: CourseTableProps) {
+export default function CourseTable({ courses, onEdit }: CourseTableProps) {
+    const { confirmActionContentCreateModal } = useConfirmAction();
     return (
         <div className="table-fixed w-full h-full max-h-[63vh] overflow-auto [&::-webkit-scrollbar]:w-0 border-b">
             <table className="w-full">
@@ -29,25 +31,33 @@ export default function CourseTable({ courses }: CourseTableProps) {
                                 {col}
                             </th>
                         ))}
-                        <th className="ps-2 pe-7"></th>
+                        <th className="px-6 py-3 text-right text-xs font-semibold uppercase text-gray-500"></th>
                     </tr>
                 </thead>
                 <tbody>
+                    {courses.length === 0 && (
+                        <tr className="border-t">
+                            <td colSpan={7} className="px-6 py-10 text-center text-sm text-gray-500">
+                                No courses found.
+                            </td>
+                        </tr>
+                    )}
+
                     {courses.map((course, index) => (
                         <tr key={course.course_id} className={`border-t border-t-gray-300 ${index % 2 === 0 ? 'bg-stone-100' : ''}`}>
                             <td className="ps-7 pe-2">
                                 <div className="flex items-center justify-center">
-                                    <Checkbox />
+                                    <Checkbox className="size-5 cursor-pointer bg-white" />
                                 </div>
                             </td>
-                            <td className="px-4 py-2 text-sm max-w-55">
+                            <td className="px-4 py-2 text-sm max-w-60">
                                 <span className="font-bold">{course.name}</span> <br />
                                 <span className="text-xs text-gray-500">{course.department?.name || '-'}</span> <br />
                             </td>
                             <td className="px-4 py-2 text-sm">{course.branch?.name || '-'}</td>
                             <td className="px-4 py-2 text-sm">{course.code || '-'}</td>
-                            <td data-label="Actions" className="ps-2 pe-7 py-0.25 text-sm">
-                                <div className="flex items-center lg:justify-center space-x-1">
+                            <td className="px-6 py-3 text-sm">
+                                <div className="flex justify-center">
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button size="sm" variant="ghost" className="text-xs">
@@ -55,18 +65,24 @@ export default function CourseTable({ courses }: CourseTableProps) {
                                             </Button>
                                         </DropdownMenuTrigger>
 
-                                        <DropdownMenuContent className="flex flex-col items-start gap-1 mt-1 p-2 rounded-xl border border-white/5 bg-white shadow" align="end">
-                                            <Separator />
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onClick={() => onEdit(course)}>
+                                                <PenBox className="size-4 text-blue-500" /> Edit
+                                            </DropdownMenuItem>
 
-                                            <Button variant="ghost" size="sm" className="text-xs">
-                                                <PenBox className="size-4 text-blue-500" />Edit
-                                            </Button>
+                                            <DropdownMenuSeparator />
 
-                                            <Separator />
-
-                                            <Button variant="ghost" size="sm" className="text-xs">
-                                                <Trash className="size-4 text-rose-500" />Delete
-                                            </Button>
+                                            <DropdownMenuItem
+                                                onClick={() =>
+                                                    confirmActionContentCreateModal({
+                                                        url: { url: `/utility/course/${course.course_id}`, method: 'delete' },
+                                                        message: `Are you sure you want to delete ${course.name}?`,
+                                                        action: 'Delete',
+                                                    })
+                                                }
+                                            >
+                                                <Trash className="size-4 text-rose-500" /> Delete
+                                            </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </div>

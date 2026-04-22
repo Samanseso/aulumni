@@ -32,7 +32,7 @@ const PostCards = ({ posts, selectedData, setSelectedData }: PostCardsProps) => 
     });
 
     return (
-        <div>
+        <div className="!h-[calc(100vh-196px)] !max-h-[calc(100vh-196px)] overflow-auto scroll-area [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-400">
             {viewPostId !== null && (
                 <PostModal post_id={viewPostId} setViewPostId={setViewPostId} />
             )}
@@ -45,7 +45,7 @@ const PostCards = ({ posts, selectedData, setSelectedData }: PostCardsProps) => 
                                     {key}
                                 </th>
                             </tr>
-                        </thead>    
+                        </thead>
                     </table>
                     <div className="px-5 grid grid-cols-3 xl:grid-cols-4 gap-3 mb-7">
                         {grouped_post.map((post) => (
@@ -74,14 +74,14 @@ const PostCards = ({ posts, selectedData, setSelectedData }: PostCardsProps) => 
                                         </div>
 
                                         <Checkbox className='size-5 cursor-pointer'
-                                        checked={selectedData.includes(post.post_id)}
-                                        onCheckedChange={(checked) => {
-                                            if (checked) {
-                                                setSelectedData([...selectedData, post.post_id]);
-                                            } else {
-                                                setSelectedData(selectedData.filter(id => id !== post.post_id));
-                                            }
-                                        }} />
+                                            checked={selectedData.includes(post.post_id)}
+                                            onCheckedChange={(checked) => {
+                                                if (checked) {
+                                                    setSelectedData([...selectedData, post.post_id]);
+                                                } else {
+                                                    setSelectedData(selectedData.filter(id => id !== post.post_id));
+                                                }
+                                            }} />
 
                                         {/* <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
@@ -114,7 +114,7 @@ const PostCards = ({ posts, selectedData, setSelectedData }: PostCardsProps) => 
                                         <h4 className="text-sm text-gray-900 line-clamp-2 my-3">
                                             {post.job_title}
                                         </h4>
-                                        {post.attachments && post.attachments.length > 0 && (
+                                        {post.attachments && post.attachments.length > 0 ?
                                             <div className="grid grid-cols-1 gap-3">
                                                 {post.attachments.map(att => (
                                                     att.type === "image" ? (
@@ -127,7 +127,10 @@ const PostCards = ({ posts, selectedData, setSelectedData }: PostCardsProps) => 
                                                     )
                                                 ))}
                                             </div>
-                                        )}
+                                            :
+                                            <div className="flex h-[25vh] items-center justify-center rounded-md bg-gradient-to-br from-blue/10  to-white">
+                                                <p className="px-4 text-center text-sm font-medium text-slate-500">No attachement uploaded</p>
+                                            </div>}
                                     </div>
 
                                     <div className='flex items-center justify-between'>

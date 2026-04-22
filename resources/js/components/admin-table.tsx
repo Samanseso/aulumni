@@ -23,7 +23,6 @@ interface AdminTableProps {
 }
 
 const columns = [
-	"User ID",
 	"Name",
 	"User Name",
 	"Email",
@@ -90,8 +89,6 @@ export function AdminTable({ admins, selectedData, setSelectedData }: AdminTable
 									/>
 								</div>
 							</td>
-
-							<td className="px-4 py-2 text-sm">{user.user_id}</td>
 
 							<td className="px-4 py-2 text-sm">
 								<span className="font-bold">{user.name}</span>

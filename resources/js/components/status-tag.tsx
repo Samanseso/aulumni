@@ -25,7 +25,7 @@ const StatusTag = ({ text }: { text: string }) => {
 
 
     return (
-        <Badge variant="secondary" style={{ backgroundColor: getBgColor()}} className="text-white uppercase rounded-sm">
+        <Badge variant="secondary" style={{ backgroundColor: getBgColor()}} className="text-white uppercase rounded-sm shadow-sm">
             {text}
         </Badge>
 

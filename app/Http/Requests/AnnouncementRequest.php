@@ -22,7 +22,6 @@ class AnnouncementRequest extends FormRequest
             'starts_at' => ['required', 'date'],
             'ends_at' => ['nullable', 'date', 'after_or_equal:starts_at'],
             'description' => ['required', 'string'],
-            'registration_link' => ['nullable', 'url', 'max:1024'],
             'privacy' => ['nullable', Rule::in(['public', 'friends', 'only_me'])],
             'attachments' => ['nullable', 'array'],
             'attachments.*' => ['file', 'mimes:jpg,jpeg,png,gif,webp,mp4,mov,pdf,doc,docx', 'max:10240'],

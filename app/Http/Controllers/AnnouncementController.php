@@ -50,8 +50,7 @@ class AnnouncementController extends Controller
 
         return Inertia::render('admin/announcements', [
             'announcements' => $query
-                ->orderBy('starts_at')
-                ->orderByDesc('created_at')
+                ->orderByDesc('starts_at')
                 ->get(),
         ]);
     }
@@ -81,7 +80,6 @@ class AnnouncementController extends Controller
                 'starts_at' => $request['starts_at'],
                 'ends_at' => $request['ends_at'],
                 'description' => $request['description'],
-                'registration_link' => $request['registration_link'],
                 'privacy' => $request['privacy'] ?? 'public',
                 'status' => 'pending',
             ]);
@@ -267,7 +265,6 @@ class AnnouncementController extends Controller
             'event_type'        => ['required', 'string', 'in:Seminar,Workshop,Webinar,Career Fair,Alumni Gathering,General Event'],
             'organizer'         => ['required', 'string', 'max:255'],
             'venue'             => ['required', 'string', 'max:255'],
-            'registration_link' => ['nullable', 'url', 'max:500'],
             'starts_at'         => ['required', 'date'],
             'ends_at'           => ['required', 'date', 'after:starts_at'],
             'description'       => ['required', 'string'],
@@ -283,7 +280,6 @@ class AnnouncementController extends Controller
             'event_type'        => $validated['event_type'],
             'organizer'         => $validated['organizer'],
             'venue'             => $validated['venue'],
-            'registration_link' => $validated['registration_link'] ?? null,
             'starts_at'         => $validated['starts_at'],
             'ends_at'           => $validated['ends_at'],
             'description'       => $validated['description'],

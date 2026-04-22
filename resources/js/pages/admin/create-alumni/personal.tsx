@@ -23,7 +23,7 @@ const BasicInfo: React.FC = () => {
 	return (
 		<AppLayout breadcrumbs={breadcrumbs}>
 			<CreateAlumniLayout>
-				<Form {...AlumniController.process_personal_details.form()} options={{ preserveScroll: true }}>
+				<Form {...AlumniController.process_personal_details()} options={{ preserveScroll: true }}>
 					{({ processing, errors }) => (
 						<div>
 							<div className="flex px-7 gap-8 border-t-2 ">

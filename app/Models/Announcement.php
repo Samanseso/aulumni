@@ -25,7 +25,6 @@ class Announcement extends Model
         'starts_at',
         'ends_at',
         'description',
-        'registration_link',
         'privacy',
         'status',
     ];

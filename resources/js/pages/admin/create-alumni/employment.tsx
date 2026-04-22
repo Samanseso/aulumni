@@ -27,7 +27,7 @@ const EmploymentInfo: React.FC = () => {
 	return (
 		<AppLayout breadcrumbs={breadcrumbs}>
 			<CreateAlumniLayout>
-				<Form {...AlumniController.process_employment_details.form()} options={{ preserveScroll: true }}>
+				<Form {...AlumniController.process_employment_details()} options={{ preserveScroll: true }}>
 					{({ processing, errors }) => (
 						<div className="px-7 gap-8 border-t-2">
 							<div className="flex-1">

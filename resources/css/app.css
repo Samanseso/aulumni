@@ -1,6 +1,10 @@
 @import 'tailwindcss';
 
 @import 'tw-animate-css';
+@import 'swiper/css';
+@import 'swiper/css/navigation';
+@import 'swiper/css/pagination';
+@import 'swiper/css/scrollbar';
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -214,13 +218,17 @@ input[type='number'] {
 /* container */
 .scroll-area {
     position: relative; /* keep for layout if you add absolute children */
-    height: 65vh;
     overflow: auto;
     /* optional: avoid layout shift when scrollbar appears */
     scrollbar-gutter: stable; /* reserves space (not overlay) */
 }
 
-input[type="file"]:focus {
-    outline: none !important;
-    box-shadow: none !important;
+.swiper {
+    overflow: visible !important;
+}
+
+
+.swiper-pagination {
+    position: absolute !important;
+    bottom: -30px !important;
 }

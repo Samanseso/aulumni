@@ -4,6 +4,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Department } from '@/types';
 import { EllipsisVertical, PenBox, Trash } from 'lucide-react';
 import { Checkbox } from './ui/checkbox';
+import CountTag from './count-tag';
 
 interface DepartmentsTableProps {
     departments: Department[];
@@ -47,9 +48,9 @@ export default function DepartmentsTable({ departments, onEdit }: DepartmentsTab
                                 <span className="font-bold">{department.name}</span> <br />
                                 <span className="text-xs text-gray-500">{department.branch?.name ?? '-'}</span> <br />
                             </td>
-                            <td className="px-4 py-3 text-sm">{department.courses_count ?? 0}</td>
-                            <td className="px-4 py-3 text-sm">{department.employees_count ?? 0}</td>
-                            <td className="px-4 py-3 text-sm">{department.alumni_count ?? 0}</td>
+                            <td className="px-4 py-3 text-sm"><CountTag count={department.courses_count ?? 0} label={department.courses_count === 1 ? 'Course' : 'Courses'} /></td>
+                            <td className="px-4 py-3 text-sm"><CountTag count={department.employees_count ?? 0} label={department.employees_count === 1 ? 'Employee' : 'Employees'} /></td>
+                            <td className="px-4 py-3 text-sm"><CountTag count={department.alumni_count ?? 0} label={department.alumni_count === 1 ? 'Alumnus' : 'Alumni'} /></td>
                             <td className="px-6 py-3 text-sm">
                                 <div className="flex justify-center">
                                     <DropdownMenu>

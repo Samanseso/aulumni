@@ -80,7 +80,7 @@ export function NavMain() {
 
 
 
-            <SidebarGroupLabel className="mt-5">Content Management</SidebarGroupLabel>
+            <SidebarGroupLabel className="mt-5 uppercase text-[10px] font-semibold opacity-85">Content Management</SidebarGroupLabel>
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton
@@ -112,7 +112,7 @@ export function NavMain() {
 
 
 
-            <SidebarGroupLabel className="mt-5">User Management</SidebarGroupLabel>
+            <SidebarGroupLabel className="mt-5 uppercase text-[10px] font-semibold opacity-85">User Management</SidebarGroupLabel>
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton
@@ -158,7 +158,7 @@ export function NavMain() {
 
 
 
-            <SidebarGroupLabel className="mt-5">Utilities</SidebarGroupLabel>
+            <SidebarGroupLabel className="mt-5 uppercase text-[10px] font-semibold opacity-85">Utilities</SidebarGroupLabel>
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton
@@ -176,12 +176,12 @@ export function NavMain() {
                 <SidebarMenuItem>
                     <SidebarMenuButton
                         asChild
-                        isActive={urlIsActive("/utility/branch")}
-                        tooltip={{ children: "Branch" }}
+                        isActive={urlIsActive("/utility/course")}
+                        tooltip={{ children: "Course" }}
                     >
-                        <Link href="/utility/branch" prefetch>
-                            <University />
-                            <span>Branch</span>
+                        <Link href="/utility/course" prefetch>
+                            <BookMarked />
+                            <span>Course</span>
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -203,12 +203,12 @@ export function NavMain() {
                 <SidebarMenuItem>
                     <SidebarMenuButton
                         asChild
-                        isActive={urlIsActive("/utility/course")}
-                        tooltip={{ children: "Course" }}
+                        isActive={urlIsActive("/utility/branch")}
+                        tooltip={{ children: "Branch" }}
                     >
-                        <Link href="/utility/course" prefetch>
-                            <BookMarked />
-                            <span>Course</span>
+                        <Link href="/utility/branch" prefetch>
+                            <University />
+                            <span>Branch</span>
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>

@@ -29,6 +29,7 @@ import InputError from "./input-error";
 interface AnnouncementModalProps {
     announcementId: number;
     setAnnouncementId: (id: number | null) => void;
+    admin?: boolean;
 }
 
 const getAnnouncement = async (announcementId: number): Promise<CompleteAnnouncement> => {
@@ -36,12 +37,12 @@ const getAnnouncement = async (announcementId: number): Promise<CompleteAnnounce
     return response.data;
 };
 
-export default function AnnouncementModal({ announcementId, setAnnouncementId }: AnnouncementModalProps) {
+export default function AnnouncementModal({ announcementId, setAnnouncementId, admin = false }: AnnouncementModalProps) {
     const [announcement, setAnnouncement] = useState<CompleteAnnouncement | null>(null);
     const [isEditing, setIsEditing] = useState(false);
     const { confirmActionContentCreateModal } = useConfirmAction();
 
-    const { props } = usePage<{ modal: ModalType}>();
+    const { props } = usePage<{ modal: ModalType }>();
 
     useEffect(() => {
         getAnnouncement(announcementId)
@@ -61,7 +62,7 @@ export default function AnnouncementModal({ announcementId, setAnnouncementId }:
     return (
         <Dialog open={true} onOpenChange={() => setAnnouncementId(null)} modal={true}>
             <DialogTitle className="hidden">Announcement</DialogTitle>
-            <DialogContent hasCloseButton={false} className="h-fit border-5 border-white bg-white p-0 lg:max-w-3xl">
+            <DialogContent hasCloseButton={false} className="border-5 border-white bg-white p-0 lg:max-w-3xl">
                 <DialogDescription className="hidden" />
                 {announcement ? (
                     <>
@@ -72,7 +73,8 @@ export default function AnnouncementModal({ announcementId, setAnnouncementId }:
                                 </span>
                             </div>
                             {
-                                isEditing ?
+                                admin && (
+                                    isEditing ?
                                     <Button
                                         variant="ghost"
                                         onClick={() => setIsEditing(false)}
@@ -85,13 +87,14 @@ export default function AnnouncementModal({ announcementId, setAnnouncementId }:
                                     >
                                         <PenBox className="size-4" /> Edit
                                     </Button>
+                                )
                             }
                         </div>
 
                         <div className="">
                             {isEditing ? (
                                 <Form
-                                    {...AnnouncementController.update.form(announcement.announcement_id)}
+                                    {...AnnouncementController.update(announcement.announcement_id)}
                                     onSuccess={() => {
                                         setAnnouncementId(null);
                                     }}
@@ -102,7 +105,7 @@ export default function AnnouncementModal({ announcementId, setAnnouncementId }:
                                 >
                                     {({ processing, errors }) => (
                                         <>
-                                            <div className="!h-[67.25vh] overflow-auto scroll-area [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 flex flex-col gap-4 px-5.5 py-4">
+                                            <div className="!h-[67.2vh] overflow-auto scroll-area [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 flex flex-col gap-4 px-5.5 py-4">
                                                 <div>
                                                     <Label htmlFor="title">Announcement Title</Label>
                                                     <Input
@@ -158,17 +161,7 @@ export default function AnnouncementModal({ announcementId, setAnnouncementId }:
                                                     </div>
                                                 </div>
 
-                                                <div className="grid grid-cols-3 gap-4">
-                                                    <div>
-                                                        <Label htmlFor="registration_link">Registration Link</Label>
-                                                        <Input
-                                                            id="registration_link"
-                                                            name="registration_link"
-                                                            defaultValue={announcement.registration_link || ""}
-                                                            placeholder="https://..."
-                                                        />
-                                                        <InputError message={errors?.registration_link} />
-                                                    </div>
+                                                <div className="grid grid-cols-2 gap-4">
                                                     <div>
                                                         <Label htmlFor="starts_at">Starts At</Label>
                                                         <Input
@@ -203,7 +196,7 @@ export default function AnnouncementModal({ announcementId, setAnnouncementId }:
                                                     />
                                                     <InputError message={errors?.description} />
                                                 </div>
-                                        </div>
+                                            </div>
 
                                             <div className="flex justify-between px-5.5 py-3">
                                                 <Button
@@ -227,7 +220,7 @@ export default function AnnouncementModal({ announcementId, setAnnouncementId }:
                             )}
                         </div>
 
-                        {!isEditing && (
+                        {!isEditing && admin && (
                             <DialogFooter className="flex h-fit flex-1 px-5.5 py-3 sm:justify-between">
                                 <Button
                                     variant="destructive"
@@ -237,7 +230,7 @@ export default function AnnouncementModal({ announcementId, setAnnouncementId }:
                                         message: "Are you sure you want to delete this announcement?",
                                         action: "Delete",
                                     })}
-                                    
+
                                 >
                                     <Trash /> Delete Announcement
                                 </Button>
@@ -246,7 +239,7 @@ export default function AnnouncementModal({ announcementId, setAnnouncementId }:
                                     <Button variant="outline" onClick={() => setAnnouncementId(null)}>Close</Button>
                                     {announcement.status === "approved" ? (
                                         <Form
-                                            {...AnnouncementController.reject.form(announcement.announcement_id)}
+                                            {...AnnouncementController.reject(announcement.announcement_id)}
                                             className="w-full"
                                             onSuccess={() => setAnnouncementId(null)}
                                         >
@@ -259,7 +252,7 @@ export default function AnnouncementModal({ announcementId, setAnnouncementId }:
                                         </Form>
                                     ) : (
                                         <Form
-                                            {...AnnouncementController.approve.form(announcement.announcement_id)}
+                                            {...AnnouncementController.approve(announcement.announcement_id)}
                                             className="w-full"
                                             onSuccess={() => setAnnouncementId(null)}
                                         >
@@ -276,26 +269,31 @@ export default function AnnouncementModal({ announcementId, setAnnouncementId }:
                         )}
                     </>
                 ) : (
-                    <>
+                    <div className={admin ? "" : "max-h-[70vh] overflow-hidden"}>
                         <div className="flex items-center justify-between px-5.5 pt-3">
                             <Skeleton className="mt-2 h-7 w-40" />
-                            <Skeleton className="h-6 w-20" />
+                            { admin &&  <Skeleton className="h-6 w-20" /> }
                         </div>
 
-                        <div className="h-[70vh] overflow-auto px-4 py-4">
+                        <div className="h-[69.5vh] overflow-auto px-4 py-4 overflow-hidden">
                             <Skeleton className="mb-3 h-12 w-full" />
                             <Skeleton className="mb-3 h-40 w-full" />
-                            <Skeleton className="h-80 w-full" />
+                            <Skeleton className="h-61 w-full" />
                         </div>
 
-                        <DialogFooter className="flex h-fit flex-1 px-5.5 py-3 sm:justify-between">
-                            <Skeleton className="h-9 w-40" />
-                            <div className="flex gap-3">
-                                <Skeleton className="h-9 w-20" />
-                                <Skeleton className="h-9 w-28" />
-                            </div>
-                        </DialogFooter>
-                    </>
+                        {
+                            admin &&
+                            <>
+                                <DialogFooter className="flex h-[100vh] h-fit flex-1 px-5.5 py-3 sm:justify-between">
+                                    <Skeleton className="h-9 w-40" />
+                                    <div className="flex gap-3">
+                                        <Skeleton className="h-9 w-20" />
+                                        <Skeleton className="h-9 w-28" />
+                                    </div>
+                                </DialogFooter>
+                            </>
+                        }
+                    </div>
                 )}
             </DialogContent>
         </Dialog>

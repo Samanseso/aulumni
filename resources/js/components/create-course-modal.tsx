@@ -1,23 +1,24 @@
-import CourseController from '@/actions/App/Http/Controllers/CourseController';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Branch, Department } from '@/types';
+import { Branch, Course, Department } from '@/types';
 import { Form } from '@inertiajs/react';
-import { SetStateAction, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface CreateCourseModalProps {
     branches: Branch[];
     departments: Department[];
-    setOpen: React.Dispatch<SetStateAction<boolean>>;
+    course?: Course | null;
+    onClose: () => void;
 }
 
-export default function CreateCourseModal({ branches, departments, setOpen }: CreateCourseModalProps) {
-    const [selectedBranchId, setSelectedBranchId] = useState<string>('');
-    const [selectedDepartmentId, setSelectedDepartmentId] = useState<string>('');
+export default function CreateCourseModal({ branches, departments, course, onClose }: CreateCourseModalProps) {
+    const isEditing = Boolean(course);
+    const [selectedBranchId, setSelectedBranchId] = useState<string>(course?.branch_id?.toString() ?? '');
+    const [selectedDepartmentId, setSelectedDepartmentId] = useState<string>(course?.department_id?.toString() ?? '');
 
     const filteredDepartments = selectedBranchId
         ? departments.filter((department) => department.branch_id === Number(selectedBranchId))
@@ -38,16 +39,25 @@ export default function CreateCourseModal({ branches, departments, setOpen }: Cr
     }, [filteredDepartments, selectedDepartmentId]);
 
     return (
-        <Dialog open={true} onOpenChange={setOpen}>
+        <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
             <DialogContent className="bg-white lg:max-w-xl">
-                <DialogTitle>Create Course</DialogTitle>
+                <DialogTitle>{isEditing ? 'Edit Course' : 'Create Course'}</DialogTitle>
                 <DialogDescription>
-                    Add a new course under the correct branch and department.
+                    {isEditing
+                        ? 'Update the course and keep its branch and department assignment aligned with its related records.'
+                        : 'Add a new course under the correct branch and department.'}
                 </DialogDescription>
 
-                <Form {...CourseController.store.form()} onSuccess={() => setOpen(false)}>
+                <Form
+                    action={isEditing ? `/utility/course/${course?.course_id}` : '/utility/course'}
+                    method="post"
+                    options={{ preserveScroll: true }}
+                    onSuccess={() => onClose()}
+                >
                     {({ processing, errors }) => (
                         <>
+                            {isEditing && <input type="hidden" name="_method" value="put" />}
+
                             <div className="mt-5 mb-10 flex flex-col gap-4">
                                 <div className="flex">
                                     <Label className="text-gray-500 w-40 font-bold uppercase text-xs mt-2.5" htmlFor="branch_id">
@@ -101,7 +111,7 @@ export default function CreateCourseModal({ branches, departments, setOpen }: Cr
                                         Name <span className="text-red">*</span>
                                     </Label>
                                     <div className="w-full">
-                                        <Input id="name" name="name" type="text" placeholder="e.g. Bachelor of Science in Computer Science" />
+                                        <Input id="name" name="name" type="text" placeholder="e.g. Bachelor of Science in Computer Science" defaultValue={course?.name ?? ''} />
                                         <InputError className="mt-2" message={errors.name} />
                                     </div>
                                 </div>
@@ -111,18 +121,18 @@ export default function CreateCourseModal({ branches, departments, setOpen }: Cr
                                         Code
                                     </Label>
                                     <div className="w-full">
-                                        <Input id="code" name="code" type="text" placeholder="e.g. BSCS" />
+                                        <Input id="code" name="code" type="text" placeholder="e.g. BSCS" defaultValue={course?.code ?? ''} />
                                         <InputError className="mt-2" message={errors.code} />
                                     </div>
                                 </div>
                             </div>
 
                             <DialogFooter>
-                                <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
+                                <Button type="button" variant="secondary" onClick={() => onClose()}>
                                     Cancel
                                 </Button>
                                 <Button disabled={processing} type="submit">
-                                    Create
+                                    {isEditing ? 'Update' : 'Create'}
                                 </Button>
                             </DialogFooter>
                         </>

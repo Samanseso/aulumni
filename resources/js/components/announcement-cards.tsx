@@ -39,7 +39,7 @@ export default function AnnouncementCards({ announcements, selectedData, setSele
     return (
         <div className="!h-[calc(100vh-196px)] !max-h-[calc(100vh-196px)] overflow-auto scroll-area [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-400">
             {viewAnnouncementId !== null ? (
-                <AnnouncementModal announcementId={viewAnnouncementId} setAnnouncementId={setViewAnnouncementId} />
+                <AnnouncementModal announcementId={viewAnnouncementId} setAnnouncementId={setViewAnnouncementId} admin={true} />
             ) : null}
 
             {Object.entries(groupedAnnouncements).map(([groupLabel, items]) => (
@@ -103,7 +103,7 @@ export default function AnnouncementCards({ announcements, selectedData, setSele
 
 
 
-                                        <h4 className="mb-2 line-clamp-2 text-base font-semibold text-slate-950">{announcement.title}</h4>
+                                        <h4 className="mt-1 mb-3 line-clamp-2 text-base font-semibold text-slate-950">{announcement.title}</h4>
 
                                         <div className="mb-3 space-y-2 text-sm text-slate-600">
                                             <div className="flex items-center gap-2">
@@ -121,10 +121,10 @@ export default function AnnouncementCards({ announcements, selectedData, setSele
                                                 <img
                                                     src={previewImage.url}
                                                     alt={announcement.title}
-                                                    className="h-[22vh] w-full rounded-md object-cover"
+                                                    className="h-[25vh] w-full rounded-md object-cover"
                                                 />
                                             ) : (
-                                                <div className="flex h-[22vh] items-center justify-center rounded-md bg-gradient-to-br from-blue/10 via-white to-red/10">
+                                                <div className="flex h-[25vh] items-center justify-center rounded-md bg-gradient-to-br from-blue/10 to-white">
                                                     <p className="px-4 text-center text-sm font-medium text-slate-500">No event cover uploaded yet</p>
                                                 </div>
                                             )}
@@ -136,7 +136,7 @@ export default function AnnouncementCards({ announcements, selectedData, setSele
                                         </div>
                                     </div>
                                 );
-                            })()
+                            })()    
                         ))}
                     </div>
                 </div>

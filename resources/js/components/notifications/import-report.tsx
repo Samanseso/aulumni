@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { ImportReportNotificationPayload } from '@/types';
 import { getRelativeTimeDifference } from '@/helper';
+import Heading from '../heading';
 
 type FieldDescriptor = {
     key: string;
@@ -110,39 +111,38 @@ export default function NotificationImportReport({ data }: { data: ImportReportN
 
     return (
         <div className="space-y-5">
-            <div className="flex items-start gap-4 rounded-2xl border border-amber-100 bg-amber-50 p-5">
+            <div className="flex items-start gap-4 rounded-xl border border-amber-100 bg-amber-50 p-5 shadow-sm">
                 <div className="flex size-12 items-center justify-center rounded-full bg-amber-500 text-white">
                     <Import className="size-5" />
                 </div>
 
                 <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                        <h2 className="text-lg font-semibold text-slate-950">{data.title}</h2>
+                    <div className='flex justify-between'>
+                        <Heading title={data.title} description={data.message} classname='mb-0' />
                         <p className="text-xs text-slate-500">{getRelativeTimeDifference(data.timestamp)}</p>
-                    </div>
 
-                    <p className="mt-2 text-sm leading-6 text-slate-600">{data.message}</p>
+                    </div>
                 </div>
             </div>
 
             <div className="grid gap-3 md:grid-cols-3">
-                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
+                <div className="rounded-xl border border-slate-200 bg-white px-4 py-4">
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Total rows</p>
                     <p className="mt-2 text-2xl font-semibold text-slate-950">{data.report.total ?? 0}</p>
                 </div>
 
-                <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-4 shadow-sm">
+                <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-4">
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-600">Succeeded</p>
                     <p className="mt-2 text-2xl font-semibold text-emerald-700">{data.report.succeeded ?? 0}</p>
                 </div>
 
-                <div className="rounded-2xl border border-rose-100 bg-rose-50 px-4 py-4 shadow-sm">
+                <div className="rounded-xl border border-rose-100 bg-rose-50 px-4 py-4">
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rose-500">Failed</p>
                     <p className="mt-2 text-2xl font-semibold text-rose-600">{data.report.failed ?? 0}</p>
                 </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="flex flex-col gap-4 border-b border-slate-100 pb-5 md:flex-row md:items-center md:justify-between">
                     <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Failure details</p>
@@ -165,7 +165,7 @@ export default function NotificationImportReport({ data }: { data: ImportReportN
                 {failure ? (
                     <div className="space-y-5 pt-5">
                         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                            <div className="rounded-2xl bg-slate-50 px-4 py-3">
+                            <div className="rounded-xl bg-slate-50 px-4 py-3">
                                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Selected row</p>
                                 <p className="mt-1 text-sm font-medium text-slate-800">Row {failure.row ?? selectedIndex + 1}</p>
                             </div>
@@ -191,7 +191,7 @@ export default function NotificationImportReport({ data }: { data: ImportReportN
                             ) : null}
                         </div>
 
-                        <div className="rounded-2xl border border-rose-100 bg-rose-50 p-4">
+                        <div className="rounded-xl border border-rose-100 bg-rose-50 p-4">
                             <div className="flex items-start gap-3">
                                 <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-rose-500 text-white">
                                     <FileWarning className="size-4" />
@@ -221,7 +221,7 @@ export default function NotificationImportReport({ data }: { data: ImportReportN
                                         <div
                                             key={key}
                                             className={cn(
-                                                'rounded-2xl border px-4 py-3',
+                                                'rounded-xl border px-4 py-3',
                                                 hasIssue ? 'border-rose-200 bg-rose-50' : 'border-slate-200 bg-slate-50',
                                             )}
                                         >
@@ -238,7 +238,7 @@ export default function NotificationImportReport({ data }: { data: ImportReportN
                                     );
                                 })
                             ) : (
-                                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-500">
+                                <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-500">
                                     No row preview is available for this failure.
                                 </div>
                             )}

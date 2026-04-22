@@ -129,7 +129,7 @@ const AcademicInfo: React.FC = () => {
 	return (
 		<AppLayout breadcrumbs={breadcrumbs}>
 			<CreateAlumniLayout>
-				<Form {...AlumniController.process_academic_details.form()} options={{ preserveScroll: true }}>
+				<Form {...AlumniController.process_academic_details()} options={{ preserveScroll: true }}>
 					{({ processing, errors }) => (
 						<div>
 							<div className="flex px-7 gap-8 border-t-2 ">
@@ -171,8 +171,6 @@ const AcademicInfo: React.FC = () => {
 														<SelectValue placeholder="Choose School Level" />
 													</SelectTrigger>
 													<SelectContent>
-														<SelectItem value="Elementary">Elementary</SelectItem>
-														<SelectItem value="High School">High School</SelectItem>
 														<SelectItem value="College">College</SelectItem>
 														<SelectItem value="Graduate">Graduate School</SelectItem>
 													</SelectContent>

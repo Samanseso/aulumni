@@ -48,7 +48,7 @@ const ActionConfirmation = ({ url, message, action, data, promptPassword = false
                 }
                 <DialogFooter>
                     <Button variant="secondary" onClick={() => setConfirmActionContent(undefined)}>No, keep it</Button>
-                    <Link href={url} onSuccess={() => setConfirmActionContent(undefined)} data={{ ...data || undefined, password: password }} as="div">
+                    <Link href={url} onSuccess={() => setConfirmActionContent(undefined)} data={{ ...data || undefined, password: password }} onError={() => setProcessing(false)} as="div">
                         <Button disabled={processing} onClick={() => setProcessing(true)} variant={action == "Delete" ? "destructive" : "default"}>
                             { processing && <Spinner />}
                             Yes, {action}!

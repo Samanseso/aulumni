@@ -41,13 +41,13 @@ export default function AnnouncementCreateModal({ setOpen }: AnnouncementCreateM
     return (
         <Dialog open={true} onOpenChange={setOpen}>
             <DialogContent className="!w-[50vw] !max-w-[50vw] bg-white">
-                <DialogTitle>Create Event Announcement</DialogTitle>
+                <DialogTitle>Create Announcement</DialogTitle>
                 <DialogDescription className="mb-2 text-sm text-muted-foreground">
                     Publish a new event announcement for alumni and keep the announcement feed updated.
                 </DialogDescription>
 
                 <Form
-                    {...AnnouncementController.store.form()}
+                    {...AnnouncementController.store()}
                     className="space-y-5"
                     options={{ preserveState: true }}
                     onSuccess={() => setOpen(false)}
@@ -91,11 +91,7 @@ export default function AnnouncementCreateModal({ setOpen }: AnnouncementCreateM
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-3 gap-4">
-                                <div>
-                                    <Label htmlFor="registration_link">Registration Link</Label>
-                                    <Input name="registration_link" placeholder="https://..." />
-                                </div>
+                            <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <Label htmlFor="starts_at">Starts At</Label>
                                     <Input name="starts_at" type="datetime-local" />
@@ -138,16 +134,6 @@ export default function AnnouncementCreateModal({ setOpen }: AnnouncementCreateM
                                         <Image className="h-4 w-4" />
                                         <span>Image</span>
                                     </Label>
-
-                                    <Label htmlFor={attachmentInputId} className="inline-flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
-                                        <Video className="h-4 w-4" />
-                                        <span>Video</span>
-                                    </Label>
-
-                                    <Label htmlFor={attachmentInputId} className="inline-flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
-                                        <FileText className="h-4 w-4" />
-                                        <span>File</span>
-                                    </Label>
                                 </div>
 
                                 <div className="flex items-center gap-2">
@@ -161,10 +147,6 @@ export default function AnnouncementCreateModal({ setOpen }: AnnouncementCreateM
                                     </Button>
                                 </div>
                             </DialogFooter>
-
-                            <p className="text-xs text-slate-500">
-                                Supported uploads: JPG, PNG, GIF, WEBP, MP4, MOV, PDF, DOC, and DOCX.
-                            </p>
                         </>
                     )}
                 </Form>

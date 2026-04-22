@@ -18,22 +18,12 @@ import AdminController from "@/actions/App/Http/Controllers/User/AdminController
 import CreateAdminModal from "./create-admin-modal";
 import BulkSelectionToolbar from "./bulk-selection-toolbar";
 
-const columns = [
-	"User ID",
-	"Name",
-	"User Name",
-	"Email",
-	"User Type",
-	"Status",
-	"Created At",
-];
 
 const sortableColumns: ColumnType[] = [
 	{ name: "User ID", db_name: "user_id" },
 	{ name: "Name", db_name: "name" },
 	{ name: "User Name", db_name: "user_name" },
 	{ name: "Email", db_name: "email" },
-	{ name: "User Type", db_name: "user_type" },
 	{ name: "Status", db_name: "status" },
 ];
 
@@ -225,7 +215,7 @@ export default function AdminUserList() {
 				<AdminTable admins={admins} selectedData={selectedData} setSelectedData={setSelectedData} />
 			)}
 
-			<Import open={open} entityLabel="admin" importAction={AdminController.import.form()} setOpen={setOpen} />
+			<Import open={open} entityLabel="admin" importAction={AdminController.import()} setOpen={setOpen} />
 
 			<div className="flex w-full justify-between items-end px-6 absolute bottom-7 right-0 space-x-10">
 				{

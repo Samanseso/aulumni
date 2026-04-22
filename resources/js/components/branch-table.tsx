@@ -4,6 +4,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Branch } from '@/types';
 import { EllipsisVertical, PenBox, Trash } from 'lucide-react';
 import { Checkbox } from './ui/checkbox';
+import CountTag from './count-tag';
 
 interface BranchTableProps {
     branches: Branch[];
@@ -57,10 +58,10 @@ export default function BranchTable({ branches, onEdit }: BranchTableProps) {
                                 <span className="text-xs text-gray-500">{branch.contact}</span> <br />
                                 <span className="text-xs text-gray-500">{branch.address}</span> <br />
                             </td>
-                            <td className="px-4 py-3 text-sm">{branch.departments_count ?? 0}</td>
-                            <td className="px-4 py-3 text-sm">{branch.courses_count ?? 0}</td>
-                            <td className="px-4 py-3 text-sm">{branch.employees_count ?? 0}</td>
-                            <td className="px-4 py-3 text-sm">{branch.alumni_count ?? 0}</td>
+                            <td className="px-4 py-3 text-sm"><CountTag count={branch.departments_count ?? 0} label={branch.departments_count === 1 ? 'Department' : 'Departments'} /></td>
+                            <td className="px-4 py-3 text-sm"><CountTag count={branch.courses_count ?? 0} label={branch.courses_count === 1 ? 'Course' : 'Courses'} /></td>
+                            <td className="px-4 py-3 text-sm"><CountTag count={branch.employees_count ?? 0} label={branch.employees_count === 1 ? 'Employee' : 'Employees'} /></td>
+                            <td className="px-4 py-3 text-sm"><CountTag count={branch.alumni_count ?? 0} label={branch.alumni_count === 1 ? 'Alumnus' : 'Alumni'} /></td>
                             <td className="px-4 py-3 text-sm">
                                 <div className="flex justify-enter">
                                     <DropdownMenu>

@@ -3,126 +3,113 @@
 namespace App\Exports;
 
 use App\Models\Alumni;
-use Illuminate\Support\Collection;
-use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Illuminate\Database\Eloquent\Builder;
 
-class AlumniExport implements FromCollection, WithHeadings
+class AlumniExport implements FromQuery, WithHeadings, WithMapping, WithChunkReading, ShouldAutoSize
 {
-    public function collection(): Collection
+    public function chunkSize(): int
     {
-        return Alumni::with([
-            'user',
-            'personal_details',
-            'academic_details',
-            'contact_details',
-            'employment_details',
-        ])->get()->map(function ($alumni) {
-            return [
-                // USER
-                'user_id'               => optional($alumni->user)->user_id,
-                'user_name'             => optional($alumni->user)->user_name,
+        return 500;
+    }
 
-                // PERSONAL
-                'alumni_id'             => $alumni->alumni_id,
-                'first_name'            => optional($alumni->personal_details)->first_name,
-                'middle_name'           => optional($alumni->personal_details)->middle_name,
-                'last_name'             => optional($alumni->personal_details)->last_name,
-                'password'              => optional($alumni->user)->password,
-                'status'                => optional($alumni->user)->status,
-                'gender'                => optional($alumni->personal_details)->gender,
-                'birthday'              => optional($alumni->personal_details)->birthday,
-                'photo'                 => optional($alumni->personal_details)->photo,
-                'bio'                   => optional($alumni->personal_details)->bio,
-                'interest'              => optional($alumni->personal_details)->interest,
-                'address'               => optional($alumni->personal_details)->address,
-
-                // ACADEMIC
-                'student_number'        => optional($alumni->academic_details)->student_number,
-                'school_level'          => optional($alumni->academic_details)->school_level,
-                'batch'                 => optional($alumni->academic_details)->batch,
-                'branch'                => optional($alumni->academic_details)->branch,
-                'course'                => optional($alumni->academic_details)->course,
-
-                // CONTACT
-                'email'                 => optional($alumni->contact_details)->email,
-                'contact'               => optional($alumni->contact_details)->contact,
-                'telephone'             => optional($alumni->contact_details)->telephone,
-                'mailing_address'       => optional($alumni->contact_details)->mailing_address,
-                'present_address'       => optional($alumni->contact_details)->present_address,
-                'provincial_address'    => optional($alumni->contact_details)->provincial_address,
-                'company_address'       => optional($alumni->contact_details)->company_address,
-                'facebook_url'          => optional($alumni->contact_details)->facebook_url,
-                'twitter_url'           => optional($alumni->contact_details)->twitter_url,
-                'gmail_url'             => optional($alumni->contact_details)->gmail_url,
-                'link_url'              => optional($alumni->contact_details)->link_url,
-                'other_url'             => optional($alumni->contact_details)->other_url,
-
-                // EMPLOYMENT
-                'first_work_position'   => optional($alumni->employment_details)->first_work_position,
-                'first_work_time_taken' => optional($alumni->employment_details)->first_work_time_taken,
-                'first_work_acquisition' => optional($alumni->employment_details)->first_work_acquisition,
-                'current_employed'      => optional($alumni->employment_details)->current_employed,
-                'current_work_type'     => optional($alumni->employment_details)->current_work_type,
-                'current_work_status'   => optional($alumni->employment_details)->current_work_status,
-                'company'               => optional($alumni->employment_details)->current_work_company,
-                'position'              => optional($alumni->employment_details)->current_work_position,
-                'employee_year'         => optional($alumni->employment_details)->current_work_years,
-                'monthly_income'        => optional($alumni->employment_details)->current_work_monthly_income,
-                'satisfaction'          => optional($alumni->employment_details)->current_work_satisfaction,
-                'au_skills'             => optional($alumni->employment_details)->au_skills,
-                'au_usefulness'         => optional($alumni->employment_details)->au_usefulness,
-            ];
-        });
+    public function query(): Builder
+    {
+        return Alumni::query()->with([
+            'user:user_id,user_name,password,status',
+            'personal_details:alumni_id,first_name,middle_name,last_name,gender,birthday,photo,bio,interest,address',
+            'academic_details:alumni_id,student_number,school_level,batch,branch,course',
+            'contact_details:alumni_id,email,contact,telephone,mailing_address,present_address,provincial_address,company_address,facebook_url,twitter_url,gmail_url,link_url,other_url',
+            'employment_details:alumni_id,first_work_position,first_work_time_taken,first_work_acquisition,current_employed,current_work_type,current_work_status,current_work_company,current_work_position,current_work_years,current_work_monthly_income,current_work_satisfaction,au_skills,au_usefulness',
+        ]);
     }
 
     public function headings(): array
     {
+        return array_keys(self::columnMap());
+    }
+
+    public function map($alumni): array
+    {
+        $user       = $alumni->user;
+        $personal   = $alumni->personal_details;
+        $academic   = $alumni->academic_details;
+        $contact    = $alumni->contact_details;
+        $employment = $alumni->employment_details;
+
+        return array_values(self::columnMap($user, $personal, $academic, $contact, $employment, $alumni));
+    }
+
+    // ------------------------------------------------------------------
+    // Single source of truth: heading => value
+    // Column names mirror AlumniImport exactly.
+    // ------------------------------------------------------------------
+
+    private static function columnMap(
+        $user = null,
+        $personal = null,
+        $academic = null,
+        $contact = null,
+        $employment = null,
+        $alumni = null,
+    ): array {
         return [
-            'user_id',
-            'user_name',
-            'alumni_id',
-            'first_name',
-            'middle_name',
-            'last_name',
-            'password',
-            'status',
-            'gender',
-            'birthday',
-            'photo',
-            'bio',
-            'interest',
-            'address',
-            'student_number',
-            'school_level',
-            'batch',
-            'branch',
-            'course',
-            'email',
-            'contact',
-            'telephone',
-            'mailing_address',
-            'present_address',
-            'provincial_address',
-            'company_address',
-            'facebook_url',
-            'twitter_url',
-            'gmail_url',
-            'link_url',
-            'other_url',
-            'first_work_position',
-            'first_work_time_taken',
-            'first_work_acquisition',
-            'current_employed',
-            'current_work_type',
-            'current_work_status',
-            'company',
-            'position',
-            'employee_year',
-            'monthly_income',
-            'satisfaction',
-            'au_skills',
-            'au_usefulness',
+            // identity (not re-imported, but useful for reference)
+            'user_id'       => $user?->user_id,
+            'user_name'     => $user?->user_name,
+            'alumni_id'     => $alumni?->alumni_id,
+            'status'        => $user?->status,
+
+            // personal — matches import keys
+            'first_name'    => $personal?->first_name,
+            'middle_name'   => $personal?->middle_name,
+            'last_name'     => $personal?->last_name,
+            'sex'           => $personal?->gender,
+            'birthday'      => $personal?->birthday,
+            'photo'         => $personal?->photo,
+            'bio'           => $personal?->bio,
+            'interest'      => $personal?->interest,
+            'address'       => $personal?->address,
+
+            // academic — matches import keys
+            'student_number' => $academic?->student_number,
+            'school_level'   => $academic?->school_level,
+            'year_graduated' => $academic?->batch,
+            'branch'         => $academic?->branch,
+            'degree_earned'  => $academic?->course,
+
+            // contact — matches import keys
+            'email_address'                => $contact?->email,
+            'contact_number'               => $contact?->contact,
+            'telephone'                    => $contact?->telephone,
+            'mailing_address'              => $contact?->mailing_address,
+            'where_are_you_based_right_now'=> $contact?->present_address,
+            'provincial_address'           => $contact?->provincial_address,
+            'company_address'              => $contact?->company_address,
+            'facebook_account'             => $contact?->facebook_url,
+            'twitter_url'                  => $contact?->twitter_url,
+            'gmail_url'                    => $contact?->gmail_url,
+            'link_url'                     => $contact?->link_url,
+            'other_url'                    => $contact?->other_url,
+
+            // employment — matches import keys
+            'what_was_your_first_job_after_graduation'                                                                                                                               => $employment?->first_work_position,
+            'how_long_did_it_take_for_you_to_get_this_job'                                                                                                                           => $employment?->first_work_time_taken,
+            'how_did_you_acquire_your_current_job'                                                                                                                                   => $employment?->first_work_acquisition,
+            'are_you_currently_employed_in_case_of_unemployed_state_your_reasons_why_you_are_unemployed_in_the_option_other'                                                         => $employment?->current_employed,
+            'type_of_organization'                                                                                                                                                   => $employment?->current_work_type,
+            'present_employment_status'                                                                                                                                              => $employment?->current_work_status,
+            'name_of_present_employer_company'                                                                                                                                       => $employment?->current_work_company,
+            'position'                                                                                                                                                               => $employment?->current_work_position,
+            'number_of_years_in_the_company'                                                                                                                                         => $employment?->current_work_years,
+            'monthly_income_range'                                                                                                                                                   => $employment?->current_work_monthly_income,
+            'how_satisfied_are_you_with_your_job'                                                                                                                                    => $employment?->current_work_satisfaction,
+            'what_do_you_think_are_the_skills_knowledge_and_trainings_you_received_from_arellano_university_that_proved_to_be_useful_to_your_current_job_business_further_studies'   => $employment?->au_skills,
+            'to_what_extent_is_the_usefulness_of_these_acquired_knowledge_skills_and_trainings'                                                                                      => $employment?->au_usefulness,
         ];
     }
 }

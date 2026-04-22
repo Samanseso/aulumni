@@ -17,11 +17,20 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Notifications() {
+
+    const param = new URLSearchParams(window.location.search);
+    const notificationId = param.get('selected');
+
     const { props } = usePage<{ notifications: AppNotification<any>[] }>();
-    const [selected, setSelected] = useState<AppNotification<any> | null>(props.notifications[0] ?? null);
+
+    const selectedNotification = props.notifications.find((n) => n.id === notificationId) ?? props.notifications[0] ?? null;
+
+    const [selected, setSelected] = useState<AppNotification<any> | null>(selectedNotification);
+
+    const [hovering, setHovering] = useState(false);
 
     useEffect(() => {
-        setSelected(props.notifications[0] ?? null);
+        setSelected(selectedNotification);
     }, [props.notifications]);
 
     return (
@@ -34,9 +43,16 @@ export default function Notifications() {
                         <p className="text-sm font-semibold text-slate-900">Inbox</p>
                         <p className="text-xs text-slate-500">Recent updates from across the system</p>
                     </div>
-
+                    
                     {props.notifications.length > 0 ? (
-                        <div className="max-h-[calc(100vh-12rem)] overflow-auto p-2">
+                        <div
+                            onMouseEnter={() => setHovering(true)}
+                            onMouseLeave={() => setHovering(false)}
+                            className={cn(
+                                "max-h-[calc(100vh-188px)] ps-2 pe-1.5 pt-2 overflow-auto overflow-auto scroll-area [&::-webkit-scrollbar]:w-1.5",
+                                "[&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded",
+                                hovering ? "[&::-webkit-scrollbar-thumb]:bg-gray-300" : "[&::-webkit-scrollbar-thumb]:bg-transparent"
+                            )}>
                             <div className="space-y-1">
                                 {props.notifications.map((notification) => (
                                     <button

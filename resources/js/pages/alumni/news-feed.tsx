@@ -1,6 +1,7 @@
 import { Head, Link, usePage } from '@inertiajs/react'
-import { Bell, BriefcaseBusiness, Building2, CalendarDays, Globe, GraduationCap, Image, MapPin, Sparkles, UserCircle2 } from 'lucide-react'
+import { Bell, BriefcaseBusiness, Building2, CalendarDays, Globe, GraduationCap, Image, Key, MapPin, Sparkles, UserCircle2 } from 'lucide-react'
 import { useState } from 'react'
+import { Navigation, Pagination, Scrollbar, A11y } from 'swiper/modules';
 
 import PostCreateModal from '@/components/post-create-modal'
 import PostItem from '@/components/post-item'
@@ -11,6 +12,11 @@ import UserAvatar from '@/components/user-avatar'
 import AppLayout from '@/layouts/app-layout'
 import { Alumni, CompleteAnnouncement, CompletePost, User } from '@/types'
 import { PlaceholderPattern } from '@/components/ui/placeholder-pattern'
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { cn } from '../../lib/utils';
+import AnnouncementModal from '@/components/announcement-modal';
+
+
 
 const NewsFeed = () => {
     const { props } = usePage<{
@@ -20,13 +26,17 @@ const NewsFeed = () => {
         viewerProfile: Alumni | null
         feedSummary: {
             profile_completion: number
-            approved_posts: number
+            approved_posts: number  
             approved_announcements: number
             upcoming_events: number
             companies_hiring: number
             unread_notifications: number
         }
     }>()
+
+    const [viewAnnouncementId, setViewAnnouncementId] = useState<number | null>(null)
+
+    const [hoveringAnnouncement, setHoveringAnnouncement] = useState(false);
 
     const [createPostModal, setCreatePostModal] = useState(false)
     const profileUrl = `/${props.auth.user.user_name}`
@@ -38,6 +48,10 @@ const NewsFeed = () => {
             <div className="flex justify-center gap-6 pb-0">
                 {createPostModal && <PostCreateModal setCreatePostModal={setCreatePostModal} />}
 
+                {viewAnnouncementId !== null ? (
+                    <AnnouncementModal announcementId={viewAnnouncementId} setAnnouncementId={setViewAnnouncementId} />
+                ) : null}
+
                 <aside className="hidden lg:block min-w-[20rem]">
                     <div className="sticky pt-4 top-4 space-y-4">
                         <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
@@ -45,11 +59,7 @@ const NewsFeed = () => {
                             <div className="px-5 pb-5">
                                 <div className="-mt-8 flex items-end gap-3">
                                     <div className="rounded-full border-4 border-white bg-white shadow-md">
-                                        <img
-                                            className="h-20 w-20 rounded-full object-cover"
-                                            src="/assets/images/default-profile.png"
-                                            alt={props.auth.user.name}
-                                        />
+                                        <UserAvatar className='h-20 w-20' user={props.auth.user} />
                                     </div>
                                     <div className="pb-1">
                                         <p className="text-base font-semibold text-slate-900">{props.auth.user.name}</p>
@@ -111,7 +121,10 @@ const NewsFeed = () => {
 
                         <div className="mt-4 grid gap-2">
                             <Button asChild variant="outline" className="justify-start">
-                                <Link href={profileUrl}>Two-Factor Authentication</Link>
+                                <Link href={profileUrl}>
+                                    <Key />
+                                    Two-Factor Authentication
+                                </Link>
                             </Button>
                             <Button asChild variant="outline" className="justify-start">
                                 <Link href="/survey/employment">
@@ -124,118 +137,39 @@ const NewsFeed = () => {
                 </aside>
 
                 <div className="w-full max-w-xl  pt-4 max-h-[calc(100vh-65px)] overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                    <div className="mb-4 overflow-hidden border border-slate-200 bg-white shadow-sm md:rounded-xl">
-                        <div className="p-4 pb-2">
-                            <div className="mb-2 flex items-center gap-2">
-                                <UserAvatar user={props.auth.user} />
-                                <Input
-                                    onClick={() => setCreatePostModal(true)}
-                                    readOnly
-                                    endIcon={<BriefcaseBusiness size={20} />}
-                                    placeholder="Share a job opportunity with the alumni network..."
-                                    className="rounded-full border-0 bg-muted"
-                                />
-                            </div>
-                            <div className="flex items-center justify-between ps-12.5">
-                                <div className="flex items-center gap-4 text-muted-foreground">
-                                    <Button variant="ghost" className="!px-0 text-sm"><Image />Image</Button>
+                    <div className="grid gap-2 lg:gap-4">
+                        <div className="overflow-hidden border border-slate-200 bg-white shadow-sm md:rounded-xl">
+                            <div className="p-4 pb-2">
+                                <div className="mb-2 flex items-center gap-2">
+                                    <UserAvatar user={props.auth.user} />
+                                    <Input
+                                        onClick={() => setCreatePostModal(true)}
+                                        readOnly
+                                        endIcon={<BriefcaseBusiness size={20} />}
+                                        placeholder="Share a job opportunity with the alumni network..."
+                                        className="rounded-full border-0 bg-muted"
+                                    />
                                 </div>
+                                <div className="flex items-center justify-between ps-12.5">
+                                    <div className="flex items-center gap-4 text-muted-foreground">
+                                        <Button variant="ghost" className="!px-0 text-sm"><Image />Image</Button>
+                                    </div>
 
-                                <div className="flex items-center">
-                                    <Globe size={20} className="text-muted-foreground" />
-                                    <Select defaultValue="public">
-                                        <SelectTrigger className="border-0 px-1.5 shadow-none outline-0">
-                                            <SelectValue placeholder="privacy" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="public">Public</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                    <div className="flex items-center">
+                                        <Globe size={20} className="text-muted-foreground" />
+                                        <Select defaultValue="public">
+                                            <SelectTrigger className="border-0 px-1.5 shadow-none outline-0">
+                                                <SelectValue placeholder="privacy" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="public">Public</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="grid gap-4">
-                        {props.announcements.length > 0 && (
-                            <div className="overflow-hidden border border-slate-200 bg-white shadow-sm md:rounded-xl">
-                                <div className="border-b border-slate-200 px-4 py-4">
-                                    <div className="flex items-center justify-between gap-3">
-                                        <div>
-                                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-red">Event Announcements</p>
-                                            <h2 className="mt-1 text-lg font-semibold text-slate-950">Upcoming events for alumni</h2>
-                                        </div>
-                                        <span className="rounded-full bg-blue/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-blue">
-                                            {props.feedSummary.approved_announcements} published
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div className="grid gap-3 p-4">
-                                    {props.announcements.slice(0, 3).map((announcement) => {
-                                        const previewImage = announcement.attachments?.find((attachment) => attachment.type === "image");
-
-                                        return (
-                                            <div key={announcement.announcement_uuid} className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
-                                                <div className="grid gap-4 md:grid-cols-[1.2fr_0.8fr]">
-                                                    <div className="p-4">
-                                                        <div className="mb-3 flex flex-wrap items-center gap-2">
-                                                            <span className="rounded-full bg-red/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-red">
-                                                                {announcement.event_type}
-                                                            </span>
-                                                            <span className="rounded-full bg-blue/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-blue">
-                                                                Event
-                                                            </span>
-                                                        </div>
-
-                                                        <h3 className="text-lg font-semibold text-slate-950">{announcement.title}</h3>
-                                                        <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-600">{announcement.description}</p>
-
-                                                        <div className="mt-4 grid gap-2 text-sm text-slate-600">
-                                                            <div className="flex items-center gap-2">
-                                                                <CalendarDays className="size-4 text-blue" />
-                                                                <span>{new Date(announcement.starts_at).toLocaleString()}</span>
-                                                            </div>
-                                                            <div className="flex items-center gap-2">
-                                                                <MapPin className="size-4 text-red" />
-                                                                <span>{announcement.venue}</span>
-                                                            </div>
-                                                        </div>
-
-                                                        {announcement.registration_link && (
-                                                            <div className="mt-4">
-                                                                <a
-                                                                    href={announcement.registration_link}
-                                                                    target="_blank"
-                                                                    rel="noreferrer"
-                                                                    className="text-sm font-medium text-blue-700 underline-offset-4 hover:underline"
-                                                                >
-                                                                    Open registration link
-                                                                </a>
-                                                            </div>
-                                                        )}
-                                                    </div>
-
-                                                    <div className="min-h-56 bg-white">
-                                                        {previewImage ? (
-                                                            <img
-                                                                src={previewImage.url}
-                                                                alt={announcement.title}
-                                                                className="h-full w-full object-cover"
-                                                            />
-                                                        ) : (
-                                                            <div className="flex h-full items-center justify-center bg-[radial-gradient(circle_at_top_left,_rgba(1,78,168,0.16),_transparent_38%),linear-gradient(135deg,#ffffff,#eef4ff,#ffe8e6)] px-6 text-center text-sm font-medium text-slate-500">
-                                                                Event visual will appear here once an image is uploaded.
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        )}
 
                         {props.posts.map((post) => (
                             <div
@@ -246,15 +180,80 @@ const NewsFeed = () => {
                             </div>
                         ))}
                     </div>
-                </div>
-                <aside className="hidden xl:block min-w-[20rem]">
-                    <div className="sticky pt-4 top-4 space-y-4">
-                        <div className='bg-white rounded-xl border border-slate-200 p-4 shadow-sm'>
 
-                            <div className="relative h-[74.5vh] rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                                <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
+
+                </div>
+                <aside className="hidden xl:block min-w-[22rem]">
+                    <div className="sticky pt-4 top-4 space-y-4">
+                        <div className='max-w-[20rem] bg-white rounded-xl border border-slate-200 shadow-sm'>
+
+                            <div className="p-4">
+                                <div className="flex items-center justify-between gap-3">
+                                    <h2 className="mt-1 text-lg font-semibold text-slate-950">Announcements</h2>
+                                    <span className="rounded-full bg-blue/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-blue">
+                                        {props.feedSummary.approved_announcements} upcoming
+                                    </span>
+                                </div>
                             </div>
 
+                            <div
+                                onMouseEnter={() => setHoveringAnnouncement(true)}
+                                onMouseLeave={() => setHoveringAnnouncement(false)}
+                                className={cn(
+                                    '!h-[calc(100vh-186px)] !max-h-[calc(100vh-186px)] overflow-auto scroll-area [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:transparent ps-4 pe-2.5',
+                                    hoveringAnnouncement && "[&::-webkit-scrollbar-thumb]:bg-gray-300"
+                                )}>
+                                {props.announcements.map((announcement) => {
+                                    const previewImage = announcement.attachments?.find((attachment) => attachment.type === "image");
+
+                                    return (
+                                        <div
+                                            key={announcement.announcement_uuid} className="overflow-hidden cursor-pointer rounded-xl border border-slate-200 bg-slate-50 mb-4"
+                                            onClick={() => setViewAnnouncementId(announcement.announcement_id)}
+                                        >
+                                            <div className="grid gap-4">
+                                                <div className="p-4">
+                                                    {/* <div className="mb-3 flex flex-wrap items-center gap-2">
+                                                        <span className="rounded-full bg-red/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-red">
+                                                            {announcement.event_type}
+                                                        </span>
+                                                        <span className="rounded-full bg-blue/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-blue">
+                                                            Event
+                                                        </span>
+                                                    </div> */}
+
+                                                    <h3 className="text-lg font-semibold text-slate-950">{announcement.title}</h3>
+                                                    <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-600">{announcement.description}</p>
+
+                                                    <div className="mt-4 grid gap-2 text-sm text-slate-600">
+                                                        <div className="flex items-center gap-2">
+                                                            <CalendarDays className="size-4 text-blue" />
+                                                            <span>{new Date(announcement.starts_at).toLocaleString()}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <MapPin className="size-4 text-red" />
+                                                            <span>{announcement.venue}</span>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+
+                                                {/* <div className="">
+                                                {previewImage ? (
+                                                    <img
+                                                        src={previewImage.url}
+                                                        alt={announcement.title}
+                                                        className="h-full w-full object-cover"
+                                                    />
+                                                ) : (
+                                                    null
+                                                )}
+                                            </div> */}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </div>
 
                     </div>

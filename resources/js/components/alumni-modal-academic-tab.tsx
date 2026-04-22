@@ -104,8 +104,6 @@ const AlumniModalAcademicTab = ({ alumni }: { alumni: Alumni }) => {
                                 <SelectValue placeholder="Select school level" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="Elementary">Elementary</SelectItem>
-                                <SelectItem value="High School">High School</SelectItem>
                                 <SelectItem value="College">College</SelectItem>
                                 <SelectItem value="Graduate">Graduate</SelectItem>
                             </SelectContent>

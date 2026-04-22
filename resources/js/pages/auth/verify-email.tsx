@@ -1,6 +1,7 @@
 // Components
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, usePage } from '@inertiajs/react';
 
+import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
@@ -8,7 +9,22 @@ import AuthLayout from '@/layouts/auth-layout';
 import { logout } from '@/routes';
 import { send } from '@/routes/verification';
 
-export default function VerifyEmail({ status }: { status?: string }) {
+interface VerifyEmailProps {
+    status?: string;
+    mailDriver?: string;
+    mailLogsOnly?: boolean;
+    mailLogPath?: string | null;
+}
+
+export default function VerifyEmail({
+    status,
+    mailDriver,
+    mailLogsOnly,
+    mailLogPath,
+}: VerifyEmailProps) {
+    const { props } = usePage<{ errors?: { verification?: string } }>();
+    const verificationError = props.errors?.verification;
+
     return (
         <AuthLayout
             title="Verify email"
@@ -23,7 +39,16 @@ export default function VerifyEmail({ status }: { status?: string }) {
                 </div>
             )}
 
-            <Form {...send.form()} className="space-y-6 text-center">
+            {mailLogsOnly && (
+                <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-left text-sm text-amber-800">
+                    Email delivery is currently using the <strong>{mailDriver}</strong> mailer, so verification emails are being written to the log instead of sent to your inbox.
+                    {mailLogPath ? ` Check ${mailLogPath} for the verification link.` : null}
+                </div>
+            )}
+
+            <InputError message={verificationError} className="mb-4 text-center" />
+
+            <Form {...send()} className="space-y-6 text-center">
                 {({ processing }) => (
                     <>
                         <Button disabled={processing} variant="secondary">

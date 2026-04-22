@@ -1,4 +1,4 @@
-import { Head, usePage } from "@inertiajs/react";
+import { Head, Link, usePage } from "@inertiajs/react";
 import {
     Area,
     AreaChart,
@@ -45,6 +45,7 @@ import { downloadChartDataAsCsv, downloadElementAsPdf } from "@/lib/dashboard-ex
 import AppLayout from "@/layouts/app-layout";
 import { home } from "@/routes";
 import { BreadcrumbItem, DashboardChart, DashboardInsight, DashboardOverviewCard } from "@/types";
+import reports from "@/routes/dashboard/reports";
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -53,7 +54,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-const featuredChartIds = new Set(["monthly-activity", "content-pipeline"]);
+const featuredChartIds = new Set(["content-pipeline"]);
 
 export default function Dashboard() {
     const { props } = usePage<{
@@ -65,7 +66,7 @@ export default function Dashboard() {
     }>();
 
     const featuredCharts = props.charts.filter((chart) => featuredChartIds.has(chart.id));
-    const remainingCharts = props.charts.filter((chart) => ! featuredChartIds.has(chart.id));
+    const remainingCharts = props.charts.filter((chart) => !featuredChartIds.has(chart.id));
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -76,6 +77,16 @@ export default function Dashboard() {
                     {props.overview.map((card, index) => (
                         <OverviewCard key={card.id} card={card} tone={index % 2 === 0 ? "blue" : "red"} />
                     ))}
+
+                    <Card className="justify-center">
+                        <div className="flex flex-col mx-auto items-center">
+                            <Link href={"/dashboard/reports/export/workbook"} className="relative h-25 w-25 bg-blue/15 rounded-full shadow mb-5 cursor-pointer" as="div">
+                                <FileDown className="absolute size-14 left-[50%] right-[50%] translate-y-[41%] -translate-x-[48%]" />
+                            </Link>
+
+                            <CardDescription>Download Overall Report</CardDescription>
+                        </div>
+                    </Card>
                 </section>
 
                 <section className="grid gap-4 xl:grid-cols-3">
@@ -86,11 +97,8 @@ export default function Dashboard() {
                     </div>
 
                     <Card className="border-0 bg-white shadow-[0_24px_70px_-42px_rgba(2,38,89,0.35)]">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-xl text-slate-950">What needs attention next</CardTitle>
-                            <CardDescription>
-                                A narrative layer for the charts so the dashboard reads more like a ready-made report deck.
-                            </CardDescription>
+                        <CardHeader className="">
+                            <CardTitle className="text-xl text-slate-950">Insights</CardTitle>
                         </CardHeader>
 
                         <CardContent className="space-y-4">
@@ -104,14 +112,14 @@ export default function Dashboard() {
                                             : "border-red/10 bg-red/5",
                                     )}
                                 >
-                                    <div className="flex items-start justify-between gap-3">
+                                    <div className="flex flex-col gap-3">
                                         <div>
                                             <p className="text-sm font-semibold text-slate-950">{insight.title}</p>
                                             <p className="mt-1 text-sm leading-6 text-slate-600">{insight.description}</p>
                                         </div>
                                         <span
                                             className={cn(
-                                                "rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em]",
+                                                "rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] w-fit",
                                                 insight.tone === "blue"
                                                     ? "bg-blue text-white"
                                                     : "bg-red text-white",
@@ -122,16 +130,6 @@ export default function Dashboard() {
                                     </div>
                                 </div>
                             ))}
-
-                            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                                <div className="flex items-center gap-2 text-slate-700">
-                                    <TrendingUp className="size-4" />
-                                    <p className="text-sm font-semibold">Recommended use</p>
-                                </div>
-                                <p className="mt-2 text-sm leading-6 text-slate-600">
-                                    Export the charts you need for meetings, then use the workbook for the raw supporting data behind each visual.
-                                </p>
-                            </div>
                         </CardContent>
                     </Card>
                 </section>
@@ -208,7 +206,7 @@ function ChartCard({ chart, featured = false }: { chart: DashboardChart; feature
     const [isExportingPdf, setIsExportingPdf] = useState(false);
 
     const handleExportPdf = async () => {
-        if (! captureRef.current) {
+        if (!captureRef.current) {
             return;
         }
 
@@ -228,9 +226,9 @@ function ChartCard({ chart, featured = false }: { chart: DashboardChart; feature
                         <div className="space-y-2">
                             <div>
                                 <CardTitle className="text-xl text-slate-950">{chart.title}</CardTitle>
-                                <CardDescription className="mt-2 max-w-3xl leading-6 text-slate-600 max-w-130">
+                                {/* <CardDescription className="mt-2 max-w-3xl leading-6 text-slate-600 max-w-130">
                                     {chart.description}
-                                </CardDescription>
+                                </CardDescription> */}
                             </div>
                         </div>
 
@@ -263,10 +261,10 @@ function ChartCard({ chart, featured = false }: { chart: DashboardChart; feature
                         <ChartRenderer chart={chart} />
                     </div>
 
-                    <div className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                    {/* <div className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                         <ArrowUpRight className="mt-0.5 size-4 text-blue" />
                         <p className="text-sm leading-6 text-slate-600">{chart.insight}</p>
-                    </div>
+                    </div> */}
                 </CardContent>
             </div>
         </Card>
@@ -283,7 +281,7 @@ function ChartRenderer({ chart }: { chart: DashboardChart }) {
         return config;
     }, {});
 
-    if (! chart.data.length) {
+    if (!chart.data.length) {
         return (
             <div className="flex h-[280px] items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white text-sm text-slate-500">
                 No data available for this chart yet.
@@ -442,7 +440,7 @@ function PieTooltip({
         payload?: { fill?: string };
     }>;
 }) {
-    if (! active || ! payload?.length) {
+    if (!active || !payload?.length) {
         return null;
     }
 
@@ -469,7 +467,7 @@ function PieLegend({
         value?: string;
     }>;
 }) {
-    if (! payload?.length) {
+    if (!payload?.length) {
         return null;
     }
 

@@ -1,9 +1,6 @@
 import AlumniProfileLayout from '@/layouts/alumni-profile-layout';
 import AppLayout from '@/layouts/app-layout'
 import {
-    AcademicDetailsCard,
-    EmploymentDetailsCard,
-    PersonalDetailsCard,
     ProfileSummaryCard,
     ProfileTimeline,
 } from '@/components/alumni-profile-sections'
@@ -32,9 +29,6 @@ const All = () => {
                 <div className='grid gap-5 xl:grid-cols-[340px_minmax(0,1fr)]'>
                     <div className='grid gap-5'>
                         <ProfileSummaryCard alumni={props.alumni} />
-                        <PersonalDetailsCard alumni={props.alumni} />
-                        <AcademicDetailsCard alumni={props.alumni} />
-                        <EmploymentDetailsCard alumni={props.alumni} />
                     </div>
                     <div className='grid gap-5'>
                         <ProfileTimeline

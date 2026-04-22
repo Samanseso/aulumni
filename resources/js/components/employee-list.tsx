@@ -22,7 +22,8 @@ import BulkSelectionToolbar from "./bulk-selection-toolbar";
 const sortableColumns: ColumnType[] = [
     { name: 'Employee ID', db_name: 'employee_id' },
     { name: 'Name', db_name: 'name' },
-    { name: 'Date created', db_name: 'created_at' },
+    { name: 'Email', db_name: 'email' },
+    // { name: 'Date created', db_name: 'created_at' },
 ]
 
 
@@ -49,6 +50,8 @@ export default function EmployeeList() {
 
     const { confirmActionContentCreateModal } = useConfirmAction();
     const { createModal } = useModal();
+
+    console.log(selectedBranchFilter);;
 
 
     useEffect(() => {
@@ -201,11 +204,11 @@ export default function EmployeeList() {
                                             <SelectItem value="none" className="hidden">Branch</SelectItem>
                                     }
                                     {props.branches.map(branch => (
-                                        <SelectItem key={branch.name} value={branch.name}>{branch.name}</SelectItem>
+                                        <SelectItem key={branch.branch_id} value={branch.name}>{branch.name}</SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
-                            <Select value={filter.find(f => f.property === "department")?.value || ""} onValueChange={handleDepartmentChange}>
+                            <Select disabled={selectedBranchFilter === undefined} value={filter.find(f => f.property === "department")?.value || ""} onValueChange={handleDepartmentChange}>
                                 <SelectTrigger className="w-35 text-black gap-2 !text-black text-nowrap">
                                     <SelectValue placeholder="Department" />
                                 </SelectTrigger>
@@ -216,7 +219,7 @@ export default function EmployeeList() {
                                             <SelectItem value="none" className="hidden">Department</SelectItem>
                                     }
                                     {filteredDepartments.map(department => (
-                                        <SelectItem key={department.name} value={department.name}>{department.name}</SelectItem>
+                                        <SelectItem key={department.department_id} value={department.name}>{department.name}</SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
@@ -274,7 +277,7 @@ export default function EmployeeList() {
 
             {employees.length > 0 && <EmployeeTable key={tableVersion} employees={employees} selectedData={selectedData} setSelectedData={setSelectedData} />}
 
-            <Import open={open} entityLabel="employee" importAction={EmployeeController.import.form()} setOpen={setOpen} />
+            <Import open={open} entityLabel="employee" importAction={EmployeeController.import()} setOpen={setOpen} />
 
             <div className="flex w-full justify-between items-end px-6 absolute bottom-7 right-0 space-x-10">
                 {

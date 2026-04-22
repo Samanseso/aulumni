@@ -27,6 +27,7 @@ class AlumniEmploymentDetails extends Model
         'current_work_satisfaction',
         'au_skills',
         'au_usefulness',
+        'remarks',
     ];
 
     public function alumni(): BelongsTo

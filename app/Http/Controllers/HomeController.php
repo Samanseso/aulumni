@@ -52,7 +52,7 @@ class HomeController extends Controller
                     ->where('status', 'approved')
                     ->whereNotNull('company')
                     ->distinct()
-                    ->count('company'),
+                    ->count('company'), 
                 'unread_notifications' => Auth::user()?->unreadNotifications()->count() ?? 0,
             ],
         ]);
@@ -67,6 +67,26 @@ class HomeController extends Controller
             'posts' => $this->approvedPostsForViewer($request->user()->user_id, $alumni->user_id),
             'isOwnProfile' => $request->user()->user_id === $alumni->user_id,
         ]);
+    }
+
+    public function show_profile_personal(Request $request, string $user_name)
+    {
+        return $this->renderPublicProfile($request, $user_name, 'alumni/profile-personal');
+    }
+
+    public function show_profile_academic(Request $request, string $user_name)
+    {
+        return $this->renderPublicProfile($request, $user_name, 'alumni/profile-academic');
+    }
+
+    public function show_profile_contact(Request $request, string $user_name)
+    {
+        return $this->renderPublicProfile($request, $user_name, 'alumni/profile-contact');
+    }
+
+    public function show_profile_employment(Request $request, string $user_name)
+    {
+        return $this->renderPublicProfile($request, $user_name, 'alumni/profile-employment');
     }
 
     protected function approvedPostsForViewer(int $viewerUserId, ?int $profileUserId = null)
@@ -97,6 +117,16 @@ class HomeController extends Controller
             ->orderBy('starts_at')
             ->orderByDesc('created_at')
             ->get();
+    }
+
+    protected function renderPublicProfile(Request $request, string $userName, string $component, array $extraProps = [])
+    {
+        $alumni = $this->findAlumniByUsername($userName);
+
+        return Inertia::render($component, array_merge([
+            'alumni' => $alumni,
+            'isOwnProfile' => $request->user()->user_id === $alumni->user_id,
+        ], $extraProps));
     }
 
     protected function findAlumniByUserId(int $userId): ?Alumni

@@ -13,9 +13,12 @@ Route::middleware(['auth', 'role:admin'])->prefix('content')->group(function () 
     Route::patch('announcement/approve/{announcement}', [AnnouncementController::class, 'approve'])->name('announcement.approve');
     Route::patch('announcement/reject/{announcement}', [AnnouncementController::class, 'reject'])->name('announcement.reject');
     
-    
-    Route::get('announcement/{announcement}', [AnnouncementController::class, 'show'])->name('announcement.show');
     Route::patch('announcement/{announcement}', [AnnouncementController::class, 'update'])->name('announcement.update');
     Route::delete('announcement/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcement.destroy');
 
+});
+
+Route::middleware(['auth'])->prefix('content')->group(function () {
+
+    Route::get('announcement/{announcement}', [AnnouncementController::class, 'show'])->name('announcement.show');
 });

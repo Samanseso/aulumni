@@ -34,7 +34,7 @@ class PostLikedNotification extends Notification
     {
         return [
             'title' => $this->actor->name . ' liked your post',
-            'message' => 'They reacted to "' . $this->post->job_title . '".',
+            'message' => $this->actor->name . ' reacted to "' . $this->post->job_title . '".',
             'actor_name' => $this->actor->name,
             'actor_user_name' => $this->actor->user_name,
             'post_id' => $this->post->post_id,

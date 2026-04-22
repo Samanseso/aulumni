@@ -20,7 +20,7 @@ class AcademicDetailsRequest extends FormRequest
 
         return [
             'student_number' => ['required', 'string', 'max:100'],
-            'school_level'   => ['required', 'in:Elementary,High School,College,Graduate'],
+            'school_level'   => ['required', 'in:College,Graduate'],
             'batch'          => ['required', 'digits:4', 'integer', "between:1900,{$currentYear}", Rule::exists('batch', 'year')],
             'branch_id'      => ['required', 'integer', Rule::exists('branches', 'branch_id')],
             'department_id'  => ['nullable', 'integer', Rule::exists('departments', 'department_id')],
@@ -84,7 +84,7 @@ class AcademicDetailsRequest extends FormRequest
             'student_number.max'      => 'Student number may not be greater than 100 characters.',
 
             'school_level.required'   => 'School level is required.',
-            'school_level.in'         => 'School level must be Elementary, High School, College, or Graduate.',
+            'school_level.in'         => 'School level must be College, or Graduate.',
 
             'batch.required'          => 'Batch is required.',
             'batch.digits'            => 'Batch must be a four digit year (e.g., 2020).',

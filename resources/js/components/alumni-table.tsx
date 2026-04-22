@@ -92,9 +92,9 @@ export function AlumniTable({ alumni, columns, selectedData, setSelectedData }: 
                                     <span className="text-xs text-gray-500">@{alum.user_name}</span> <br />
                                 </td>
 
-                                <td className="px-4 py-2 text-sm">{alum.student_number}</td>
+                                {/* <td className="px-4 py-2 text-sm">{alum.student_number}</td> */}
                                 <td className="px-4 py-2 text-sm">{alum.school_level}</td>
-                                <td className="px-4 py-2 text-sm max-w-[100px] truncate">{alum.course}</td>
+                                <td className="px-4 py-2 text-sm max-w-[300px] truncate">{alum.course}</td>
                                 <td className="px-4 py-2 text-sm">{alum.branch}</td>
                                 <td className="px-4 py-2 text-sm">{alum.batch}</td>
                                 <td className="px-4 py-2 text-sm"><StatusTag text={alum.status} /></td>

@@ -4,6 +4,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Batch } from '@/types';
 import { EllipsisVertical, PenBox, Trash } from 'lucide-react';
 import { Checkbox } from './ui/checkbox';
+import CountTag from './count-tag';
 
 interface BatchTableProps {
     batches: Batch[];
@@ -45,7 +46,9 @@ export default function BatchTable({ batches, onEdit }: BatchTableProps) {
                             </td>
                             <td className="px-6 py-3 text-sm font-semibold">{batch.year}</td>
                             <td className="px-4 py-3 text-sm">{batch.name}</td>
-                            <td className="px-4 py-3 text-sm">{batch.alumni_count ?? 0}</td>
+                            <td className="px-4 py-3 text-sm">
+                                <CountTag count={batch.alumni_count ?? 0} label={batch.alumni_count === 1 ? 'Alumnus' : 'Alumni'} />
+                            </td>
                             <td className="px-6 py-3 text-sm">
                                 <div className="flex justify-end">
                                     <DropdownMenu>

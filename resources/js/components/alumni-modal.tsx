@@ -50,15 +50,15 @@ export function AlumniModal({ alumni_id, setViewAlumni }: AlumniModalProps) {
 
         switch (tab) {
             case "profile":
-                return AlumniController.update_profile.form(alumni.user_id);
+                return AlumniController.update_profile(alumni.user_id);
             case "personal":
-                return AlumniController.update_personal.form(String(alumni.alumni_id));
+                return AlumniController.update_personal(String(alumni.alumni_id));
             case "academic":
-                return AlumniController.update_academic.form(String(alumni.alumni_id));
+                return AlumniController.update_academic(String(alumni.alumni_id));
             case "contact":
-                return AlumniController.update_contact.form(String(alumni.alumni_id));
+                return AlumniController.update_contact(String(alumni.alumni_id));
             case "employment":
-                return AlumniController.update_employment.form(String(alumni.alumni_id));
+                return AlumniController.update_employment(String(alumni.alumni_id));
             default:
                 return null;
         }
