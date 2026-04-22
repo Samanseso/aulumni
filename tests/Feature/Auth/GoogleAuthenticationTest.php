@@ -39,6 +39,7 @@ class GoogleAuthenticationTest extends TestCase
     {
         $user = User::factory()->create([
             'email' => 'jane@example.com',
+            'email_verified_at' => null,
         ]);
 
         $this->mockGoogleUser(
@@ -52,6 +53,7 @@ class GoogleAuthenticationTest extends TestCase
 
         $this->assertAuthenticatedAs($user->fresh());
         $response->assertRedirect(config('fortify.home'));
+        $this->assertNotNull($user->fresh()->email_verified_at);
         $this->assertDatabaseHas('users', [
             'user_id' => $user->user_id,
             'google_id' => 'google-123',
@@ -76,6 +78,7 @@ class GoogleAuthenticationTest extends TestCase
 
         $this->assertAuthenticatedAs($user);
         $response->assertRedirect(route('survey.personal', absolute: false));
+        $this->assertNotNull($user->fresh()->email_verified_at);
         $this->assertDatabaseHas('users', [
             'user_id' => $user->user_id,
             'user_type' => 'alumni',

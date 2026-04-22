@@ -68,7 +68,7 @@ function SectionCard({
     children: ReactNode
 }) {
     return (
-        <Card className="overflow-hidden border-slate-200 shadow-sm">
+        <Card className="overflow-hidden border-slate-200 shadow-sm h-fit">
             <CardHeader className=" bg-white/80">
                 <CardTitle className="text-lg text-slate-900">{title}</CardTitle>
                 <p className="text-sm text-slate-500">{subtitle}</p>
@@ -157,9 +157,6 @@ export function PublicProfileActions({
 }) {
     return (
         <div className="flex flex-wrap gap-3">
-            <Button variant="outline" onClick={() => navigator.clipboard.writeText(window.location.origin + profileUrl)}>
-                Copy profile link
-            </Button>
             <Button asChild>
                 <Link href={backUrl}>{actionLabel}</Link>
             </Button>

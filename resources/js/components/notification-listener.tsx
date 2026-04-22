@@ -36,9 +36,21 @@ export default function NotificationsListener({ setNotifs }: NotificationsListen
 	useEffect(() => {
 		if (!userId || !window.Echo) return;
 
-		const channel = window.Echo.private(`App.Models.User.${userId}`);
+		const channelName = `App.Models.User.${userId}`;
+		const channel = window.Echo.private(channelName);
+
+		console.log('Subscribing to notification channel:', channelName);
+
+		channel.subscribed(() => {
+			console.log('Subscribed to notification channel:', channelName);
+		});
+
+		channel.error((error: any) => {
+			console.error('Notification channel subscription error:', error);
+		});
 
 		channel.notification((payload: any) => {
+			console.log('Received notification:', payload);
 			const incoming = normalizeNotification(payload);
 
 			setNotifs((previous) => [incoming, ...previous.filter((notification) => notification.id !== incoming.id)]);
@@ -46,7 +58,7 @@ export default function NotificationsListener({ setNotifs }: NotificationsListen
 
 		return () => {
 			try {
-				window.Echo.leave(`App.Models.User.${userId}`);
+				window.Echo.leave(channelName);
 			} catch (error) {
 				console.error(error);
 			}

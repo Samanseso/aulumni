@@ -8,6 +8,7 @@ import { CompletePost } from "@/types";
 import PostActionReaction from "./post-action-reaction";
 import PostActionComment from "./post-action-comment";
 import PostActionShare from "./post-action-share";
+import UserAvatar from "./user-avatar";
 
 interface PostItemProps {
     post: CompletePost;
@@ -26,11 +27,7 @@ export default function PostItem({ post, hasActions = true }: PostItemProps) {
                     <div className="flex items-center gap-3">
                         {authorProfileUrl ? (
                             <Link href={authorProfileUrl} className="z-10 rounded-full border">
-                                <img
-                                    className="h-10 w-10 rounded-full border-3 border-white"
-                                    src="/assets/images/default-profile.png"
-                                    alt="Profile"
-                                />
+                                <UserAvatar avatar={post.author?.avatar} name={post.author?.name ?? "Unknown"} />
                             </Link>
                         ) : (
                             <div className="z-10 rounded-full border">

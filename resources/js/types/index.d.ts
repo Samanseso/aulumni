@@ -104,7 +104,7 @@ export interface User {
 	user_name: string;
 	email: string;
 	email_verified_at?: string | null;
-	avatar?: string;
+	avatar?: string | null;
 	user_type: string;
 	password: string;
 	status: string;
@@ -276,7 +276,7 @@ export interface CompletePost extends Post {
 	attachments: Attachment[];
 	comments?: Comment[];
 	liked_by_user: boolean;
-	author: { user_id: number; name?: string; user_name?: string; email?: string };
+	author: User;
 };
 
 
@@ -479,6 +479,9 @@ export interface EmploymentSurveySubmittedNotificationPayload {
   message: string;
   alumni_name: string;
   alumni_user_name?: string | null;
+  email?: string | null;
+  account_status?: string | null;
+  school_level?: string | null;
   current_employed?: string | null;
   current_work_company?: string | null;
   timestamp: string;

@@ -22,7 +22,7 @@ export default function CreateAdminModal({ setOpen }: CreateAdminModalProps) {
                 </DialogDescription>
 
                 <Form
-                    {...AdminController.store()}
+                    {...AdminController.store.form()}
                     options={{
                         preserveScroll: true,
                     }}

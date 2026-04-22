@@ -1,19 +1,18 @@
 import React from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
-import { User } from '@/types'
 import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
 
-const UserAvatar = ({ user, className }: { user: User, className?: string }) => {
+const UserAvatar = ({ avatar, name, className }: { avatar?: string | null, name: string, className?: string }) => {
 
     const getInitials = useInitials();
-    
+
     return (
         <div className="flex items-center gap-2 text-left text-sm">
             <Avatar className={cn("h-10 w-10 overflow-hidden rounded-full" , className)}>
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg h-10 w-10 bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
-                    {getInitials(user.name)}
+                <AvatarImage src={avatar ?? undefined} alt={name} />
+                <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
+                    {getInitials(name)}
                 </AvatarFallback>
             </Avatar>
         </div>

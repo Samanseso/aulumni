@@ -3,7 +3,7 @@
 use App\Http\Controllers\CourseController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'role:admin'])->prefix('utility/course')->name('courses.')->group(function () {
+Route::middleware(['auth', 'active', 'role:admin', 'verified'])->prefix('utility/course')->name('courses.')->group(function () {
     // List courses
     Route::get('/', [CourseController::class, 'index'])->name('index');
 

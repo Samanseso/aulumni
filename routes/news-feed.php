@@ -5,10 +5,11 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PostController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'active'])->group(function () {
 
     
     Route::post('post', [PostController::class, 'store'])->name('post.store');
+    Route::post('/profile/photo', [HomeController::class, 'updateProfilePhoto'])->name('news-feed.update_profile_photo');
 
     Route::get('/{user_name}/personal', [HomeController::class, 'show_profile_personal'])->name('news-feed.show_profile_personal');
     Route::get('/{user_name}/academic', [HomeController::class, 'show_profile_academic'])->name('news-feed.show_profile_academic');

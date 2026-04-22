@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserRequest;
 use App\Models\User;
+use App\Notifications\AccountActivatedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -16,8 +17,7 @@ class UserController extends Controller
 
     public function activate(User $user): RedirectResponse
     {
-        $user->status = 'active';
-        $user->save();
+        $this->activateUser($user);
 
         return back()->with([
             'modal_status'  => 'success',
@@ -49,7 +49,9 @@ class UserController extends Controller
 
         User::query()
             ->whereIn('user_id', $validated['user_ids'])
-            ->update(['status' => 'active']);
+            ->where('status', '!=', 'active')
+            ->get()
+            ->each(fn (User $user) => $this->activateUser($user));
 
         return back()->with([
             'modal_status' => "success",
@@ -94,7 +96,15 @@ class UserController extends Controller
 
     public function update(UserRequest $request, User $user): RedirectResponse
     {
-        $user->update($request->validate());
+        $validated = $request->validated();
+        $wasActive = $user->status === 'active';
+
+        $user->fill($validated);
+        $user->save();
+
+        if (! $wasActive && $user->status === 'active') {
+            $this->sendActivationEmail($user);
+        }
 
         return back()->with([
             'modal_status' => "success",
@@ -120,5 +130,22 @@ class UserController extends Controller
             'modal_message' => "Users were deleted successfully.",
             'signal_deselect' => (string) Str::uuid(),
         ]);
+    }
+
+    private function activateUser(User $user): void
+    {
+        if ($user->status === 'active') {
+            return;
+        }
+
+        $user->status = 'active';
+        $user->save();
+
+        $this->sendActivationEmail($user);
+    }
+
+    private function sendActivationEmail(User $user): void
+    {
+        $user->notify(new AccountActivatedNotification());
     }
 }

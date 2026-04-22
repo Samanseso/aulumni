@@ -49,7 +49,7 @@ export default function Notifications() {
                             onMouseEnter={() => setHovering(true)}
                             onMouseLeave={() => setHovering(false)}
                             className={cn(
-                                "max-h-[calc(100vh-188px)] ps-2 pe-1.5 pt-2 overflow-auto overflow-auto scroll-area [&::-webkit-scrollbar]:w-1.5",
+                                "max-h-[calc(100vh-188px)] ps-2 pe-0.5 pt-2 overflow-auto overflow-auto scroll-area [&::-webkit-scrollbar]:w-1.5",
                                 "[&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded",
                                 hovering ? "[&::-webkit-scrollbar-thumb]:bg-gray-300" : "[&::-webkit-scrollbar-thumb]:bg-transparent"
                             )}>

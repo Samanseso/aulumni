@@ -216,7 +216,7 @@ export default function AnnouncementModal({ announcementId, setAnnouncementId, a
                                     )}
                                 </Form>
                             ) : (
-                                <AnnouncementItem announcement={announcement} showStatus />
+                                <AnnouncementItem announcement={announcement} showStatus={admin} />
                             )}
                         </div>
 
@@ -239,7 +239,7 @@ export default function AnnouncementModal({ announcementId, setAnnouncementId, a
                                     <Button variant="outline" onClick={() => setAnnouncementId(null)}>Close</Button>
                                     {announcement.status === "approved" ? (
                                         <Form
-                                            {...AnnouncementController.reject(announcement.announcement_id)}
+                                            {...AnnouncementController.reject.form(announcement.announcement_id)}
                                             className="w-full"
                                             onSuccess={() => setAnnouncementId(null)}
                                         >
@@ -252,7 +252,7 @@ export default function AnnouncementModal({ announcementId, setAnnouncementId, a
                                         </Form>
                                     ) : (
                                         <Form
-                                            {...AnnouncementController.approve(announcement.announcement_id)}
+                                            {...AnnouncementController.approve.form(announcement.announcement_id)}
                                             className="w-full"
                                             onSuccess={() => setAnnouncementId(null)}
                                         >

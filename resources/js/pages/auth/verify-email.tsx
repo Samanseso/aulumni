@@ -48,7 +48,7 @@ export default function VerifyEmail({
 
             <InputError message={verificationError} className="mb-4 text-center" />
 
-            <Form {...send()} className="space-y-6 text-center">
+            <Form {...send.form()} className="space-y-6 text-center">
                 {({ processing }) => (
                     <>
                         <Button disabled={processing} variant="secondary">

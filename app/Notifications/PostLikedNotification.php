@@ -27,7 +27,8 @@ class PostLikedNotification extends Notification
 
     public function toBroadcast($notifiable): BroadcastMessage
     {
-        return new BroadcastMessage($this->payload());
+        return (new BroadcastMessage($this->payload()))
+            ->onConnection('sync');
     }
 
     protected function payload(): array

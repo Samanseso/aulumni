@@ -44,9 +44,9 @@ export default function JobPostModal({ setCreatePostModal }: JobPostModalProps) 
                 <DialogDescription className="mb-4 text-sm text-muted-foreground">
                     Fill out the details below to publish a new job postng.
                 </DialogDescription>
-
-                <Form {...PostController.store()} className="space-y-5"
-                    options={{
+        
+                <Form {...PostController.store.form()} className="space-y-5"
+                    options={{  
                         preserveState: true
                     }}
 

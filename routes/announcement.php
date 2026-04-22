@@ -3,7 +3,7 @@
 use App\Http\Controllers\AnnouncementController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'role:admin'])->prefix('content')->group(function () {
+Route::middleware(['auth', 'active', 'role:admin', 'verified'])->prefix('content')->group(function () {
     Route::get('announcement', [AnnouncementController::class, 'index'])->name('announcement.index');
     Route::post('announcement', [AnnouncementController::class, 'store'])->name('announcement.store');
     
@@ -18,7 +18,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('content')->group(function () 
 
 });
 
-Route::middleware(['auth'])->prefix('content')->group(function () {
+Route::middleware(['auth', 'active', 'verified'])->prefix('content')->group(function () {
 
     Route::get('announcement/{announcement}', [AnnouncementController::class, 'show'])->name('announcement.show');
 });

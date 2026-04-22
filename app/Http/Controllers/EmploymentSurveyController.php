@@ -18,6 +18,7 @@ use App\Notifications\EmploymentSurveySubmittedNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -67,7 +68,7 @@ class EmploymentSurveyController extends Controller
         $employment = $this->employmentPayload($validated);
 
         if (! $request->user()) {
-            app(CreateAlumni::class)->create([
+            $alumni = app(CreateAlumni::class)->create([
                 'user' => [
                     'name' => trim($validated['first_name'] . ' ' . $validated['last_name']),
                     'email' => $validated['email'],
@@ -81,6 +82,8 @@ class EmploymentSurveyController extends Controller
                 'employment' => $employment,
             ]);
 
+            $this->notifyAdminsAboutNewAccount($alumni);
+
             return redirect()->route('login')->with('status', 'Your alumni survey was submitted successfully. You can log in using your email and password once your account is ready.');
         }
 
@@ -88,6 +91,7 @@ class EmploymentSurveyController extends Controller
         $alumni = Alumni::query()
             ->where('user_id', $user->user_id)
             ->firstOrFail();
+        $shouldNotifyAdmins = $this->shouldNotifyAdminsAboutSurveySubmission($user, $alumni);
 
         $user->update([
             'name' => trim($validated['first_name'] . ' ' . $validated['last_name']),
@@ -114,18 +118,9 @@ class EmploymentSurveyController extends Controller
             array_merge($employment, ['alumni_id' => $alumni->alumni_id]),
         );
 
-        $alumni->load([
-            'personal_details',
-            'academic_details',
-            'contact_details',
-            'employment_details',
-        ]);
-
-        User::query()
-            ->where('user_type', 'admin')
-            ->where('status', 'active')
-            ->get()
-            ->each(fn (User $admin) => $admin->notify(new EmploymentSurveySubmittedNotification($alumni)));
+        if ($shouldNotifyAdmins) {
+            $this->notifyAdminsAboutNewAccount($alumni);
+        }
 
         return redirect()->route('home')->with([
             'modal_status' => 'success',
@@ -414,7 +409,7 @@ class EmploymentSurveyController extends Controller
                 return redirect()->route('survey.personal');
             }
 
-            app(CreateAlumni::class)->create([
+            $alumni = app(CreateAlumni::class)->create([
                 'user' => [
                     'name' => $fullName,
                     'email' => $surveyEmail,
@@ -428,6 +423,8 @@ class EmploymentSurveyController extends Controller
                 'employment' => $employmentPayload,
             ]);
 
+            $this->notifyAdminsAboutNewAccount($alumni);
+
             $request->session()->forget(['survey_personal', 'survey_academic', 'survey_contact', 'survey_employment']);
 
             return redirect()->route('login')->with('status', 'Your alumni survey was submitted successfully. You can log in using your email and password once your account is ready.');
@@ -437,6 +434,7 @@ class EmploymentSurveyController extends Controller
         $alumni = Alumni::query()
             ->where('user_id', $user->user_id)
             ->first();
+        $shouldNotifyAdmins = $this->shouldNotifyAdminsAboutSurveySubmission($user, $alumni);
 
         if (! $alumni) {
             $alumni = Alumni::query()->create([
@@ -470,26 +468,17 @@ class EmploymentSurveyController extends Controller
             array_merge($employmentPayload, ['alumni_id' => $alumni->alumni_id]),
         );
 
-        $alumni->load([
-            'personal_details',
-            'academic_details',
-            'contact_details',
-            'employment_details',
-        ]);
-
-        User::query()
-            ->where('user_type', 'admin')
-            ->where('status', 'active')
-            ->get()
-            ->each(fn (User $admin) => $admin->notify(new EmploymentSurveySubmittedNotification($alumni)));
+        if ($shouldNotifyAdmins) {
+            $this->notifyAdminsAboutNewAccount($alumni);
+        }
 
         $request->session()->forget(['survey_personal', 'survey_academic', 'survey_contact', 'survey_employment']);
 
         return redirect()->route('home')->with([
             'modal_status' => 'success',
             'modal_action' => 'update',
-            'modal_title' => 'Survey submitted',
-            'modal_message' => 'Your alumni survey was saved successfully.',
+            'modal_title' => 'Account Created',
+            'modal_message' => 'Welcome to Arellano University Alumni Tracking.',
         ]);
     }
 
@@ -534,15 +523,14 @@ class EmploymentSurveyController extends Controller
     {
         $user = $request->user();
         $alumni = $this->currentAlumni($request);
-        [$firstName, $middleName, $lastName] = $this->splitDisplayName($user?->name);
 
         return array_filter([
-            'first_name' => $alumni?->personal_details?->first_name ?: $firstName,
-            'middle_name' => $alumni?->personal_details?->middle_name ?: $middleName,
-            'last_name' => $alumni?->personal_details?->last_name ?: $lastName,
+            'first_name' => $alumni?->personal_details?->first_name,
+            'middle_name' => $alumni?->personal_details?->middle_name,
+            'last_name' => $alumni?->personal_details?->last_name,
             'birthday' => $alumni?->personal_details?->birthday,
             'gender' => $alumni?->personal_details?->gender,
-            'photo' => $alumni?->personal_details?->photo ?: $user?->avatar,
+            'photo' => $user?->avatar,
             'bio' => $alumni?->personal_details?->bio,
             'interest' => $alumni?->personal_details?->interest,
             'address' => $alumni?->personal_details?->address,
@@ -678,6 +666,38 @@ class EmploymentSurveyController extends Controller
             implode(' ', array_slice($parts, 1, -1)) ?: null,
             $parts[count($parts) - 1] ?? null,
         ];
+    }
+
+    protected function notifyAdminsAboutNewAccount(Alumni $alumni): void
+    {
+        $alumni->loadMissing([
+            'user',
+            'personal_details',
+            'academic_details',
+            'contact_details',
+            'employment_details',
+        ]);
+
+        User::query()
+            ->where('user_type', 'admin')
+            ->get()
+            ->each(fn (User $admin) => $admin->notify(new EmploymentSurveySubmittedNotification($alumni)));
+    }
+
+    protected function shouldNotifyAdminsAboutSurveySubmission(User $user, ?Alumni $alumni): bool
+    {
+        if ($user->status !== 'pending') {
+            return false;
+        }
+
+        if (! $alumni) {
+            return true;
+        }
+
+        return ! DB::table('notifications')
+            ->where('type', EmploymentSurveySubmittedNotification::class)
+            ->where('data->alumni_id', $alumni->alumni_id)
+            ->exists();
     }
 
     protected function nextAlumniId(): string

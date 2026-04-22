@@ -33,11 +33,7 @@ export default function Notifications({ notifs }: { notifs: AppNotification<any>
             <div
                 onMouseEnter={() => setHovering(true)}
                 onMouseLeave={() => setHovering(false)}
-                className={cn(
-                    "max-h-[26rem] overflow-auto ps-1.5 h-[65vh] overflow-auto scroll-area [&::-webkit-scrollbar]:w-1.5",
-                    "[&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded",
-                    hovering ? "[&::-webkit-scrollbar-thumb]:bg-gray-300" : "[&::-webkit-scrollbar-thumb]:bg-transparent"
-                )}
+                className="max-h-[65vh]"
 
             >
                 <div className="space-y-1">

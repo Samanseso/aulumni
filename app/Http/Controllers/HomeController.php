@@ -4,10 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Announcement;
 use App\Models\Alumni;
+use App\Models\AlumniPersonalDetails;
 use App\Models\Post;
 use App\Support\AdminDashboardReportService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class HomeController extends Controller
@@ -15,7 +19,13 @@ class HomeController extends Controller
     public function index(Request $request, AdminDashboardReportService $dashboardReportService)
     {
         if (Auth::check()) {
-            switch (Auth::user()->user_type) {
+            // Redirect to email verification if not verified
+            $user = Auth::user();
+            if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail()) {
+                return redirect()->route('verification.notice');
+            }
+
+            switch ($user->user_type) {
                 case 'admin':
                     return Inertia::render('admin/dashboard', $dashboardReportService->build());
                 case 'employee':
@@ -66,6 +76,53 @@ class HomeController extends Controller
             'alumni' => $alumni,
             'posts' => $this->approvedPostsForViewer($request->user()->user_id, $alumni->user_id),
             'isOwnProfile' => $request->user()->user_id === $alumni->user_id,
+        ]);
+    }
+
+    public function updateProfilePhoto(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        abort_if(! $user || $user->user_type !== 'alumni', 403);
+
+        $validated = $request->validate([
+            'photo' => ['required', 'image', 'max:3072'],
+        ]);
+
+        $alumni = Alumni::query()
+            ->where('user_id', $user->user_id)
+            ->firstOrFail();
+
+        $personalDetails = AlumniPersonalDetails::query()->firstOrNew([
+            'alumni_id' => $alumni->alumni_id,
+        ]);
+
+        $previousPhotos = collect([$personalDetails->photo, $user->avatar])
+            ->filter()
+            ->unique()
+            ->all();
+
+        $path = $validated['photo']->store('profile-photos/' . date('Y/m'), 'public');
+        $photoUrl = url('storage/' . $path);
+
+        $personalDetails->photo = $photoUrl;
+        $personalDetails->save();
+
+        $user->forceFill([
+            'avatar' => $photoUrl,
+        ])->save();
+
+        foreach ($previousPhotos as $previousPhoto) {
+            if ($previousPhoto !== $photoUrl) {
+                $this->deleteStoredProfilePhoto($previousPhoto);
+            }
+        }
+
+        return back()->with([
+            'modal_status' => 'success',
+            'modal_action' => 'update',
+            'modal_title' => 'Profile photo updated',
+            'modal_message' => 'Your profile picture was updated successfully.',
         ]);
     }
 
@@ -141,7 +198,7 @@ class HomeController extends Controller
         ])
             ->leftJoin('users', 'alumni.user_id', '=', 'users.user_id')
             ->where('alumni.user_id', $userId)
-            ->select('alumni.*', 'users.status', 'users.user_name', 'users.email', 'users.name')
+            ->select('alumni.*', 'users.status', 'users.user_name', 'users.email', 'users.name', 'users.avatar')
             ->first();
     }
 
@@ -158,8 +215,23 @@ class HomeController extends Controller
             ->leftJoin('users', 'alumni.user_id', '=', 'users.user_id')
             ->where('users.user_name', $userName)
             ->where('users.user_type', 'alumni')
-            ->select('alumni.*', 'users.status', 'users.user_name', 'users.email', 'users.name')
+            ->select('alumni.*', 'users.status', 'users.user_name', 'users.email', 'users.name', 'users.avatar')
             ->firstOrFail();
+    }
+
+    protected function deleteStoredProfilePhoto(?string $photoUrl): void
+    {
+        if (! filled($photoUrl)) {
+            return;
+        }
+
+        $path = parse_url($photoUrl, PHP_URL_PATH);
+
+        if (! is_string($path) || ! str_starts_with($path, '/storage/')) {
+            return;
+        }
+
+        Storage::disk('public')->delete(Str::after($path, '/storage/'));
     }
 
     protected function calculateProfileCompletion(?Alumni $alumni): int

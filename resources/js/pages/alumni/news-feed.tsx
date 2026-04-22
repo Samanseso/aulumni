@@ -26,7 +26,7 @@ const NewsFeed = () => {
         viewerProfile: Alumni | null
         feedSummary: {
             profile_completion: number
-            approved_posts: number  
+            approved_posts: number
             approved_announcements: number
             upcoming_events: number
             companies_hiring: number
@@ -59,7 +59,7 @@ const NewsFeed = () => {
                             <div className="px-5 pb-5">
                                 <div className="-mt-8 flex items-end gap-3">
                                     <div className="rounded-full border-4 border-white bg-white shadow-md">
-                                        <UserAvatar className='h-20 w-20' user={props.auth.user} />
+                                        <UserAvatar className='h-20 w-20 text-2xl' avatar={props.auth.user.avatar ?? undefined} name={props.auth.user.name} />
                                     </div>
                                     <div className="pb-1">
                                         <p className="text-base font-semibold text-slate-900">{props.auth.user.name}</p>
@@ -113,27 +113,6 @@ const NewsFeed = () => {
                             </div>
                         </div>
                     </div>
-
-                    <div className="mt-3 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                        <div className="flex items-center gap-2 text-slate-900">
-                            <p className="text-md font-semibold">Important actions</p>
-                        </div>
-
-                        <div className="mt-4 grid gap-2">
-                            <Button asChild variant="outline" className="justify-start">
-                                <Link href={profileUrl}>
-                                    <Key />
-                                    Two-Factor Authentication
-                                </Link>
-                            </Button>
-                            <Button asChild variant="outline" className="justify-start">
-                                <Link href="/survey/employment">
-                                    <Bell className="size-4" />
-                                    Alumni survey
-                                </Link>
-                            </Button>
-                        </div>
-                    </div>
                 </aside>
 
                 <div className="w-full max-w-xl  pt-4 max-h-[calc(100vh-65px)] overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -141,7 +120,7 @@ const NewsFeed = () => {
                         <div className="overflow-hidden border border-slate-200 bg-white shadow-sm md:rounded-xl">
                             <div className="p-4 pb-2">
                                 <div className="mb-2 flex items-center gap-2">
-                                    <UserAvatar user={props.auth.user} />
+                                    <UserAvatar avatar={props.auth.user.avatar ?? undefined} name={props.auth.user.name} />
                                     <Input
                                         onClick={() => setCreatePostModal(true)}
                                         readOnly
@@ -150,7 +129,7 @@ const NewsFeed = () => {
                                         className="rounded-full border-0 bg-muted"
                                     />
                                 </div>
-                                <div className="flex items-center justify-between ps-12.5">
+                                {/* <div className="flex items-center justify-between ps-12.5">
                                     <div className="flex items-center gap-4 text-muted-foreground">
                                         <Button variant="ghost" className="!px-0 text-sm"><Image />Image</Button>
                                     </div>
@@ -166,7 +145,7 @@ const NewsFeed = () => {
                                             </SelectContent>
                                         </Select>
                                     </div>
-                                </div>
+                                </div> */}
                             </div>
                         </div>
 
@@ -183,7 +162,7 @@ const NewsFeed = () => {
 
 
                 </div>
-                <aside className="hidden xl:block min-w-[22rem]">
+                <aside className="hidden xl:block min-w-[20rem]">
                     <div className="sticky pt-4 top-4 space-y-4">
                         <div className='max-w-[20rem] bg-white rounded-xl border border-slate-200 shadow-sm'>
 
@@ -200,7 +179,7 @@ const NewsFeed = () => {
                                 onMouseEnter={() => setHoveringAnnouncement(true)}
                                 onMouseLeave={() => setHoveringAnnouncement(false)}
                                 className={cn(
-                                    '!h-[calc(100vh-186px)] !max-h-[calc(100vh-186px)] overflow-auto scroll-area [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:transparent ps-4 pe-2.5',
+                                    '!h-[calc(100vh-360px)] !max-h-[calc(100vh-360px)] overflow-auto scroll-area [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:transparent ps-4 pe-2.5',
                                     hoveringAnnouncement && "[&::-webkit-scrollbar-thumb]:bg-gray-300"
                                 )}>
                                 {props.announcements.map((announcement) => {

@@ -7,6 +7,8 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Contracts\User as ProviderUser;
 use Laravel\Socialite\Facades\Socialite;
@@ -71,6 +73,7 @@ class GoogleController extends Controller
     private function syncGoogleAccount(User $user, ProviderUser $googleUser): User
     {
         $googleName = trim((string) $googleUser->getName());
+        $storedAvatarUrl = $user->avatar;
 
         $updates = [
             'google_id' => $googleUser->getId(),
@@ -84,11 +87,15 @@ class GoogleController extends Controller
             $updates['name'] = $googleName;
         }
 
-        if (filled($googleUser->getAvatar())) {
-            $updates['avatar'] = $googleUser->getAvatar();
+        if (filled($googleUser->getAvatar()) && $this->shouldSyncGoogleAvatar($user->avatar)) {
+            $storedAvatarUrl = $this->storeGoogleAvatar($googleUser->getAvatar(), $user->avatar);
         }
 
-        $user->fill($updates)->save();
+        if (filled($storedAvatarUrl)) {
+            $updates['avatar'] = $storedAvatarUrl;
+        }
+
+        $user->forceFill($updates)->save();
         $this->syncGoogleProfileDefaults($user, $googleUser);
 
         return $user;
@@ -111,7 +118,6 @@ class GoogleController extends Controller
                 'first_name' => $firstName,
                 'middle_name' => $middleName,
                 'last_name' => $lastName,
-                'photo' => $googleUser->getAvatar(),
             ], fn (?string $value) => filled($value)),
             'contact' => [
                 'email' => $email,
@@ -119,12 +125,18 @@ class GoogleController extends Controller
         ]);
 
         $user = $alumni->user()->firstOrFail();
+        $storedAvatarUrl = $this->storeGoogleAvatar($googleUser->getAvatar());
 
-        $user->fill([
+        $updates = [
             'google_id' => $googleUser->getId(),
-            'avatar' => $googleUser->getAvatar(),
             'email_verified_at' => now(),
-        ])->save();
+        ];
+
+        if (filled($storedAvatarUrl)) {
+            $updates['avatar'] = $storedAvatarUrl;
+        }
+
+        $user->forceFill($updates)->save();
 
         return $user;
     }
@@ -168,10 +180,6 @@ class GoogleController extends Controller
             $updates['last_name'] = $lastName;
         }
 
-        if (blank($personalDetails?->photo) && filled($googleUser->getAvatar())) {
-            $updates['photo'] = $googleUser->getAvatar();
-        }
-
         if ($updates === []) {
             return;
         }
@@ -202,5 +210,99 @@ class GoogleController extends Controller
             implode(' ', array_slice($parts, 1, -1)) ?: null,
             $parts[count($parts) - 1] ?? null,
         ];
+    }
+
+    private function shouldSyncGoogleAvatar(?string $currentAvatarUrl): bool
+    {
+        if (blank($currentAvatarUrl)) {
+            return true;
+        }
+
+        $host = parse_url($currentAvatarUrl, PHP_URL_HOST);
+
+        return is_string($host)
+            && str_contains(Str::lower($host), 'googleusercontent.com');
+    }
+
+    private function storeGoogleAvatar(?string $avatarUrl, ?string $previousAvatarUrl = null): ?string
+    {
+        if (blank($avatarUrl)) {
+            return $previousAvatarUrl;
+        }
+
+        try {
+            $response = Http::accept('image/*')
+                ->connectTimeout(10)
+                ->retry(2, 200)
+                ->timeout(15)
+                ->get($avatarUrl);
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return $previousAvatarUrl;
+        }
+
+        $body = $response->body();
+        $contentType = Str::lower(Str::before((string) $response->header('Content-Type'), ';'));
+
+        if (! $response->successful() || blank($body)) {
+            return $previousAvatarUrl;
+        }
+
+        if ($contentType !== '' && ! str_starts_with($contentType, 'image/')) {
+            return $previousAvatarUrl;
+        }
+
+        $path = 'profile-photos/google/' . date('Y/m') . '/' . Str::uuid() . '.' . $this->resolveAvatarExtension($contentType, $avatarUrl);
+
+        if (! Storage::disk('public')->put($path, $body)) {
+            return $previousAvatarUrl;
+        }
+
+        $storedAvatarUrl = url('storage/' . $path);
+
+        if ($previousAvatarUrl && $previousAvatarUrl !== $storedAvatarUrl) {
+            $this->deleteStoredAvatar($previousAvatarUrl);
+        }
+
+        return $storedAvatarUrl;
+    }
+
+    private function resolveAvatarExtension(string $contentType, string $avatarUrl): string
+    {
+        return match ($contentType) {
+            'image/png' => 'png',
+            'image/gif' => 'gif',
+            'image/webp' => 'webp',
+            default => $this->resolveAvatarExtensionFromUrl($avatarUrl),
+        };
+    }
+
+    private function resolveAvatarExtensionFromUrl(string $avatarUrl): string
+    {
+        $path = parse_url($avatarUrl, PHP_URL_PATH);
+        $extension = is_string($path) ? Str::lower(pathinfo($path, PATHINFO_EXTENSION)) : '';
+
+        return match ($extension) {
+            'png', 'gif', 'webp' => $extension,
+            'jpeg' => 'jpg',
+            'jpg' => 'jpg',
+            default => 'jpg',
+        };
+    }
+
+    private function deleteStoredAvatar(?string $avatarUrl): void
+    {
+        if (! filled($avatarUrl)) {
+            return;
+        }
+
+        $path = parse_url($avatarUrl, PHP_URL_PATH);
+
+        if (! is_string($path) || ! str_starts_with($path, '/storage/')) {
+            return;
+        }
+
+        Storage::disk('public')->delete(Str::after($path, '/storage/'));
     }
 }

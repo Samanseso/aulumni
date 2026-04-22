@@ -4,7 +4,7 @@ use App\Http\Controllers\User\UserController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth'])->prefix('user')->group(function () {
+Route::middleware(['auth', 'active', 'verified'])->prefix('user')->group(function () {
 
 
     // Activation/deactivation 

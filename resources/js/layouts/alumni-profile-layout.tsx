@@ -6,6 +6,8 @@ import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { useActiveUrl } from '@/hooks/use-active-url';
 import type { Alumni } from '@/types';
+import { cn } from '@/lib/utils';
+import UserAvatar from '@/components/user-avatar';
 
 interface AlumniProfileTab {
     text: string;
@@ -17,6 +19,7 @@ interface AlumniProfileLayoutProps extends PropsWithChildren {
     tabs?: AlumniProfileTab[];
     actions?: ReactNode;
     publicProfileUrl?: string;
+    className?: string;
 }
 
 export default function AlumniProfileLayout({
@@ -25,6 +28,7 @@ export default function AlumniProfileLayout({
     tabs,
     actions,
     publicProfileUrl,
+    className,
 }: AlumniProfileLayoutProps) {
     const { urlIsActive } = useActiveUrl();
     const [copied, setCopied] = useState(false);
@@ -37,10 +41,6 @@ export default function AlumniProfileLayout({
         { text: 'Contact', href: `/user/alumni/${alumni.user_name}/contact` },
         { text: 'Employment', href: `/user/alumni/${alumni.user_name}/employment` },
     ];
-    const profileImageUrl =
-        alumni.personal_details?.photo ||
-        alumni.avatar ||
-        '/assets/images/default-profile.png';
 
     const quickFacts = [
         {
@@ -62,81 +62,74 @@ export default function AlumniProfileLayout({
     };
 
     return (
-        <div className='m-4 overflow-hidden rounded-lg'>
-            <div className="rounded-lg border border-slate-200 bg-white shadow-sm !h-[calc(100vh-112px)] !max-h-[calc(100vh-112px)] overflow-auto scroll-area [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-400">
-                <div className="h-70 bg-slate-200 max-w-5xl mt-5 rounded-lg mx-auto" />
+        <div className={cn("m-4 rounded-lg border border-slate-200 bg-white shadow-sm !h-[calc(100vh-112px)] !max-h-[calc(100vh-112px)] overflow-auto scroll-area [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-400", className)}>
+            <div className="h-70 bg-slate-200 max-w-5xl mt-5 rounded-lg mx-auto" />
 
-                <div className="mx-auto max-w-5xl px-6 pb-8">
-                    <div className="-mt-14 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-                        <div className="w-full flex flex-col gap-5 sm:flex-row sm:items-end">
-                            <div className="rounded-full border-4 border-white bg-white shadow-lg">
-                                <img
-                                    className="h-42 w-42 rounded-full object-cover"
-                                    src={profileImageUrl}
-                                    alt={`${alumni.name} profile`}
+            <div className="mx-auto max-w-5xl px-6 pb-8">
+                <div className="-mt-14 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="w-full flex flex-col gap-5 sm:flex-row sm:items-end">
+                        <div className="rounded-full border-4 border-white bg-white shadow-lg">
+                            <UserAvatar className='h-42 w-42 text-5xl' avatar={alumni.avatar ?? undefined} name={alumni.name} />
+                        </div>
+
+
+                        <div className='flex-1 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between'>
+                            <div className="pb-1">
+                                <Heading
+                                    title={alumni.name}
+                                    description={`${alumni.email} | @${alumni.user_name}`}
+                                    classname="mb-0"
                                 />
-                            </div>
 
-
-                            <div className='flex-1 flex justify-between'>
-                                <div className="pb-1">
-                                    <Heading
-                                        title={alumni.name}
-                                        description={`${alumni.email} | @${alumni.user_name}`}
-                                        classname="mb-0"
-                                    />
-
-                                    {quickFacts.length > 0 && (
-                                        <div className="mt-4 flex flex-wrap gap-2">
-                                            {quickFacts.map((fact) => (
-                                                <div
-                                                    key={fact.label}
-                                                    className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-600"
-                                                >
-                                                    {fact.icon}
-                                                    <span>{fact.value}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                                {actions ?? (
-                                    <div className="flex gap-3">
-                                        <Button variant="outline" onClick={handleCopy}>
-                                            <Copy className="size-4" />
-                                            {copied ? 'Copied' : 'Copy public link'}
-                                        </Button>
-                                        <Button asChild>
-                                            <Link href={resolvedPublicProfileUrl}>
-                                                <ExternalLink className="size-4" />
-                                                View public profile
-                                            </Link>
-                                        </Button>
+                                {quickFacts.length > 0 && (
+                                    <div className="mt-4 flex flex-wrap gap-2">
+                                        {quickFacts.map((fact) => (
+                                            <div
+                                                key={fact.label}
+                                                className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-600"
+                                            >
+                                                {fact.icon}
+                                                <span>{fact.value}</span>
+                                            </div>
+                                        ))}
                                     </div>
                                 )}
                             </div>
-                        </div>
-                    </div>
-
-                    <div className="mt-8 border-t border-slate-100 pt-3">
-                        <div className="flex flex-wrap gap-2 mb-5">
-                            {resolvedTabs.map((tab) => (
-                                <Link
-                                    key={tab.text}
-                                    href={tab.href}
-                                    as="div"
-                                >
-                                    <Button variant={urlIsActive(tab.href) ? 'default' : 'ghost'}>
-                                        {tab.text}
+                            {actions ?? (
+                                <div className="flex flex-wrap gap-3">
+                                    <Button variant="outline" onClick={handleCopy}>
+                                        <Copy className="size-4" />
+                                        {copied ? 'Copied' : 'Copy public link'}
                                     </Button>
-                                </Link>
-                            ))}
+                                    <Button asChild>
+                                        <Link href={resolvedPublicProfileUrl}>
+                                            <ExternalLink className="size-4" />
+                                            View public profile
+                                        </Link>
+                                    </Button>
+                                </div>
+                            )}
                         </div>
-                        {children}
                     </div>
                 </div>
-            </div>
 
+                <div className="mt-8 border-t border-slate-100 pt-3">
+                    <div className="flex flex-wrap gap-2 mb-5">
+                        {resolvedTabs.map((tab) => (
+                            <Link
+                                key={tab.text}
+                                href={tab.href}
+                                as="div"
+                            >
+                                <Button variant={urlIsActive(tab.href) ? 'default' : 'ghost'}>
+                                    {tab.text}
+                                </Button>
+                            </Link>
+                        ))}
+                    </div>
+                    {children}
+                </div>
+            </div>
         </div>
     );
 }

@@ -46,7 +46,7 @@ const CreateEmployeeModal = ({ setAddEmployeeModal }: CreateEmployeeModalProps) 
                 <DialogDescription className='hidden' />
                 <Form 
                     
-                    {...store()}
+                    {...store.form()}
                     options={{
                         preserveState: true,
                         preserveScroll: true,

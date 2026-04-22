@@ -3,7 +3,7 @@
 use App\Http\Controllers\DepartmentController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'role:admin'])->prefix('utility/department')->name('departments.')->group(function () {
+Route::middleware(['auth', 'active', 'role:admin', 'verified'])->prefix('utility/department')->name('departments.')->group(function () {
     // List departments
     Route::get('/', [DepartmentController::class, 'index'])->name('index');
 

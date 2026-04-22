@@ -79,6 +79,7 @@ export default function SurveyPersonal() {
         personal: any;
     }>();
 
+
     const personal = props.personal || {};
     const [selectedGender, setSelectedGender] = useState(personal?.gender || '');
 
@@ -208,7 +209,7 @@ export default function SurveyPersonal() {
                                         </FieldBlock>
                                     </div>
 
-                                    <FieldBlock label="Photo URL" description="Link to your profile photo (optional).">
+                                    {/* <FieldBlock label="Photo URL" description="Link to your profile photo (optional).">
                                         <Input
                                             type="url"
                                             name="photo"
@@ -216,9 +217,9 @@ export default function SurveyPersonal() {
                                             placeholder="https://example.com/photo.jpg"
                                         />
                                         <InputError className="mt-2" message={errors.photo} />
-                                    </FieldBlock>
+                                    </FieldBlock> */}
 
-                                    <FieldBlock label="Bio" description="Tell us about yourself (optional).">
+                                    {/* <FieldBlock label="Bio" description="Tell us about yourself (optional).">
                                         <textarea
                                             className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 focus:border-blue-500 focus:ring focus:ring-blue-500/50"
                                             name="bio"
@@ -227,7 +228,7 @@ export default function SurveyPersonal() {
                                             rows={4}
                                         />
                                         <InputError className="mt-2" message={errors.bio} />
-                                    </FieldBlock>
+                                    </FieldBlock> */}
 
                                     <FieldBlock label="Interests" description="Your interests or hobbies (optional).">
                                         <textarea

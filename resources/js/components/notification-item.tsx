@@ -1,4 +1,4 @@
-import { Bell, ClipboardList, Heart, Import, MessageCircle } from 'lucide-react';
+import { Bell, Heart, Import, MessageCircle, UserRound } from 'lucide-react';
 
 import { getRelativeTimeDifference } from '@/helper';
 import { AppNotification } from '@/types';
@@ -13,8 +13,8 @@ const appearance = {
         iconClassName: 'bg-rose-100 text-rose-600',
     },
     'App\\Notifications\\EmploymentSurveySubmittedNotification': {
-        icon: ClipboardList,
-        iconClassName: 'bg-blue-100 text-blue-700',
+        icon: UserRound,
+        iconClassName: 'bg-emerald-100 text-emerald-700',
     },
     'App\\Notifications\\UserMentionNotification': {
         icon: MessageCircle,

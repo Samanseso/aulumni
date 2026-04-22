@@ -47,7 +47,7 @@ export default function AnnouncementCreateModal({ setOpen }: AnnouncementCreateM
                 </DialogDescription>
 
                 <Form
-                    {...AnnouncementController.store()}
+                    {...AnnouncementController.store.form()}
                     className="space-y-5"
                     options={{ preserveState: true }}
                     onSuccess={() => setOpen(false)}

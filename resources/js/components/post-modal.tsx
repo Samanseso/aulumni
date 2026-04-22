@@ -83,7 +83,7 @@ export default function PostModal({ post_id, setViewPostId }: PostModalProps) {
                                     <Button variant="outline" onClick={() => setViewPostId(null)}>Close</Button>
                                     {
                                         post.status === "approved" ?
-                                            <Form {...PostController.reject(post.post_id)} className="w-full"
+                                            <Form {...PostController.reject.form(post.post_id)} className="w-full"
                                                 onSuccess={() => setViewPostId(null)}
                                             >
                                                 {({ processing }) => (
@@ -95,7 +95,7 @@ export default function PostModal({ post_id, setViewPostId }: PostModalProps) {
                                                 )}
                                             </Form>
                                             :
-                                            <Form {...PostController.approve(post.post_id)} className="w-full"
+                                            <Form {...PostController.approve.form(post.post_id)} className="w-full"
                                                 onSuccess={() => setViewPostId(null)}
                                             >
                                                 {({ processing }) => (
@@ -108,7 +108,7 @@ export default function PostModal({ post_id, setViewPostId }: PostModalProps) {
                                     }
                                 </div>
                             </DialogFooter>
-                        </> :
+                        </> :   
                         <>
                             <div className="px-5.5 pt-3 flex items-center justify-between" >
                                 <Skeleton className="h-7 w-30 mt-2" />
