@@ -1,5 +1,5 @@
 import { Head, Link, usePage } from '@inertiajs/react'
-import { Bell, BriefcaseBusiness, Building2, CalendarDays, Globe, GraduationCap, Image, Key, MapPin, Sparkles, UserCircle2 } from 'lucide-react'
+import { Archive, Bell, BriefcaseBusiness, Building2, CalendarDays, Globe, GraduationCap, Image, Key, MapPin, Sparkles, UserCircle2 } from 'lucide-react'
 import { useState } from 'react'
 import { Navigation, Pagination, Scrollbar, A11y } from 'swiper/modules';
 
@@ -45,7 +45,7 @@ const NewsFeed = () => {
         <AppLayout>
             <Head title="Home" />
 
-            <div className="flex justify-center gap-6 pb-0">
+            <div className="flex justify-center gap-4 2xl:gap-6 pb-0">
                 {createPostModal && <PostCreateModal setCreatePostModal={setCreatePostModal} />}
 
                 {viewAnnouncementId !== null ? (
@@ -95,10 +95,6 @@ const NewsFeed = () => {
                                             <BriefcaseBusiness className='size-4.5 mx-0.25' />
                                             <p>{props.viewerProfile?.employment_details?.current_work_company ?? 'Current company not added yet'}</p>
                                         </div>
-                                        <div className='flex items-center gap-3'>
-                                            <CalendarDays className='size-4.5 mx-0.25' />
-                                            <p>{props.feedSummary.upcoming_events} upcoming event{props.feedSummary.upcoming_events === 1 ? '' : 's'}</p>
-                                        </div>
                                     </div>
 
                                     <div className="flex gap-2">
@@ -115,7 +111,7 @@ const NewsFeed = () => {
                     </div>
                 </aside>
 
-                <div className="w-full max-w-xl  pt-4 max-h-[calc(100vh-65px)] overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <div className="w-full max-w-xl pt-4 pb-3 max-h-[calc(100vh-65px)] overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                     <div className="grid gap-2 lg:gap-4">
                         <div className="overflow-hidden border border-slate-200 bg-white shadow-sm md:rounded-xl">
                             <div className="p-4 pb-2">
@@ -169,9 +165,6 @@ const NewsFeed = () => {
                             <div className="p-4">
                                 <div className="flex items-center justify-between gap-3">
                                     <h2 className="mt-1 text-lg font-semibold text-slate-950">Announcements</h2>
-                                    <span className="rounded-full bg-blue/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-blue">
-                                        {props.feedSummary.approved_announcements} upcoming
-                                    </span>
                                 </div>
                             </div>
 
@@ -179,15 +172,30 @@ const NewsFeed = () => {
                                 onMouseEnter={() => setHoveringAnnouncement(true)}
                                 onMouseLeave={() => setHoveringAnnouncement(false)}
                                 className={cn(
-                                    '!h-[calc(100vh-360px)] !max-h-[calc(100vh-360px)] overflow-auto scroll-area [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:transparent ps-4 pe-2.5',
+                                    '!h-[calc(100vh-390px)] !max-h-[calc(100vh-390px)] overflow-auto scroll-area [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:transparent ps-4 pe-2.5',
                                     hoveringAnnouncement && "[&::-webkit-scrollbar-thumb]:bg-gray-300"
                                 )}>
+
+                                {
+                                    props.announcements.length === 0 && (
+                                        <div className='flex h-full flex-col items-center justify-center pb-20'>
+                                            <div className="text-center">
+                                                <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+                                                    <Archive className="size-5" />
+                                                </div>
+                                                <p className="mt-4 text-sm font-medium text-slate-900">No anouncements yet</p>
+                                                <p className="mt-1 text-xs text-slate-500">Check back later for updates.</p>
+                                            </div>
+                                        </div>
+                                    )
+                                }
+
                                 {props.announcements.map((announcement) => {
                                     const previewImage = announcement.attachments?.find((attachment) => attachment.type === "image");
 
                                     return (
                                         <div
-                                            key={announcement.announcement_uuid} className="overflow-hidden cursor-pointer rounded-xl border border-slate-200 bg-slate-50 mb-4"
+                                            key={announcement.announcement_uuid} className="overflow-hidden cursor-pointer rounded-xl border border-slate-200 bg-blue-50 mb-4"
                                             onClick={() => setViewAnnouncementId(announcement.announcement_id)}
                                         >
                                             <div className="grid gap-4">

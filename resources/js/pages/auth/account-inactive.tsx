@@ -12,7 +12,7 @@ export default function AccountInactive() {
     return (
         <AuthLayout
             title="Account inactive"
-            description="Your account is currently inactive, that is whyp access to the alumni platform has been disabled."
+            description="Your account is currently inactive, that is why access to the alumni platform has been disabled."
         >
             <Head title="Account inactive" />
 

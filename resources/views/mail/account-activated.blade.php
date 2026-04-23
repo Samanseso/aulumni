@@ -3,12 +3,12 @@
 @endphp
 
 <x-mail::message>
-<div style="text-align: center; margin-bottom: 35px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+<div style="text-align: center; margin-bottom: 55px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
     <img
         src="{{ url('https://upload.wikimedia.org/wikipedia/en/8/8b/Arellano_University_logo.png') }}"
         alt="{{ $appName }} logo"
-        width="80"
-        height="80"
+        width="85"
+        height="85"
         style="display: inline-block; margin-bottom: 5px;"
     >
     <div style="font-size: 34px; font-weight: 700; color: #0f172a; letter-spacing: 0.02em;">
@@ -24,7 +24,7 @@
 
 <x-mail::panel>
 <div style="color: #334155; font-size: 14px; line-height: 1.7;">
-    Use the button below to enter your account. If you're having trouble clicking the button, copy and paste the URL below into your web browser: http://localhost/login
+    Use the button below to enter your account. If you're having trouble clicking the button, copy and paste the URL below into your web browser: {{ config('app.url') }}/login
 </div>
 </x-mail::panel>
 

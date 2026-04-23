@@ -69,3 +69,4 @@ require __DIR__ . '/announcement.php';
 # Alumni  routes
 require __DIR__ . '/news-feed.php';
 require __DIR__ . '/reaction.php';
+require __DIR__ . '/comment.php';

@@ -29,7 +29,7 @@ function SurveyCard({
     children: React.ReactNode;
 }) {
     return (
-        <section className="overflow-hidden rounded-[24px] border border-slate-200 bg-white">
+        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
             <div className="h-1.5 bg-blue" />
             <div className="p-6">
                 <div className="mb-6 flex items-start gap-4">
@@ -89,7 +89,7 @@ export default function SurveyPersonal() {
 
             <div className="min-h-[calc(100vh-5rem)] bg-[radial-gradient(circle_at_top_left,_rgba(1,78,168,0.10),_transparent_35%),linear-gradient(180deg,#f8fafc,#eef4ff_55%,#fff5f5)] px-4 py-6">
                 <div className="mx-auto max-w-5xl space-y-5">
-                    <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white">
+                    <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
                         <div className="h-4 bg-blue" />
                         <div className="space-y-4 p-6 md:p-8">
                             <div className="flex items-start gap-4">
@@ -104,7 +104,7 @@ export default function SurveyPersonal() {
                                         Personal Information
                                     </h1>
                                     <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
-                                        {props.is_signup ? 'Create your account and provide your personal details.' : 'Update your personal information.'}
+                                        Set up your account by providing your personal information.
                                     </p>
                                 </div>
                             </div>

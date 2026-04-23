@@ -49,9 +49,17 @@ export default function AccountPending() {
                     If your account should already be active, please contact the AU alumni office or wait for the approval notice from an administrator.
                 </p>
 
-                <Button asChild variant="outline" className="w-full">
-                    <Link href={logout()}>Log out</Link>
-                </Button>
+                <div className='space-y-2'>
+                    {
+                        !auth.user.survey_completed &&
+                        <Button asChild className="w-full">
+                            <Link href={'/survey/personal'}>Set up your account</Link>
+                        </Button>
+                    }
+                    <Button asChild variant="outline" className="w-full">
+                        <Link href={logout()}>Log out</Link>
+                    </Button>
+                </div>
             </div>
         </AuthLayout>
     )

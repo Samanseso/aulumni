@@ -10,11 +10,9 @@ const PostActionShare = ({ post_id }: { post_id: number }) => {
     return (
         <>
             {postViewId && <PostModal post_id={post_id} setViewPostId={setViewPostId} />}
-            <Link className='flex-1 hover:bg-mute' href={""} as={"div"}>
-                <Button variant="ghost" className="flex-1 hover:bg-muted" onClick={() => { }}>
-                    <Share2 className="size-4" /> Share
-                </Button>
-            </Link>
+            <Button variant="ghost" className="flex-1 hover:bg-muted" onClick={() => { }}>
+                <Share2 className="size-4" /> Share
+            </Button>
         </>
     )
 }

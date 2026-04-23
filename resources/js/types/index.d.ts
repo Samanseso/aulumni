@@ -1,3 +1,4 @@
+import survey from '../routes/survey/index';
 
 
 export interface Auth {
@@ -105,6 +106,7 @@ export interface User {
 	email: string;
 	email_verified_at?: string | null;
 	avatar?: string | null;
+	survey_completed: boolean;
 	user_type: string;
 	password: string;
 	status: string;
@@ -133,7 +135,6 @@ export interface Alumni extends User {
 	contact_details?: AlumniContactDetails | null;
 	employment_details?: AlumniEmploymentDetails | null;
 }
-
 
 
 

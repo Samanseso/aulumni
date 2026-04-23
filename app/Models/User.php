@@ -40,7 +40,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'google_id',
         'avatar',
-        'show_survey_onboarding',
+        'survey_completed',
         'user_type',
         'password',
         'status',
@@ -69,7 +69,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'show_survey_onboarding' => 'boolean',
+            'survey_completed' => 'boolean',
             'two_factor_confirmed_at' => 'datetime',
         ];
     }

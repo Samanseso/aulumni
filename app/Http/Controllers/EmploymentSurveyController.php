@@ -67,7 +67,7 @@ class EmploymentSurveyController extends Controller
         $contact = $this->contactPayload($validated);
         $employment = $this->employmentPayload($validated);
 
-        if (! $request->user()) {
+        if (!$request->user()) {
             $alumni = app(CreateAlumni::class)->create([
                 'user' => [
                     'name' => trim($validated['first_name'] . ' ' . $validated['last_name']),
@@ -75,6 +75,7 @@ class EmploymentSurveyController extends Controller
                     'user_type' => 'alumni',
                     'password' => $validated['password'],
                     'status' => 'pending',
+                    'survey_completed' => true,
                 ],
                 'personal' => $personal,
                 'academic' => $academic,
@@ -96,6 +97,7 @@ class EmploymentSurveyController extends Controller
         $user->update([
             'name' => trim($validated['first_name'] . ' ' . $validated['last_name']),
             'email' => $validated['email'],
+            'survey_completed' => true,
         ]);
 
         AlumniPersonalDetails::query()->updateOrCreate(
@@ -416,6 +418,7 @@ class EmploymentSurveyController extends Controller
                     'user_type' => 'alumni',
                     'password' => $personalData['password'],
                     'status' => 'pending',
+                    'survey_completed' => true,
                 ],
                 'personal' => $personalPayload,
                 'academic' => $academicPayload,
@@ -446,6 +449,7 @@ class EmploymentSurveyController extends Controller
         $user->update([
             'name' => $fullName,
             'email' => $surveyEmail ?? $user->email,
+            'survey_completed' => true,
         ]);
 
         AlumniPersonalDetails::query()->updateOrCreate(
@@ -688,6 +692,10 @@ class EmploymentSurveyController extends Controller
     {
         if ($user->status !== 'pending') {
             return false;
+        }
+
+        if (! $user->survey_completed) {
+            return true;
         }
 
         if (! $alumni) {

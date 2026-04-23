@@ -7,7 +7,9 @@ use App\Http\Requests\UserRequest;
 use App\Models\User;
 use App\Notifications\AccountActivatedNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Throwable;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use App\Concerns\PasswordValidationRules;
 
@@ -17,13 +19,15 @@ class UserController extends Controller
 
     public function activate(User $user): RedirectResponse
     {
-        $this->activateUser($user);
+        $emailSent = $this->activateUser($user);
 
         return back()->with([
             'modal_status'  => 'success',
             'modal_action'  => 'update',
-            'modal_title'   => 'Activation successful!',
-            'modal_message' => 'User was activated successfully.',
+            'modal_title'   => $emailSent
+                ? 'Activation successful!'
+                : 'Activation completed with email warning',
+            'modal_message' => 'User was activated successfully.'.$this->activationEmailWarningMessage($emailSent ? 0 : 1),
         ]);
     }
 
@@ -47,17 +51,23 @@ class UserController extends Controller
             'user_ids.*' => ['integer', 'exists:users,user_id'],
         ]);
 
-        User::query()
+        $failedEmailCount = User::query()
             ->whereIn('user_id', $validated['user_ids'])
             ->where('status', '!=', 'active')
             ->get()
-            ->each(fn (User $user) => $this->activateUser($user));
+            ->reduce(
+                fn (int $count, User $user) => $count + ($this->activateUser($user) ? 0 : 1),
+                0,
+            );
 
         return back()->with([
             'modal_status' => "success",
             'modal_action' => "update",
-            'modal_title' => "Activation successful!",
-            'modal_message' => "Users were activated successfully.",
+            'modal_title' => $failedEmailCount === 0
+                ? "Activation successful!"
+                : "Activation completed with email warning",
+            'modal_message' => "Users were activated successfully."
+                .$this->activationEmailWarningMessage($failedEmailCount),
             'signal_deselect' => (string) Str::uuid(),
         ]);
     }
@@ -102,15 +112,20 @@ class UserController extends Controller
         $user->fill($validated);
         $user->save();
 
+        $activationEmailFailed = false;
+
         if (! $wasActive && $user->status === 'active') {
-            $this->sendActivationEmail($user);
+            $activationEmailFailed = ! $this->sendActivationEmail($user);
         }
 
         return back()->with([
             'modal_status' => "success",
             'modal_action' => "update",
-            'modal_title' => "Update successful!",
-            'modal_message' => "User was updated successfully.",
+            'modal_title' => $activationEmailFailed
+                ? "Update successful with email warning"
+                : "Update successful!",
+            'modal_message' => "User was updated successfully."
+                .$this->activationEmailWarningMessage($activationEmailFailed ? 1 : 0),
         ]);
     }
 
@@ -132,20 +147,43 @@ class UserController extends Controller
         ]);
     }
 
-    private function activateUser(User $user): void
+    private function activateUser(User $user): bool
     {
         if ($user->status === 'active') {
-            return;
+            return true;
         }
 
         $user->status = 'active';
         $user->save();
 
-        $this->sendActivationEmail($user);
+        return $this->sendActivationEmail($user);
     }
 
-    private function sendActivationEmail(User $user): void
+    private function sendActivationEmail(User $user): bool
     {
-        $user->notify(new AccountActivatedNotification());
+        try {
+            $user->notify(new AccountActivatedNotification());
+
+            return true;
+        } catch (Throwable $exception) {
+            Log::error('Failed to send activation email.', [
+                'user_id' => $user->user_id,
+                'email' => $user->email,
+                'mailer' => config('mail.default'),
+                'exception' => $exception::class,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return false;
+        }
+    }
+
+    private function activationEmailWarningMessage(int $failedEmailCount): string
+    {
+        return match (true) {
+            $failedEmailCount <= 0 => '',
+            $failedEmailCount === 1 => ' The account was activated, but the activation email could not be sent. Check the mail configuration or the logs for details.',
+            default => " {$failedEmailCount} activation emails could not be sent. Check your mail configuration or the Laravel log for details.",
+        };
     }
 }

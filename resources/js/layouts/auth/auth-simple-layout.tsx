@@ -17,7 +17,7 @@ export default function AuthSimpleLayout({
     return (
         <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">
             <div className="w-full max-w-md bg-white p-5 rounded-xl shadow">
-                <div className="flex flex-col gap-8 ">
+                <div className="flex flex-col gap-6">
                     <div className="flex flex-col items-center">
 
                         <Link
@@ -31,7 +31,7 @@ export default function AuthSimpleLayout({
 
                         </Link>
 
-                        <h1 className="text-3xl font-black mb-4 mt-1">aulumni</h1>
+                        <h1 className="text-3xl font-black mb-6 mt-1">aulumni</h1>
 
 
                         <div className="text-center">

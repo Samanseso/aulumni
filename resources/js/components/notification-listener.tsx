@@ -39,18 +39,18 @@ export default function NotificationsListener({ setNotifs }: NotificationsListen
 		const channelName = `App.Models.User.${userId}`;
 		const channel = window.Echo.private(channelName);
 
-		console.log('Subscribing to notification channel:', channelName);
+		// console.log('Subscribing to notification channel:', channelName);
 
-		channel.subscribed(() => {
-			console.log('Subscribed to notification channel:', channelName);
-		});
+		// channel.subscribed(() => {
+		// 	console.log('Subscribed to notification channel:', channelName);
+		// });
 
-		channel.error((error: any) => {
-			console.error('Notification channel subscription error:', error);
-		});
+		// channel.error((error: any) => {
+		// 	console.error('Notification channel subscription error:', error);
+		// });
 
 		channel.notification((payload: any) => {
-			console.log('Received notification:', payload);
+			// console.log('Received notification:', payload);
 			const incoming = normalizeNotification(payload);
 
 			setNotifs((previous) => [incoming, ...previous.filter((notification) => notification.id !== incoming.id)]);

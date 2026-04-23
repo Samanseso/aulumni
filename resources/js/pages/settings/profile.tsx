@@ -53,7 +53,7 @@ export default function Profile({
                         {({ processing, recentlySuccessful, errors }) => (
                             <>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="name">Name</Label>
+                                    <Label htmlFor="name">Display Name</Label>
 
                                     <Input
                                         id="name"
@@ -71,7 +71,7 @@ export default function Profile({
                                     />
                                 </div>
 
-                                <div className="grid gap-2">
+                                {/* <div className="grid gap-2">
                                     <Label htmlFor="email">Email address</Label>
 
                                     <Input
@@ -89,7 +89,7 @@ export default function Profile({
                                         className="mt-2"
                                         message={errors.email}
                                     />
-                                </div>
+                                </div> */}
 
                                 {mustVerifyEmail &&
                                     auth.user.email_verified_at === null && (

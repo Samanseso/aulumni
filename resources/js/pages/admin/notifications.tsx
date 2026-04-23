@@ -38,7 +38,7 @@ export default function Notifications() {
             <Head title="Notifications" />
 
             <div className="grid gap-4 p-4 pb-0 xl:grid-cols-[360px_minmax(0,1fr)]">
-                <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm h-[calc(100vh-110px)]">
+                <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm h-[calc(100vh-110px)]">
                     <div className="border-b border-slate-200 px-4 py-4">
                         <p className="text-sm font-semibold text-slate-900">Inbox</p>
                         <p className="text-xs text-slate-500">Recent updates from across the system</p>
@@ -80,8 +80,8 @@ export default function Notifications() {
                     )}
                 </div>
 
-                <div className="h-[calc(100vh-110px)] rounded-2xl border border-slate-200 bg-white p-6 shadow-sm overflow-y-auto 
-                            [&::-webkit-scrollbar]:w-0   [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded
+                <div className="h-[calc(100vh-110px)] rounded-xl border border-slate-200 bg-white p-6 shadow-sm overflow-y-auto 
+                            [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded
                             [&::-webkit-scrollbar-thumb]:bg-gray-300">
                     {selected ? (
                         <NotificationRenderer type={selected.type} data={selected.data} />

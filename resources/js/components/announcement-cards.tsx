@@ -54,7 +54,7 @@ export default function AnnouncementCards({ announcements, selectedData, setSele
                         </thead>
                     </table>
 
-                    <div className="mb-7 grid grid-cols-2 xl:grid-cols-3 gap-3 px-5">
+                    <div className="mb-7 grid grid-cols-2 xl:grid-cols-4 gap-3 px-5">
                         {items.map((announcement) => (
                             (() => {
                                 const previewImage = announcement.attachments?.find((attachment) => attachment.type === "image");

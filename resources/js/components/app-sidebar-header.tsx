@@ -55,7 +55,7 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                 <Breadcrumbs breadcrumbs={breadcrumbs} />
             </div>
 
-            {
+            {/* {
                 isAlumni &&
                 <div className='absolute w-[33vw] left-[50%] -translate-x-[50%] flex gap-2'>
                     <Link href="/" className='flex-1 cursor-pointer py-2 border-b-3 border-blue'>
@@ -65,7 +65,7 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                     <div className='flex-1 cursor-pointer hover:bg-muted py-2 rounded-lg'><Network size={20} className='mx-auto' /></div>
                     <div className='flex-1 cursor-pointer hover:bg-muted py-2 rounded-lg'><Building2 size={20} className='mx-auto' /></div>
                 </div>
-            }
+            } */}
 
 
             <div className='flex items-center justify-between gap-2'>

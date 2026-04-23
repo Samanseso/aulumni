@@ -64,7 +64,8 @@ export function initializeTheme(): void {
         setCookie('appearance', 'system');
     }
 
-    currentAppearance = getStoredAppearance();
+    // currentAppearance = getStoredAppearance();
+    currentAppearance = 'light';
     applyTheme(currentAppearance);
 
     // Set up system theme change listener

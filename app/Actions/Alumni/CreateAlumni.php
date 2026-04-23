@@ -52,6 +52,7 @@ class CreateAlumni
                 'name'                  => $name,
                 'email'                 => $email,
                 'user_type'             => $userInput['user_type'] ?? 'alumni',
+                'survey_completed'      => $userInput['survey_completed'] ?? false,
                 'status'                => $userInput['status'] ?? 'pending',
                 'created_by'            => $userInput['created_by'] ?? null,
                 'password'              => $password,

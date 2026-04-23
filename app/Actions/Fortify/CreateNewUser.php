@@ -37,7 +37,8 @@ class CreateNewUser implements CreatesNewUsers
                 'name' => $displayName,
                 'email' => $input['email'],
                 'user_type' => $userType,
-                'show_survey_onboarding' => $userType === 'alumni',
+                'survey_completed' => $userType === 'alumni'
+                    && filter_var($input['survey_completed'] ?? false, FILTER_VALIDATE_BOOLEAN),
                 'password' => $input['password'],
                 'status' => $input['status'] ?? 'pending',
                 'created_by' => $input['created_by'] ?? null,

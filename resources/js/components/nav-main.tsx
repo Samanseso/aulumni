@@ -13,6 +13,7 @@ import {
     LayoutPanelLeft,
     Logs,
     Megaphone,
+    Settings,
 } from "lucide-react";
 import {
     SidebarGroup,
@@ -49,7 +50,7 @@ export function NavMain() {
                 "[&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded",
                 hovering ? "[&::-webkit-scrollbar-thumb]:bg-gray-300" : "[&::-webkit-scrollbar-thumb]:bg-transparent"
             )}>
-            <SidebarGroupLabel>Platform</SidebarGroupLabel>
+            <SidebarGroupLabel className="uppercase text-[10px] font-semibold opacity-85">Platform</SidebarGroupLabel>
             <SidebarMenu>
                 <SidebarMenuItem key="Dashboard">
                     <SidebarMenuButton
@@ -73,6 +74,19 @@ export function NavMain() {
                         <Link href="/notifications" prefetch>
                             <Bell />
                             <span>Notification</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+
+                <SidebarMenuItem>
+                    <SidebarMenuButton
+                        asChild
+                        isActive={urlIsActive("/settings") || currentUrl.includes("/settings")}
+                        tooltip={{ children: "Settings" }}
+                    >
+                        <Link href="/settings" prefetch>
+                            <Settings />
+                            <span>Settings</span>
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
