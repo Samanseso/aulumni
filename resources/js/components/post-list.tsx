@@ -83,8 +83,8 @@ export default function PostList() {
     useEffect(() => {
         const channel = window.Echo.channel('posts');
 
-        channel.listen('.PostsUpdated', (post_id: number) => {
-            getPost(post_id)
+        channel.listen('.PostsUpdated', (payload: { post_id: number }) => {
+            getPost(payload.post_id)
                 .then((response) => {
                     setPosts((previous) => previous.some((post) => post.post_id === response.post_id) ? previous : [response, ...previous]);
                 })

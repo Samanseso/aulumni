@@ -23,7 +23,7 @@ class PostRequest extends FormRequest
             'job_description' => ['required', 'string'],
             'privacy' => ['nullable', Rule::in(['public', 'friends', 'only_me'])],
             'status' => ['nullable', 'string', 'max:50'],
-            'attachments' => ['nullable', 'array'],
+            'attachments' => ['nullable'],
             'attachments.*' => ['file', 'mimes:jpg,jpeg,png,gif,webp,mp4,mov,pdf,doc,docx', 'max:10240'],
         ];
     }

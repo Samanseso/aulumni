@@ -124,8 +124,8 @@ export default function AnnouncementCreateModal({ setOpen }: AnnouncementCreateM
                                     <input
                                         id={attachmentInputId}
                                         type="file"
-                                        name="attachments[]"
-                                        multiple
+                                        name="attachments"
+                                        accept="image/png, image/jpeg"
                                         className="sr-only"
                                         onChange={onFilesChange}
                                     />

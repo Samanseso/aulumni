@@ -150,7 +150,7 @@ const BasicInfo: React.FC = () => {
 									</div>
 
 									{/* Bio */}
-									<div className="flex flex-col gap-3 mb-3">
+									{/* <div className="flex flex-col gap-3 mb-3">
 										<div className="flex">
 											<Label className="text-gray-500 w-50 font-bold uppercase text-xs mt-2.5" htmlFor="bio">
 												Bio
@@ -167,7 +167,7 @@ const BasicInfo: React.FC = () => {
 												<InputError className="mt-2" message={errors.bio} />
 											</div>
 										</div>
-									</div>
+									</div> */}
 
 									{/* Interest */}
 									<div className="flex flex-col gap-3 mb-3">

@@ -1,5 +1,6 @@
 import '../css/app.css';
 
+import type { Page } from '@inertiajs/core';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { StrictMode } from 'react';
@@ -19,6 +20,27 @@ window.Pusher = Pusher;
 const csrfToken = document
     .querySelector('meta[name="csrf-token"]')
     ?.getAttribute('content');
+
+const getInitialPage = (id = 'app'): Page => {
+    const app = document.getElementById(id);
+    const dataPage = app?.getAttribute('data-page');
+
+    if (dataPage) {
+        return JSON.parse(dataPage);
+    }
+
+    const scriptPage = document.querySelector<HTMLScriptElement>(
+        `script[data-page="${id}"][type="application/json"]`,
+    )?.textContent;
+
+    if (scriptPage) {
+        return JSON.parse(scriptPage);
+    }
+
+    throw new Error(
+        `Unable to find the initial Inertia page payload for "#${id}". Check the @inertia root in resources/views/app.blade.php and your SSR settings.`,
+    );
+};
 
 window.Echo = new Echo({
     broadcaster: 'reverb',
@@ -41,13 +63,13 @@ window.Echo = new Echo({
 
 
 createInertiaApp({
+    page: getInitialPage(),
     title: (title) => (title ? `${title} - ${appName}` : appName),
-    resolve: (name) => {
-        //console.log('Requested page name:', name);
-        const pages = import.meta.glob('./pages/**/*.tsx');
-        //console.log('Available page keys:', Object.keys(pages));
-        return resolvePageComponent(`./pages/${name}.tsx`, pages);
-    },
+    resolve: (name) =>
+        resolvePageComponent(
+            `./pages/${name}.tsx`,
+            import.meta.glob('./pages/**/*.tsx'),
+        ).then((module: any) => module.default),
 
     setup({ el, App, props }) {
         const root = createRoot(el);
@@ -67,5 +89,4 @@ createInertiaApp({
     },
 });
 
-// This will set light / dark mode on load...
 initializeTheme();

@@ -10,6 +10,7 @@ import {
     BriefcaseBusiness,
     Building2,
     Cake,
+    CalendarDays,
     FileText,
     Globe,
     GraduationCap,
@@ -84,14 +85,17 @@ export function ProfileSummaryCard({ alumni }: AlumniProfileSectionsProps) {
         {
             label: 'School level',
             value: alumni.academic_details?.school_level,
+            icon: <GraduationCap className='size-4' />
         },
         {
             label: 'Batch',
             value: alumni.academic_details?.batch,
+            icon: <CalendarDays className='size-4' />
         },
         {
             label: 'Current company',
             value: alumni.employment_details?.current_work_company,
+            icon: <BriefcaseBusiness className='size-4' />
         },
     ]
 
@@ -104,7 +108,7 @@ export function ProfileSummaryCard({ alumni }: AlumniProfileSectionsProps) {
                 {introStats.map((item) => (
                     <InfoRow
                         key={item.label}
-                        icon={<Sparkles className="size-4" />}
+                        icon={item.icon}
                         label={item.label}
                         value={item.value}
                     />

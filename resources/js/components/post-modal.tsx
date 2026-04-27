@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogTitle, DialogDescription } from "./ui/dialog";
 import { Button } from "./ui/button";
-import { Trash, Link as LinkIcon, ChevronsUpDown, Check, Ban, Globe, Send, SendHorizonal } from "lucide-react";
+import { Trash, Link as LinkIcon, ChevronsUpDown, Check, Ban, Globe, Send, SendHorizonal, FileText, X } from "lucide-react";
 import { Form, usePage } from "@inertiajs/react";
-import { CompletePost, User } from "@/types";
+import { Comment, CompletePost, User } from "@/types";
 import { useConfirmAction } from "./context/confirm-action-context";
 import axios from "axios";
 import StatusTag from "./status-tag";
@@ -16,6 +16,7 @@ import { Skeleton } from "./ui/skeleton";
 import UserAvatar from "./user-avatar";
 import { Input } from "./ui/input";
 import { store } from "@/routes/comment";
+import Comments from "./comments";
 
 
 interface PostModalProps {
@@ -25,7 +26,7 @@ interface PostModalProps {
 }
 
 const getPost = async (post: number): Promise<CompletePost> => {
-    try {
+    try {   
         const response = await axios.get<CompletePost>(show(post).url);
         return response.data;
     } catch (err) {
@@ -34,9 +35,10 @@ const getPost = async (post: number): Promise<CompletePost> => {
     }
 };
 
-const doComment = async (post_id: number, user_id: number, parent_comment_id: number | null, content: string) => {
+const doComment = async (post_id: number, user_id: number, parent_comment_id: number | null, content: string): Promise<Comment> => {
     try {
-        await axios.post(store().url, { post_id, user_id, parent_comment_id, content });
+        const response = await axios.post(store().url, { post_id, user_id, parent_comment_id, content });
+        return response.data;
     } catch (err) {
         console.error("Failed to submit comment:", err);
         throw err;
@@ -48,14 +50,60 @@ export default function PostModal({ post_id, setViewPostId, admin = false }: Pos
     const { auth } = usePage<{ auth: { user: User } }>().props;
 
     const [post, setPost] = useState<CompletePost | null>(null);
-    const [hovering, setHovering] = useState(false);
+    const [hovering, setHovering] = useState(true);
+
+    const [comments, setComments] = useState<Comment[]>([])
     const [commentContent, setCommentContent] = useState("");
+
+    const [returnedCommentId, setReturnedCommentId] = useState<number | null>(null);
 
     const { confirmActionContentCreateModal } = useConfirmAction();
 
+
+    useEffect(() => {
+        if (returnedCommentId) {
+            const newComment = comments.find(item => item.comment_id === 0);
+
+            if (!newComment) return;
+
+            const updatedCommentId = { ...newComment, comment_id: returnedCommentId }
+
+
+            setComments(prev => prev.map(item => item.comment_id === 0 ? updatedCommentId : item))
+        }
+
+        
+    }, [returnedCommentId]);
+
+    const handleComment = async (post_id: number, user_id: number, parent_comment_id: number | null, content: string) => {
+
+        setCommentContent("");
+
+        const newComment: Comment = {
+            comment_id: 0,
+            post_id: post_id,
+            user_id: user_id,
+            parent_comment_id: null,
+            author: auth.user,
+            content: content,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+        }
+
+        setComments(prev => [newComment, ...prev]);
+
+        doComment(post_id, user_id, parent_comment_id, content)
+        .then(res => {
+            setReturnedCommentId(res.comment_id);
+        })
+    }
+
     useEffect(() => {
         getPost(post_id)
-            .then(res => setPost(res))
+            .then(res => {
+                setPost(res);
+                setComments(res.comments);
+            })
             .catch(err => console.log(err))
     }, [post_id]);
 
@@ -63,16 +111,21 @@ export default function PostModal({ post_id, setViewPostId, admin = false }: Pos
 
 
     return (
-        <Dialog open={true} onOpenChange={() => setViewPostId(null)} modal={true}>
-            <DialogTitle className="hidden">Post</DialogTitle>
-            <DialogContent hasCloseButton={false} className="p-0 border-5 border-white bg-white lg:max-w-[45vw] h-fit">
+        <Dialog open={true} onOpenChange={() => setViewPostId(null)}>
+            <DialogTitle className="hidden">Post</DialogTitle>  
+            <DialogContent hasCloseButton={false} className="p-0 gap-0 bg-white lg:max-w-[45vw] h-fit">
                 <DialogDescription className="hidden" />
                 {
                     post ?
                         <>
-                            <div className="px-5.5 pt-3 flex items-center justify-between" >
+                            <div className="px-5.5 py-4 flex items-center justify-between border-b" >
                                 <p className="text-lg font-bold">{post.author.name}'s Post</p>
                                 {admin && <StatusTag text={post.status} />}
+                                <Button variant="secondary" size="icon" className="rounded-full"
+                                    onClick={() => setViewPostId(null)}
+                                >
+                                    <X />   
+                                </Button>
                             </div>
                             <div className={cn(
                                 "ps-1.5 h-[72vh] overflow-auto scroll-area [&::-webkit-scrollbar]:w-1.5",
@@ -83,7 +136,22 @@ export default function PostModal({ post_id, setViewPostId, admin = false }: Pos
                                 onMouseLeave={() => setHovering(false)}
                             >
                                 <PostItem post={post} hasActions={false} />
+
+                                {
+                                    comments.length > 0 ?
+                                        <Comments comment={comments} setComments={setComments} auth={auth} />
+                                        :
+                                        <div className="px-6 py-12 text-center">
+                                            <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+                                                <FileText className="size-5" />
+                                            </div>
+                                            <p className="mt-4 text-sm font-medium text-slate-900">No comments yet</p>
+                                            <p className="mt-1 text-xs text-slate-500">Be the first to comment.</p>
+                                        </div>
+
+                                }
                             </div>
+
 
 
                             {
@@ -127,20 +195,21 @@ export default function PostModal({ post_id, setViewPostId, admin = false }: Pos
                                         </div>
                                     </DialogFooter> :
 
-                                    <DialogFooter className="px-5.5 pb-3 flex sm:justify-between h-fit flex-1">
+                                    <DialogFooter className="px-5.5 py-4 flex sm:justify-between h-fit flex-1 border-t">
                                         <Input
                                             autoFocus
-                                            startIcon={<UserAvatar className="h-7 w-7" avatar={auth.user.avatar} name={auth.user.name} />}
+                                            startIcon={<UserAvatar className="h-7 w-7 text-[10px]" avatar={auth.user.avatar} name={auth.user.name} />}
                                             type="text"
-                                            placeholder="Write a comment..." 
+                                            placeholder="Write a comment..."
                                             className="rounded-full py-5 ps-2 pe-3 bg-slate-200"
+                                            value={commentContent}
                                             onChange={(e) => setCommentContent(e.target.value)}
                                             onEndIconClick={() => {
-                                                doComment(post_id, auth.user.user_id, null, commentContent)
+                                                handleComment(post_id, auth.user.user_id, null, commentContent)
                                             }}
                                             onKeyDown={(e) => {
                                                 if (e.key == "Enter") {
-                                                    doComment(post_id, auth.user.user_id, null, commentContent)
+                                                    handleComment(post_id, auth.user.user_id, null, commentContent)
                                                 }
                                             }}
                                             endIcon={<SendHorizonal className="size-4.5 mt-0.25 text-blue-500" />}

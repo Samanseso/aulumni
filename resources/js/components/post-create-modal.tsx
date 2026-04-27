@@ -9,7 +9,7 @@ import {
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectValue, SelectTrigger } from './ui/select';
-import { Image, LoaderCircle, Video } from 'lucide-react';
+import { Image, LoaderCircle } from 'lucide-react';
 import { Form } from '@inertiajs/react';
 import PostController from '@/actions/App/Http/Controllers/PostController';
 import { Label } from './ui/label';
@@ -115,14 +115,14 @@ export default function JobPostModal({ setCreatePostModal }: JobPostModalProps) 
                                         <span>Image</span>
                                         <input
                                             type="file"
-                                            name="attachments[]"
-                                            multiple
+                                            name="attachments"
                                             className="sr-only"
+                                            accept="image/png, image/jpeg"
                                             onChange={onFilesChange}
                                         />
                                     </Label>
 
-                                    <Button variant="ghost" className="!px-0 text-sm"><Video />Video</Button>
+                                    
                                 </div>
 
                                 <div className="flex items-center gap-2">

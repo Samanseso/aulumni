@@ -37,4 +37,11 @@ class PostsUpdated implements ShouldBroadcastNow
     public function broadcastAs() { 
         return 'PostsUpdated'; 
     }
+
+    public function broadcastWith()
+    {
+        return [
+            'post_id' => $this->post,
+        ];
+    }
 }

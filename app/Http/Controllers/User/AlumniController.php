@@ -543,7 +543,7 @@ class AlumniController extends Controller
             ->leftJoin('users', 'alumni.user_id', '=', 'users.user_id')
             ->where('users.user_name', $userName)
             ->where('users.user_type', 'alumni')
-            ->select('alumni.*', 'users.status', 'users.user_name', 'users.email', 'users.name')
+            ->select('alumni.*', 'users.status', 'users.user_name', 'users.email', 'users.name', 'users.avatar')
             ->firstOrFail();
     }
 

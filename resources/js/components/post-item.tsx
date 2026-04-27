@@ -1,5 +1,5 @@
 import { Link } from "@inertiajs/react";
-import { Briefcase, BriefcaseBusiness, Building2, CalendarDays, Ellipsis, Globe, Heart, Link as LinkIcon, MapPin, PhilippinePeso, Pin } from "lucide-react";
+import { Briefcase, BriefcaseBusiness, Building2, CalendarDays, Ellipsis, Globe, Heart, Link as LinkIcon, MapPin, MessageCircle, PhilippinePeso, Pin } from "lucide-react";
 import { useState } from "react";
 
 import { getRelativeTimeDifference } from "@/helper";
@@ -7,8 +7,9 @@ import { CompletePost } from "@/types";
 
 import PostActionReaction from "./post-action-reaction";
 import PostActionComment from "./post-action-comment";
-import PostActionShare from "./post-action-share";
+import PostActionSave from "./post-action-save";
 import UserAvatar from "./user-avatar";
+import comment from '../routes/comment/index';
 
 interface PostItemProps {
     post: CompletePost;
@@ -17,6 +18,7 @@ interface PostItemProps {
 
 export default function PostItem({ post, hasActions = true }: PostItemProps) {
     const [reactionCount, setReactionCount] = useState<number>(post.reactions_count);
+    const [commentCount, setCommentCount] = useState<number>(post.comments_count);
     const [likedByUser, setLikedByUser] = useState<boolean>(!!post.liked_by_user);
     const authorProfileUrl = post.author?.user_name ? `/${post.author.user_name}` : undefined;
 
@@ -40,7 +42,7 @@ export default function PostItem({ post, hasActions = true }: PostItemProps) {
                         )}
 
                         <div>
-                            <div className="font-semibold">
+                            <div className="font-semibold hover:underline">
                                 {authorProfileUrl ? (
                                     <Link href={authorProfileUrl}>{post.author.name}</Link>
                                 ) : (
@@ -143,6 +145,10 @@ export default function PostItem({ post, hasActions = true }: PostItemProps) {
                                 <Heart className="size-4 text-rose-500" />
                                 <span>{reactionCount}</span>
                             </div>
+                            <div className="flex items-center gap-1">
+                                <MessageCircle className="size-4" />
+                                <span>{commentCount}</span>
+                            </div>
                         </div>
 
                         <div className="text-xs text-gray-400">
@@ -154,14 +160,14 @@ export default function PostItem({ post, hasActions = true }: PostItemProps) {
                         <div className="flex gap-2">
                             <PostActionReaction
                                 post_id={post.post_id}
-                                likedByUser={likedByUser}
+                                likedByUser={likedByUser}   
                                 setLikedByUser={setLikedByUser}
                                 setReactionCount={setReactionCount}
                             />
 
                             <PostActionComment post_id={post.post_id} />
 
-                            <PostActionShare post_id={post.post_id} />
+                            <PostActionSave post_id={post.post_id} />
                         </div>
                     )}
                 </div>

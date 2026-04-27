@@ -79,6 +79,8 @@ export default function SurveyPersonal() {
         personal: any;
     }>();
 
+    console.log(props);
+
 
     const personal = props.personal || {};
     const [selectedGender, setSelectedGender] = useState(personal?.gender || '');
@@ -241,7 +243,7 @@ export default function SurveyPersonal() {
                                         <InputError className="mt-2" message={errors.interest} />
                                     </FieldBlock>
 
-                                    <FieldBlock label="Address" description="Your residential address (optional).">
+                                    {/* <FieldBlock label="Address" description="Your residential address (optional).">
                                         <textarea
                                             className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 focus:border-blue-500 focus:ring focus:ring-blue-500/50"
                                             name="address"
@@ -250,7 +252,7 @@ export default function SurveyPersonal() {
                                             rows={3}
                                         />
                                         <InputError className="mt-2" message={errors.address} />
-                                    </FieldBlock>
+                                    </FieldBlock> */}
                                 </SurveyCard>
 
                                 <div className="w-full flex justify-between gap-3">
@@ -261,7 +263,7 @@ export default function SurveyPersonal() {
                                     >
 
                                         <Link href='/login'>
-                                            <ArrowLeft className="size-4" /> Back to Login
+                                            <ArrowLeft className="size-4" /> Return
                                         </Link>
 
                                     </Button>

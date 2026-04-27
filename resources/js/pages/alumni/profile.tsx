@@ -1,78 +1,14 @@
+import { ProfilePhotoUploadAction, ProfileUpdateAction } from '@/components/alumni-profile-actions'
 import {
     ProfileSummaryCard,
     ProfileTimeline,
     PublicProfileActions,
 } from '@/components/alumni-profile-sections'
-import InputError from '@/components/input-error'
 import PublicProfileShell from '@/components/public-profile-shell'
-import { Button } from '@/components/ui/button'
 import { Alumni, CompletePost } from '@/types'
-import { router, usePage } from '@inertiajs/react'
-import { Camera, LoaderCircle } from 'lucide-react'
-import { useRef, useState, type ChangeEvent } from 'react'
+import { usePage } from '@inertiajs/react'
 
-function ProfilePhotoUploadAction() {
-    const fileInputRef = useRef<HTMLInputElement>(null)
-    const [processing, setProcessing] = useState(false)
-    const [error, setError] = useState<string | null>(null)
 
-    const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const photo = event.target.files?.[0]
-
-        if (!photo) {
-            return
-        }
-
-        setError(null)
-
-        router.post(
-            '/profile/photo',
-            { photo },
-            {
-                forceFormData: true,
-                preserveScroll: true,
-                onStart: () => setProcessing(true),
-                onError: (errors) => {
-                    setError(
-                        typeof errors.photo === 'string'
-                            ? errors.photo
-                            : 'Unable to update your profile picture.',
-                    )
-                },
-                onSuccess: () => setError(null),
-                onFinish: () => {
-                    setProcessing(false)
-
-                    if (fileInputRef.current) {
-                        fileInputRef.current.value = ''
-                    }
-                },
-            },
-        )
-    }
-
-    return (
-        <div className="grid gap-2">
-            <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/png,image/jpeg,image/gif,image/webp"
-                className="sr-only"
-                onChange={handleFileChange}
-            />
-            <Button
-                type="button"
-                variant="outline"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={processing}
-            >
-                {processing ? <LoaderCircle className="size-4 animate-spin" /> : <Camera className="size-4" />}
-                {processing ? 'Uploading...' : 'Update photo'}
-            </Button>
-            <InputError message={error ?? undefined} />
-        </div>
-    )
-}
 
 const Profile = () => {
     const { props } = usePage<{ alumni: Alumni; posts: CompletePost[]; isOwnProfile: boolean }>()
@@ -87,6 +23,7 @@ const Profile = () => {
                 props.isOwnProfile ? (
                     <div className="flex flex-wrap items-start gap-3">
                         <ProfilePhotoUploadAction />
+                        <ProfileUpdateAction />
                         <PublicProfileActions
                             profileUrl={profileUrl}
                             backUrl="/"

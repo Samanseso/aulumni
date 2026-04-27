@@ -101,12 +101,12 @@ export default function AlumniProfileLayout({
                                         <Copy className="size-4" />
                                         {copied ? 'Copied' : 'Copy public link'}
                                     </Button>
-                                    <Button asChild>
+                                    {/* <Button asChild>
                                         <Link href={resolvedPublicProfileUrl}>
                                             <ExternalLink className="size-4" />
                                             View public profile
                                         </Link>
-                                    </Button>
+                                    </Button> */}
                                 </div>
                             )}
                         </div>

@@ -275,7 +275,7 @@ export interface Post {
 
 export interface CompletePost extends Post {
 	attachments: Attachment[];
-	comments?: Comment[];
+	comments: Comment[];
 	liked_by_user: boolean;
 	author: User;
 };
@@ -365,12 +365,8 @@ export interface Comment {
 	comment_id: number;
 	post_id: number;
 	user_id: number;
-	user: {
-		user_id: number;
-		user_name: string;
-		name: string;
-		email: string;
-	}
+	parent_comment_id: number | null;
+	author: User;
 	content: string;
 	created_at: string;
 	updated_at: string;

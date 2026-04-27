@@ -56,7 +56,7 @@ class CommentController extends Controller
                 Comment::where('comment_id', $comment->parent_comment_id)->increment('reply_count');
             }
 
-            return response()->json($comment->load('user'), 201);
+            return response()->json($comment->load('author'), 201);
         });
     }
 
@@ -73,22 +73,24 @@ class CommentController extends Controller
         return response()->json($comment);
     }
 
-    public function destroy(Comment $comment): JsonResponse
+    public function destroy(Comment $comment)
     {
         return DB::transaction(function () use ($comment) {
-            // decrement counters if not a soft delete scenario handled elsewhere
             $post = Post::find($comment->post_id);
+
             if ($post) {
-                $post->decrement('comments_count');
+                $replyCount = $comment->children()->count();
+                $post->decrement('comments_count', 1 + $replyCount);
             }
 
             if ($comment->parent_comment_id) {
                 Comment::where('comment_id', $comment->parent_comment_id)->decrement('reply_count');
             }
 
+            Comment::where('parent_comment_id', $comment->comment_id)->delete();
             $comment->delete();
 
-            return response()->json(null, 204);
+            return back();
         });
     }
 }

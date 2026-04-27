@@ -31,7 +31,7 @@ class HomeController extends Controller
                 case 'employee':
                     return Inertia::render('employee/dashboard');
                 case 'alumni':
-                    return $this->show_posts($request->user()->user_id);
+                    return $this->show_posts($request);
                 default:
                     abort(403, 'Unauthorized');
             }
@@ -40,8 +40,10 @@ class HomeController extends Controller
         return redirect()->route('login');
     }
 
-    public function show_posts($user_id)
+    public function show_posts(Request $request)
     {
+
+        $user_id = $request->user()->user_id;
         $viewerProfile = $this->findAlumniByUserId($user_id);
         $posts = $this->approvedPostsForViewer($user_id);
         $announcements = $this->approvedAnnouncements();
@@ -62,8 +64,8 @@ class HomeController extends Controller
                     ->where('status', 'approved')
                     ->whereNotNull('company')
                     ->distinct()
-                    ->count('company'), 
-                'unread_notifications' => Auth::user()?->unreadNotifications()->count() ?? 0,
+                    ->count('company'),
+                'unread_notifications' => $request->user()->unreadNotifications()->count() ?? 0,
             ],
         ]);
     }
@@ -253,9 +255,68 @@ class HomeController extends Controller
         ];
 
         $completedFields = collect($fields)
-            ->filter(fn ($value) => filled($value))
+            ->filter(fn($value) => filled($value))
             ->count();
 
         return (int) round(($completedFields / count($fields)) * 100);
+    }
+
+
+    public function show_find_job(Request $request)
+    {
+        $user_id = $request->user()->user_id;
+
+        $viewerProfile = $this->findAlumniByUserId($user_id);
+        $posts = $this->approvedPostsForViewer($user_id);
+        $announcements = $this->approvedAnnouncements();
+
+        return Inertia::render('alumni/find-job', [
+            'announcements' => $announcements,
+            'viewerProfile' => $viewerProfile,
+            'feedSummary' => [
+                'profile_completion' => $this->calculateProfileCompletion($viewerProfile),
+                'approved_posts' => Post::query()->where('status', 'approved')->count(),
+                'approved_announcements' => Announcement::query()->where('status', 'approved')->count(),
+                'upcoming_events' => Announcement::query()
+                    ->where('status', 'approved')
+                    ->where('starts_at', '>=', now())
+                    ->count(),
+                'companies_hiring' => Post::query()
+                    ->where('status', 'approved')
+                    ->whereNotNull('company')
+                    ->distinct()
+                    ->count('company'),
+                'unread_notifications' => $request->user()->unreadNotifications()->count() ?? 0,
+            ],
+        ]);
+    }
+
+    public function show_saved_job(Request $request)
+    {
+        $user_id = $request->user()->user_id;
+
+        $viewerProfile = $this->findAlumniByUserId($user_id);
+        $posts = $this->approvedPostsForViewer($user_id);
+        $announcements = $this->approvedAnnouncements();
+
+        return Inertia::render('alumni/saved-job', [
+            'announcements' => $announcements,
+            'viewerProfile' => $viewerProfile,
+            'feedSummary' => [
+                'profile_completion' => $this->calculateProfileCompletion($viewerProfile),
+                'approved_posts' => Post::query()->where('status', 'approved')->count(),
+                'approved_announcements' => Announcement::query()->where('status', 'approved')->count(),
+                'upcoming_events' => Announcement::query()
+                    ->where('status', 'approved')
+                    ->where('starts_at', '>=', now())
+                    ->count(),
+                'companies_hiring' => Post::query()
+                    ->where('status', 'approved')
+                    ->whereNotNull('company')
+                    ->distinct()
+                    ->count('company'),
+                'unread_notifications' => $request->user()->unreadNotifications()->count() ?? 0,
+            ],
+        ]);
     }
 }

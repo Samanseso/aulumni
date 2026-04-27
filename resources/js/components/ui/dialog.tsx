@@ -44,12 +44,16 @@ function DialogOverlay({
   )
 }
 
+interface DialogContentProps extends React.ComponentProps<typeof DialogPrimitive.Content>{
+  hasCloseButton?: boolean;
+}
+
 function DialogContent({
   hasCloseButton = true,
   className,
   children,
   ...props
-}: React.ComponentProps<typeof DialogPrimitive.Content>) {
+}: DialogContentProps) {
   return (
     <DialogPortal data-slot="dialog-portal">
       <DialogOverlay />

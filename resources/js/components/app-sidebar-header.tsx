@@ -5,13 +5,14 @@ import { ReactNode, useEffect, useState } from 'react';
 import { NavUser } from './nav-user';
 import SearchBar from './search-bar';
 import { TopNavUser } from './top-nav-user';
-import { Bell, Briefcase, BriefcaseBusiness, Building2, HandHelping, Home, MessageCircle, MessageSquare, Network } from 'lucide-react';
+import { Bell, Bookmark, Briefcase, BriefcaseBusiness, Building2, HandHelping, Home, Megaphone, MessageCircle, MessageSquare, Network } from 'lucide-react';
 import { Link, usePage } from '@inertiajs/react';
 import aulogo from "../../../public/assets/images/aulogo.png";
 import { cn } from '@/lib/utils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from './ui/dropdown-menu';
 import Notifications from './notifications';
 import NotificationsListener from './notification-listener';
+import { useActiveUrl } from '@/hooks/use-active-url';
 
 
 export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbItemType[] }) {
@@ -23,6 +24,8 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
     const hasSidebar = ['admin', 'employee'].includes(props.auth.user.user_type);
     const [notifs, setNotifs] = useState<AppNotification<any>[]>(props.notifications);
     const [newNotifsCount, setNewNotifsCount] = useState(0);
+
+    const { urlIsActive } = useActiveUrl();
 
 
     useEffect(() => {
@@ -44,9 +47,9 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                 {hasSidebar && <SidebarTrigger className="-ml-1" />}
                 {isAlumni ?
                     <>
-                        <div className="flex aspect-square size-10 items-center justify-center text-sidebar-primary-foreground">
-                            <img src={aulogo} alt="aulumni logo" />
-                        </div>
+                        <Link href={"/"} className="flex aspect-square size-10 items-center justify-center text-sidebar-primary-foreground cursor-pointer" as="div">
+                            <img src={aulogo} alt="aulumni logo" /> 
+                        </Link>
                         <div className="ml-1 grid flex-1 text-left text-sm">
                             <SearchBar classname="bg-muted" />
                         </div>
@@ -55,17 +58,31 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                 <Breadcrumbs breadcrumbs={breadcrumbs} />
             </div>
 
-            {/* {
+            {
                 isAlumni &&
                 <div className='absolute w-[33vw] left-[50%] -translate-x-[50%] flex gap-2'>
-                    <Link href="/" className='flex-1 cursor-pointer py-2 border-b-3 border-blue'>
-                        <Home size={20} className='mx-auto text-blue' />
+                    <Link href="/" className={cn(
+                        "flex-1 cursor-pointer py-2",
+                        urlIsActive('/') && "border-b-3 border-blue text-blue"
+                    )}>
+                        <Home size={20} className='mx-auto' />
                     </Link>
-                    <div className='flex-1 cursor-pointer hover:bg-muted py-2 rounded-lg'><BriefcaseBusiness size={20} className='mx-auto' /></div>
-                    <div className='flex-1 cursor-pointer hover:bg-muted py-2 rounded-lg'><Network size={20} className='mx-auto' /></div>
-                    <div className='flex-1 cursor-pointer hover:bg-muted py-2 rounded-lg'><Building2 size={20} className='mx-auto' /></div>
+
+                    <Link href="/find-job" className={cn(
+                        "flex-1 cursor-pointer py-2",
+                        urlIsActive('/find-job') && "border-b-3 border-blue text-blue"
+                    )}>
+                        <BriefcaseBusiness size={20} className='mx-auto' />
+                    </Link>
+
+                    <Link href="/saved-job" className={cn(
+                        "flex-1 cursor-pointer py-2",
+                        urlIsActive('/saved-job') && "border-b-3 border-blue text-blue"
+                    )}>
+                        <Bookmark size={20} className='mx-auto' />
+                    </Link>                
                 </div>
-            } */}
+            }
 
 
             <div className='flex items-center justify-between gap-2'>

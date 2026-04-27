@@ -33,18 +33,18 @@ class EmploymentSurveyController extends Controller
 
         $alumni = $request->user()
             ? Alumni::query()
-                ->with([
-                    'personal_details',
-                    'academic_details.branchRelation',
-                    'academic_details.departmentRelation',
-                    'academic_details.courseRelation',
-                    'contact_details',
-                    'employment_details',
-                ])
-                ->leftJoin('users', 'alumni.user_id', '=', 'users.user_id')
-                ->where('alumni.user_id', $request->user()->user_id)
-                ->select('alumni.*', 'users.status', 'users.user_name', 'users.email', 'users.name')
-                ->firstOrFail()
+            ->with([
+                'personal_details',
+                'academic_details.branchRelation',
+                'academic_details.departmentRelation',
+                'academic_details.courseRelation',
+                'contact_details',
+                'employment_details',
+            ])
+            ->leftJoin('users', 'alumni.user_id', '=', 'users.user_id')
+            ->where('alumni.user_id', $request->user()->user_id)
+            ->select('alumni.*', 'users.status', 'users.user_name', 'users.email', 'users.name')
+            ->firstOrFail()
             : null;
 
         return Inertia::render('alumni/employment-survey', [
@@ -136,9 +136,9 @@ class EmploymentSurveyController extends Controller
     {
         return Branch::query()
             ->with([
-                'departments' => fn ($query) => $query
+                'departments' => fn($query) => $query
                     ->orderBy('name')
-                    ->with(['courses' => fn ($courseQuery) => $courseQuery->orderBy('name')]),
+                    ->with(['courses' => fn($courseQuery) => $courseQuery->orderBy('name')]),
             ])
             ->orderBy('name')
             ->get();
@@ -246,6 +246,10 @@ class EmploymentSurveyController extends Controller
     // Step-based survey methods
     public function personal(Request $request): Response|RedirectResponse
     {
+        if (!$request->session()->has('current_step')) {
+            $request->session()->put('current_step', 1);
+        }
+
         if ($redirect = $this->redirectIfSurveyUnavailable($request)) {
             return $redirect;
         }
@@ -286,12 +290,23 @@ class EmploymentSurveyController extends Controller
         ]);
 
         $request->session()->put('survey_personal', $validated);
+        $request->session()->put('current_step', 2);
 
         return redirect()->route('survey.academic');
     }
 
     public function academic(Request $request): Response|RedirectResponse
     {
+
+        if ($request->session()->get('current_step') < 2) {
+            return redirect()->route('survey.personal')->with([
+                'modal_status' => 'error',
+                'modal_action' => 'create',
+                'modal_title' => 'Error!',
+                'modal_message' => 'Please finish answering previous survey first.',
+            ]);
+        }
+
         if ($redirect = $this->redirectIfSurveyUnavailable($request)) {
             return $redirect;
         }
@@ -320,12 +335,22 @@ class EmploymentSurveyController extends Controller
 
         $academic = $this->hydrateAcademicDetails($validated);
         $request->session()->put('survey_academic', $academic);
+        $request->session()->put('current_step', 3);
 
         return redirect()->route('survey.contact');
     }
 
     public function contact(Request $request): Response|RedirectResponse
     {
+        if ($request->session()->get('current_step') < 2) {
+            return redirect()->route('survey.personal')->with([
+                'modal_status' => 'error',
+                'modal_action' => 'create',
+                'modal_title' => 'Error!',
+                'modal_message' => 'Please finish answering previous survey first.',
+            ]);
+        }
+        
         if ($redirect = $this->redirectIfSurveyUnavailable($request)) {
             return $redirect;
         }
@@ -350,12 +375,22 @@ class EmploymentSurveyController extends Controller
         ]);
 
         $request->session()->put('survey_contact', $validated);
+        $request->session()->put('current_step', 4);
+
 
         return redirect()->route('survey.employment');
     }
 
     public function employment(Request $request): Response|RedirectResponse
     {
+        if ($request->session()->get('current_step') < 4) {
+            return redirect()->route('survey.personal')->with([
+                'modal_status' => 'error',
+                'modal_action' => 'create',
+                'modal_title' => 'Error!',
+                'modal_message' => 'Please finish answering previous survey first.',
+            ]);
+        }
         if ($redirect = $this->redirectIfSurveyUnavailable($request)) {
             return $redirect;
         }
@@ -491,7 +526,7 @@ class EmploymentSurveyController extends Controller
         $telephone = trim(implode(' ', array_filter([
             $validated['landline_number'] ?? null,
             filled($validated['telephone_extension'] ?? null)
-                ? 'ext. '.$validated['telephone_extension']
+                ? 'ext. ' . $validated['telephone_extension']
                 : null,
         ])));
 
@@ -501,7 +536,7 @@ class EmploymentSurveyController extends Controller
             'telephone' => $telephone !== '' ? $telephone : null,
             'mailing_address' => $validated['complete_address'] ?? null,
             'present_address' => $validated['complete_address'] ?? null,
-        ], fn ($value) => $value !== null && $value !== '');
+        ], fn($value) => $value !== null && $value !== '');
     }
 
     protected function employmentPayloadFromStep(array $validated): array
@@ -520,7 +555,7 @@ class EmploymentSurveyController extends Controller
             'first_work_acquisition' => $validated['first_work_acquisition'] ?? null,
             'au_usefulness' => $validated['course_usefulness'] ?? null,
             'remarks' => $validated['remarks'] ?? null,
-        ], fn ($value) => $value !== null && $value !== '');
+        ], fn($value) => $value !== null && $value !== '');
     }
 
     protected function personalDefaults(Request $request): array
@@ -539,7 +574,7 @@ class EmploymentSurveyController extends Controller
             'interest' => $alumni?->personal_details?->interest,
             'address' => $alumni?->personal_details?->address,
             'email' => $user?->email,
-        ], fn ($value) => $value !== null && $value !== '');
+        ], fn($value) => $value !== null && $value !== '');
     }
 
     protected function academicDefaults(Request $request): array
@@ -553,7 +588,7 @@ class EmploymentSurveyController extends Controller
             'branch_id' => $academic?->branch_id,
             'department_id' => $academic?->department_id,
             'course_id' => $academic?->course_id,
-        ], fn ($value) => $value !== null && $value !== '');
+        ], fn($value) => $value !== null && $value !== '');
     }
 
     protected function contactDefaults(Request $request): array
@@ -565,7 +600,7 @@ class EmploymentSurveyController extends Controller
             'mobile_number' => $contact?->contact,
             'landline_number' => $contact?->telephone,
             'complete_address' => $contact?->present_address ?? $contact?->mailing_address,
-        ], fn ($value) => $value !== null && $value !== '');
+        ], fn($value) => $value !== null && $value !== '');
     }
 
     protected function employmentDefaults(Request $request): array
@@ -587,7 +622,7 @@ class EmploymentSurveyController extends Controller
             'course_usefulness' => $employment?->au_usefulness,
             'remarks' => $employment?->remarks,
             'has_first_job' => filled($employment?->first_work_position) ? 'Yes' : 'No',
-        ], fn ($value) => $value !== null && $value !== '');
+        ], fn($value) => $value !== null && $value !== '');
     }
 
     protected function currentAlumni(Request $request): ?Alumni
@@ -643,7 +678,7 @@ class EmploymentSurveyController extends Controller
     {
         $fullName = trim(implode(' ', array_filter([
             $personalData['first_name'] ?? null,
-            $personalData['middle_name'] ?? null,
+            // $personalData['middle_name'] ?? null,
             $personalData['last_name'] ?? null,
         ])));
 
@@ -685,7 +720,7 @@ class EmploymentSurveyController extends Controller
         User::query()
             ->where('user_type', 'admin')
             ->get()
-            ->each(fn (User $admin) => $admin->notify(new EmploymentSurveySubmittedNotification($alumni)));
+            ->each(fn(User $admin) => $admin->notify(new EmploymentSurveySubmittedNotification($alumni)));
     }
 
     protected function shouldNotifyAdminsAboutSurveySubmission(User $user, ?Alumni $alumni): bool
@@ -710,13 +745,13 @@ class EmploymentSurveyController extends Controller
 
     protected function nextAlumniId(): string
     {
-        $prefix = date('y').'-';
+        $prefix = date('y') . '-';
 
         $max = Alumni::query()
-            ->where('alumni_id', 'like', $prefix.'%')
+            ->where('alumni_id', 'like', $prefix . '%')
             ->selectRaw('MAX(CAST(SUBSTRING(alumni_id, 4) AS UNSIGNED)) as max_seq')
             ->value('max_seq') ?? 0;
 
-        return $prefix.sprintf('%05d', $max + 1);
+        return $prefix . sprintf('%05d', $max + 1);
     }
 }

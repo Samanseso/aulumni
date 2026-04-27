@@ -34,7 +34,7 @@ const PostCards = ({ posts, selectedData, setSelectedData }: PostCardsProps) => 
     return (
         <div className="!h-[calc(100vh-196px)] !max-h-[calc(100vh-196px)] overflow-auto scroll-area [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-400">
             {viewPostId !== null && (
-                <PostModal post_id={viewPostId} setViewPostId={setViewPostId} />
+                <PostModal post_id={viewPostId} setViewPostId={setViewPostId} admin={true}/>
             )}
             {Object.entries(groupedPosts).map(([key, grouped_post]) => (
                 <div key={key} className="col-span-4">

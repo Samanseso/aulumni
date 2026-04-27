@@ -144,7 +144,7 @@ const Personal = () => {
                             editValues={editValues}
                             onFieldChange={handleFieldChange}
                         />
-                        <InfoRow
+                        {/* <InfoRow
                             icon={<FileText className="size-4" />}
                             label="Bio"
                             value={localData.bio}
@@ -154,7 +154,7 @@ const Personal = () => {
                             editValues={editValues}
                             onFieldChange={handleFieldChange}
                             multiline
-                        />
+                        /> */}
                     </CardContent>
                 </Card>
             </AlumniProfileLayout>

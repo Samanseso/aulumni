@@ -66,10 +66,11 @@ class PostController extends Controller
             'author',
             'attachments',
             'reactions',
+            'comments' => fn($q) => $q->whereNull('deleted_at'),
+            'comments.author',
         ])
             ->where('post_id', $post->post_id)
             ->firstOrFail();
-
 
         return response()->json($post);
     }

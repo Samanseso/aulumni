@@ -27,9 +27,9 @@ class Comment extends Model
     protected $casts = [
         'is_edited'   => 'boolean',
         'reply_count' => 'integer',
-        'created_at'  => 'datetime:m-d-Y H:i:s', 
-        'updated_at'  => 'datetime:m-d-Y H:i:s',
-        'deleted_at'  => 'datetime:m-d-Y H:i:s',
+        'created_at'  => 'string',
+        'updated_at'  => 'string',
+        'deleted_at'  => 'string',
     ];
 
     public function post(): BelongsTo
@@ -37,7 +37,7 @@ class Comment extends Model
         return $this->belongsTo(Post::class, 'post_id', 'post_id');
     }
 
-    public function user(): BelongsTo
+    public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');
     }

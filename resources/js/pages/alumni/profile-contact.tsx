@@ -5,16 +5,33 @@ import PublicProfileShell from '@/components/public-profile-shell';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alumni } from '@/types';
 import { usePage } from '@inertiajs/react';
+import { ProfilePhotoUploadAction, ProfileUpdateAction } from '@/components/alumni-profile-actions';
+import { PublicProfileActions } from '@/components/alumni-profile-sections';
 
 export default function ProfileContact() {
     const { props } = usePage<{ alumni: Alumni; isOwnProfile: boolean }>();
     const alumni = props.alumni;
+    const profileUrl = `/${props.alumni.user_name}`
+
 
     return (
         <PublicProfileShell
             alumni={alumni}
             isOwnProfile={props.isOwnProfile}
             title={`${alumni.name} Contact`}
+            actions={
+                props.isOwnProfile ? (
+                    <div className="flex flex-wrap items-start gap-3">
+                        <ProfilePhotoUploadAction />
+                        <ProfileUpdateAction />
+                        <PublicProfileActions
+                            profileUrl={profileUrl}
+                            backUrl="/"
+                            actionLabel="Back to feed"
+                        />
+                    </div>
+                ) : undefined
+            }
         >
             <Card className="overflow-hidden border-slate-200 shadow-sm">
                 <CardHeader className="bg-white/80">
