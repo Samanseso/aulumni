@@ -62,6 +62,8 @@ class PostController extends Controller
 
     public function show(Post $post): JsonResponse
     {
+        $viewerUserId = request()->user()?->user_id;
+
         $post = Post::with([
             'author',
             'attachments',
@@ -69,8 +71,19 @@ class PostController extends Controller
             'comments' => fn($q) => $q->whereNull('deleted_at'),
             'comments.author',
         ])
+            ->withCount([
+                'reactions as liked_by_user' => function ($q) use ($viewerUserId) {
+                    $q->where('user_id', $viewerUserId ?? 0);
+                },
+                'savedPosts as saved_by_user' => function ($q) use ($viewerUserId) {
+                    $q->where('user_id', $viewerUserId ?? 0);
+                },
+            ])
             ->where('post_id', $post->post_id)
             ->firstOrFail();
+
+        $post->setAttribute('liked_by_user', (bool) $post->liked_by_user);
+        $post->setAttribute('saved_by_user', (bool) $post->saved_by_user);
 
         return response()->json($post);
     }

@@ -9,7 +9,6 @@ import { cn } from "@/lib/utils";
 
 interface AnnouncementItemProps {
     announcement: CompleteAnnouncement;
-    showStatus?: boolean;
 }
 
 
@@ -30,9 +29,9 @@ function formatEventSchedule(startsAt: string, endsAt?: string | null) {
     return `${formatDate(startsAt)} - ${formatDate(endsAt)}`;
 }
 
-export default function AnnouncementItem({ announcement, showStatus = false }: AnnouncementItemProps) {
+export default function AnnouncementItem({ announcement }: AnnouncementItemProps) {
 
-    const [hovering, setHovering] = useState(false);
+    const [hovering, setHovering] = useState(true);
 
 
     return (
@@ -40,7 +39,7 @@ export default function AnnouncementItem({ announcement, showStatus = false }: A
             onMouseEnter={() => setHovering(true)}
             onMouseLeave={() => setHovering(false)}
             className={cn(
-                "ps-1.5 h-[65vh] overflow-auto scroll-area [&::-webkit-scrollbar]:w-1.5",
+                "ps-1.5 h-[80vh] overflow-auto scroll-area [&::-webkit-scrollbar]:w-1.5",
                 "[&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded",
                 hovering ? "[&::-webkit-scrollbar-thumb]:bg-gray-300" : "[&::-webkit-scrollbar-thumb]:bg-transparent"
             )}
@@ -67,8 +66,6 @@ export default function AnnouncementItem({ announcement, showStatus = false }: A
                             </div>
                         </div>
                     </div>
-
-                    {showStatus ? <StatusTag text={announcement.status} /> : null}
                 </div>
             </div>
 

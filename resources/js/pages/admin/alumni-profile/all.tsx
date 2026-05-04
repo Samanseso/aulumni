@@ -33,7 +33,6 @@ const All = () => {
                     <div className='grid gap-5'>
                         <ProfileTimeline
                             posts={props.posts}
-                            hasActions={false}
                             emptyMessage="This alumni has not published any job opportunities yet."
                         />
                     </div>

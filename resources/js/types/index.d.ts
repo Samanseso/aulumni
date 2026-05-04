@@ -277,6 +277,7 @@ export interface CompletePost extends Post {
 	attachments: Attachment[];
 	comments: Comment[];
 	liked_by_user: boolean;
+	saved_by_user: boolean;
 	author: User;
 };
 

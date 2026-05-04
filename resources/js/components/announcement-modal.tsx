@@ -24,6 +24,7 @@ import { Spinner } from "./ui/spinner";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import InputError from "./input-error";
+import StatusTag from "./status-tag";
 
 
 interface AnnouncementModalProps {
@@ -72,23 +73,32 @@ export default function AnnouncementModal({ announcementId, setAnnouncementId, a
                                     Event Announcement
                                 </span>
                             </div>
-                            {
-                                admin && (
-                                    isEditing ?
-                                    <Button
-                                        variant="ghost"
-                                        onClick={() => setIsEditing(false)}
-                                    >
-                                        <X className="size-5" /> Cancel
-                                    </Button> :
-                                    <Button
-                                        variant="ghost"
-                                        onClick={() => setIsEditing(true)}
-                                    >
-                                        <PenBox className="size-4" /> Edit
-                                    </Button>
-                                )
-                            }
+                            <div className="flex items-center gap-3">
+                                <StatusTag text={announcement.status} />
+                                {
+                                    admin && (
+                                        isEditing ?
+                                            <Button
+                                                variant="ghost"
+                                                onClick={() => setIsEditing(false)}
+                                            >
+                                                <X className="size-5" /> Cancel
+                                            </Button> :
+                                            <>
+                                                <Button
+                                                    variant="ghost"
+                                                    onClick={() => setIsEditing(true)}
+                                                >
+                                                    <PenBox className="size-4" /> Edit
+                                                </Button>
+                                            </>
+                                    )
+
+                                }
+                                <Button variant="secondary" size="icon" className="rounded-full" onClick={() => setAnnouncementId(null)}>
+                                    <X />
+                                </Button>
+                            </div>
                         </div>
 
                         <div className="">
@@ -105,7 +115,7 @@ export default function AnnouncementModal({ announcementId, setAnnouncementId, a
                                 >
                                     {({ processing, errors }) => (
                                         <>
-                                            <div className="!h-[67.2vh] overflow-auto scroll-area [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 flex flex-col gap-4 px-5.5 py-4">
+                                            <div className="!h-[82.2vh] overflow-auto scroll-area [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 flex flex-col gap-4 px-5.5 py-4">
                                                 <div>
                                                     <Label htmlFor="title">Announcement Title</Label>
                                                     <Input
@@ -216,7 +226,7 @@ export default function AnnouncementModal({ announcementId, setAnnouncementId, a
                                     )}
                                 </Form>
                             ) : (
-                                <AnnouncementItem announcement={announcement} showStatus={admin} />
+                                <AnnouncementItem announcement={announcement} />
                             )}
                         </div>
 
@@ -269,22 +279,22 @@ export default function AnnouncementModal({ announcementId, setAnnouncementId, a
                         )}
                     </>
                 ) : (
-                    <div className={admin ? "" : "max-h-[70vh] overflow-hidden"}>
+                    <div className={admin ? "" : "overflow-hidden"}>
                         <div className="flex items-center justify-between px-5.5 pt-3">
                             <Skeleton className="mt-2 h-7 w-40" />
-                            { admin &&  <Skeleton className="h-6 w-20" /> }
+                            {admin && <Skeleton className="h-6 w-20" />}
                         </div>
 
-                        <div className="h-[69.5vh] overflow-auto px-4 py-4 overflow-hidden">
+                        <div className="h-[82vh] overflow-auto px-4 py-4 overflow-hidden">
                             <Skeleton className="mb-3 h-12 w-full" />
                             <Skeleton className="mb-3 h-40 w-full" />
-                            <Skeleton className="h-61 w-full" />
+                            <Skeleton className="h-83.5 w-full" />
                         </div>
 
                         {
                             admin &&
                             <>
-                                <DialogFooter className="flex h-[100vh] h-fit flex-1 px-5.5 py-3 sm:justify-between">
+                                <DialogFooter className="flex h-fit flex-1 px-5.5 py-3 sm:justify-between">
                                     <Skeleton className="h-9 w-40" />
                                     <div className="flex gap-3">
                                         <Skeleton className="h-9 w-20" />

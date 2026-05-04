@@ -5,7 +5,7 @@ import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-
+import { route as routeFn } from 'ziggy-js';
 import { initializeTheme } from './hooks/use-appearance';
 import { ConfirmActionProvider } from './components/context/confirm-action-context';
 import { ModalProvider } from './components/context/modal-context';
@@ -42,6 +42,10 @@ const getInitialPage = (id = 'app'): Page => {
     );
 };
 
+declare global {
+    const route: typeof routeFn;
+}
+
 window.Echo = new Echo({
     broadcaster: 'reverb',
     key: import.meta.env.VITE_REVERB_APP_KEY,
@@ -59,7 +63,6 @@ window.Echo = new Echo({
           }
         : undefined,
 });
-
 
 
 createInertiaApp({

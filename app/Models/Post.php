@@ -65,6 +65,11 @@ class Post extends Model
         return $this->hasMany(Reaction::class, 'post_id', 'post_id');
     }
 
+    public function savedPosts(): HasMany
+    {
+        return $this->hasMany(SavedPost::class, 'post_id', 'post_id');
+    }
+
     public function shares(): HasMany
     {
         return $this->hasMany(Share::class, 'post_id', 'post_id');

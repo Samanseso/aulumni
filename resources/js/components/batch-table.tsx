@@ -22,10 +22,10 @@ export default function BatchTable({ batches, onEdit }: BatchTableProps) {
                         <th className="rounded-l-md ps-7 pe-2">
                             <Checkbox className="size-5 mt-1.25 cursor-pointer" />
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-500">Year</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Name</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">Alumni</th>
-                        <th className="px-6 py-3 text-right text-xs font-semibold uppercase text-gray-500">Actions</th>
+                        <th className="px-6 py-2 text-left text-xs font-semibold uppercase text-gray-500">Year</th>
+                        <th className="px-4 py-2 text-left text-xs font-semibold uppercase text-gray-500">Name</th>
+                        <th className="px-4 py-2 text-left text-xs font-semibold uppercase text-gray-500">Alumni</th>
+                        <th className="px-6 py-2 text-right text-xs font-semibold uppercase text-gray-500" />
                     </tr>
                 </thead>
                 <tbody>
@@ -50,7 +50,7 @@ export default function BatchTable({ batches, onEdit }: BatchTableProps) {
                                 <CountTag count={batch.alumni_count ?? 0} label={batch.alumni_count === 1 ? 'Alumnus' : 'Alumni'} />
                             </td>
                             <td className="px-6 py-3 text-sm">
-                                <div className="flex justify-end">
+                                <div className="flex justify-center">
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button size="sm" variant="ghost" className="text-xs">

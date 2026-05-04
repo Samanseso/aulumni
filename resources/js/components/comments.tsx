@@ -15,7 +15,6 @@ import { Button } from './ui/button'
 interface CommentsProps {
     comment: Comment[] | undefined;
     setComments: React.Dispatch<SetStateAction<Comment[]>>;
-    auth: { user: User };
 }
 
 const doReply = async (post_id: number, user_id: number, parent_comment_id: number, content: string) => {
@@ -27,7 +26,9 @@ const doReply = async (post_id: number, user_id: number, parent_comment_id: numb
     }
 };
 
-const Comments = ({ comment, setComments, auth }: CommentsProps) => {
+const Comments = ({ comment, setComments }: CommentsProps) => {
+
+    const { auth } = usePage<{ auth: { user: User } }>().props;
 
     const [commentContent, setCommentContent] = useState("");
     const [isReplying, setIsReplying] = useState<{ replying: boolean, to: string, name: string } | null>(null);
@@ -67,7 +68,7 @@ const Comments = ({ comment, setComments, auth }: CommentsProps) => {
         <div className='px-4 grid gap-3 pb-2'>
             {
                 comment &&
-                comment.map((c) => {
+                comment.map(c => {
                     const replies = comment.filter(item => item.parent_comment_id === c.comment_id);
 
                     if (c.parent_comment_id !== null) {
@@ -80,12 +81,12 @@ const Comments = ({ comment, setComments, auth }: CommentsProps) => {
                                 <UserAvatar className='h-8 w-8' avatar={c.author.avatar} name={c.author.name} />
                             </Link>
                             <div className='flex-1 me-4 grid gap-1'>
+
                                 <div className='w-full flex items-center gap-3' onMouseEnter={() => setHoveringComment(c.comment_id)} onMouseLeave={() => setHoveringComment(-1)}>
                                     <div className='w-fit bg-gray-100 rounded-lg px-3 py-2'>
                                         <Link href={`/${c.author.user_name}`}><p className='text-sm font-semibold'>{c.author.name}</p></Link>
                                         <p>{c.content}</p>
                                     </div>
-
 
                                     {c.comment_id === hoveringComment && activeComment === -1 &&
                                         <Button variant="ghost" size="icon" className="rounded-full" onClick={() => {
@@ -95,45 +96,61 @@ const Comments = ({ comment, setComments, auth }: CommentsProps) => {
                                             <Ellipsis />
                                         </Button>
                                     }
+
                                     {c.comment_id === activeComment && <CommentActions comment={c} setComments={setComments} setActiveComment={setActiveComment} user={auth.user} />}
-
-
                                 </div>
+
+
                                 <div className='flex gap-5 ps-3.25'>
                                     <p className='text-xs text-gray-500'>{getRelativeTimeDifference(c.created_at, true)}</p>
-                                    <p
-                                        className={cn("text-xs text-gray-500 cursor-pointer hover:underline")}
-                                        onClick={() => setIsReplying({
-                                            replying: true,
-                                            to: c.comment_id.toString(),
-                                            name: c.author.name
-                                        })}>
-                                        {c.comment_id !== 0 && "Reply"}
-                                    </p>
-
-
-
+                                    {
+                                        !(auth.user.user_type === 'admin') &&
+                                        <p
+                                            className={cn("text-xs text-gray-500 cursor-pointer hover:underline")}
+                                            onClick={() => setIsReplying({
+                                                replying: true,
+                                                to: c.comment_id.toString(),
+                                                name: c.author.name
+                                            })}>
+                                            {c.comment_id !== 0 && "Reply"}
+                                        </p>
+                                    }
                                 </div>
+
 
                                 {
                                     replies.length > 0 &&
                                     <div className='ms-3.5 grid gap-2 mt-2'>
                                         {
                                             replies.map(reply => (
-                                                <div key={reply.comment_id} className="flex items-start gap-2">
-                                                    <Link href={`/${reply.author.user_name}`} className='mt-1'>
-                                                        <UserAvatar className='h-8 w-8' avatar={reply.author.avatar} name={reply.author.name} />
-                                                    </Link>
-                                                    <div className='flex-1 me-4 grid gap-1'>
-                                                        <div className='w-fit bg-gray-100 rounded-lg px-3 py-2'>
-                                                            <Link href={`/${reply.author.user_name}`}><p className='text-sm font-semibold'>{reply.author.name}</p></Link>
-                                                            <p>{reply.content}</p>
-                                                        </div>
-                                                        <div className='flex gap-5 ps-3.25'>
-                                                            <p className='text-xs text-gray-500'>{getRelativeTimeDifference(reply.created_at, true)}</p>
+                                                <>
+                                                    <div key={reply.comment_id} className="flex items-start gap-2">
+                                                        <Link href={`/${reply.author.user_name}`} className='mt-1'>
+                                                            <UserAvatar className='h-8 w-8' avatar={reply.author.avatar} name={reply.author.name} />
+                                                        </Link>
+                                                        <div className='w-full flex items-center gap-3' onMouseEnter={() => setHoveringComment(reply.comment_id)} onMouseLeave={() => setHoveringComment(-1)}>
+                                                            <div className='w-fit bg-gray-100 rounded-lg px-3 py-2'>
+                                                                <Link href={`/${reply.author.user_name}`}><p className='text-sm font-semibold'>{reply.author.name}</p></Link>
+                                                                <p>{reply.content}</p>
+                                                            </div>
+
+                                                            {reply.comment_id === hoveringComment && activeComment === -1 &&
+                                                                <Button variant="ghost" size="icon" className="rounded-full" onClick={() => {
+                                                                    setActiveComment(reply.comment_id);
+                                                                    setHoveringComment(-1);
+                                                                }}>
+                                                                    <Ellipsis />
+                                                                </Button>
+                                                            }
+
+                                                            {reply.comment_id === activeComment && <CommentActions comment={reply} setComments={setComments} setActiveComment={setActiveComment} user={auth.user} />}
                                                         </div>
                                                     </div>
-                                                </div>
+                                                    <div className='flex ps-13.25'>
+                                                        <p className='text-xs text-gray-500'>{getRelativeTimeDifference(reply.created_at, true)}</p>
+                                                    </div>
+                                                </>
+
                                             ))
                                         }
                                     </div>

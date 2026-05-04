@@ -4,10 +4,9 @@ import { Badge } from './ui/badge';
 const CountTag = ({ count, label }: { count: number; label: string }) => {
 
     return (
-        <Badge variant="secondary" className="text-black rounded-sm shadow-sm">
+        <Badge variant="secondary" className="text-black rounded-sm shadow-sm h-[28px]">
             {count}&nbsp; {label}
         </Badge>
-
     )
 }
 

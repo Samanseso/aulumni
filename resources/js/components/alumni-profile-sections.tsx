@@ -33,7 +33,6 @@ type AlumniProfileSectionsProps = {
 
 type ProfileTimelineProps = {
     posts: CompletePost[]
-    hasActions?: boolean
     emptyMessage?: string
 }
 
@@ -120,7 +119,6 @@ export function ProfileSummaryCard({ alumni }: AlumniProfileSectionsProps) {
 
 export function ProfileTimeline({
     posts,
-    hasActions = true,
     emptyMessage = 'No posts have been shared on this profile yet.',
 }: ProfileTimelineProps) {
     if (posts.length === 0) {
@@ -143,7 +141,7 @@ export function ProfileTimeline({
         <div className="grid gap-4">
             {posts.map((post) => (
                 <div key={post.post_uuid} className="overflow-hidden rounded-xl h-fit border border-slate-200 bg-white shadow-sm">
-                    <PostItem post={post} hasActions={hasActions} />
+                    <PostItem post={post} />
                 </div>
             ))}
         </div>

@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'active'])->group(function () {
 
-    
     Route::post('post', [PostController::class, 'store'])->name('post.store');
     Route::post('/profile/photo', [HomeController::class, 'updateProfilePhoto'])->name('news-feed.update_profile_photo');
 

@@ -41,7 +41,6 @@ const Profile = () => {
                 <div className="grid gap-5">
                     <ProfileTimeline
                         posts={props.posts}
-                        hasActions={true}
                         emptyMessage="This alumni has no approved job post on the public timeline yet."
                     />
                 </div>

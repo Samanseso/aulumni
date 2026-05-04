@@ -551,9 +551,14 @@ class AlumniController extends Controller
     {
         $query = Post::with(['author', 'attachments'])
             ->where('user_id', $profileUserId)
-            ->withCount(['reactions as liked_by_user' => function ($q) use ($viewerUserId) {
-                $q->where('user_id', $viewerUserId);
-            }])
+            ->withCount([
+                'reactions as liked_by_user' => function ($q) use ($viewerUserId) {
+                    $q->where('user_id', $viewerUserId);
+                },
+                'savedPosts as saved_by_user' => function ($q) use ($viewerUserId) {
+                    $q->where('user_id', $viewerUserId);
+                },
+            ])
             ->orderBy('created_at', 'desc');
 
         if ($statuses !== null) {
@@ -562,6 +567,7 @@ class AlumniController extends Controller
 
         return $query->get()->map(function ($post) {
             $post->setAttribute('liked_by_user', (bool) $post->liked_by_user);
+            $post->setAttribute('saved_by_user', (bool) $post->saved_by_user);
 
             return $post;
         });
@@ -640,12 +646,12 @@ class AlumniController extends Controller
         }
 
         if ($number < 100) {
-            return $words[10 * floor($number / 10)] .
+            return $words[10 * (int)floor($number / 10)] .
                 ' ' . $words[$number % 10];
         }
 
         if ($number < 1000) {
-            return $words[floor($number / 100)] . ' hundred '
+            return $words[(int)floor($number / 100)] . ' hundred '
                 . $this->num_to_words($number % 100);
         }
 

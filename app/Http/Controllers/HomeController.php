@@ -152,20 +152,14 @@ class HomeController extends Controller
     {
         $query = Post::with(['author', 'attachments'])
             ->where('status', 'approved')
-            ->withCount(['reactions as liked_by_user' => function ($q) use ($viewerUserId) {
-                $q->where('user_id', $viewerUserId);
-            }])
+            ->withCount($this->viewerPostStateCounts($viewerUserId))
             ->orderBy('created_at', 'desc');
 
         if ($profileUserId !== null) {
             $query->where('user_id', $profileUserId);
         }
 
-        return $query->get()->map(function ($post) {
-            $post->setAttribute('liked_by_user', (bool) $post->liked_by_user);
-
-            return $post;
-        });
+        return $this->mapViewerPostState($query->get());
     }
 
     protected function approvedAnnouncements()
@@ -267,10 +261,83 @@ class HomeController extends Controller
         $user_id = $request->user()->user_id;
 
         $viewerProfile = $this->findAlumniByUserId($user_id);
-        $posts = $this->approvedPostsForViewer($user_id);
         $announcements = $this->approvedAnnouncements();
 
+        $posts = Post::with(['author', 'attachments'])
+            ->where('status', 'approved')
+            ->withCount($this->viewerPostStateCounts($user_id))
+
+            ->when($request->filled('search'), function ($q) use ($request) {
+                $v = $request->search;
+
+                $q->where(function ($q) use ($v) {
+                    $q->where('job_title', 'like', "%{$v}%")
+                        ->orWhere('company', 'like', "%{$v}%")
+                        ->orWhere('job_description', 'like', "%{$v}%");
+                });
+            })
+
+            ->when($request->filled('location'), function ($q) use ($request) {
+                $q->where('location', 'like', "%{$request->location}%");
+            })
+
+            ->when($request->filled('job_type'), function ($q) use ($request) {
+                $q->where('job_type', $request->job_type);
+            })
+
+            ->when($request->filled('salary_min'), function ($q) use ($request) {
+                $q->where('salary', '>=', $request->salary_min);
+            })
+
+            ->when($request->filled('salary_max'), function ($q) use ($request) {
+                $q->where('salary', '<=', $request->salary_max);
+            })
+
+            ->latest()
+            ->get();
+
+        $posts = $this->mapViewerPostState($posts);
+
+
         return Inertia::render('alumni/find-job', [
+            'posts' => $posts,
+            'announcements' => $announcements,
+            'viewerProfile' => $viewerProfile,
+            'feedSummary' => [
+                'profile_completion' => $this->calculateProfileCompletion($viewerProfile),
+                'approved_posts' => Post::query()->where('status', 'approved')->count(),
+                'approved_announcements' => Announcement::query()->where('status', 'approved')->count(),
+                'upcoming_events' => Announcement::query()
+                    ->where('status', 'approved')
+                    ->where('starts_at', '>=', now())
+                    ->count(),
+                'companies_hiring' => Post::query()
+                    ->where('status', 'approved')
+                    ->whereNotNull('company')
+                    ->distinct()
+                    ->count('company'),
+                'unread_notifications' => $request->user()->unreadNotifications()->count() ?? 0,
+            ],
+        ]);
+    }
+    public function show_saved_job(Request $request)
+    {
+        $user_id = $request->user()->user_id;
+
+        $viewerProfile = $this->findAlumniByUserId($user_id);
+        $posts = Post::with(['author', 'attachments'])
+            ->where('status', 'approved')
+            ->whereHas('savedPosts', function ($q) use ($user_id) {
+                $q->where('user_id', $user_id);
+            })
+            ->withCount($this->viewerPostStateCounts($user_id))
+            ->latest()
+            ->get();
+        $posts = $this->mapViewerPostState($posts);
+        $announcements = $this->approvedAnnouncements();
+
+        return Inertia::render('alumni/saved-job', [
+            'posts' => $posts,
             'announcements' => $announcements,
             'viewerProfile' => $viewerProfile,
             'feedSummary' => [
@@ -291,32 +358,25 @@ class HomeController extends Controller
         ]);
     }
 
-    public function show_saved_job(Request $request)
+    protected function viewerPostStateCounts(int $viewerUserId): array
     {
-        $user_id = $request->user()->user_id;
+        return [
+            'reactions as liked_by_user' => function ($q) use ($viewerUserId) {
+                $q->where('user_id', $viewerUserId);
+            },
+            'savedPosts as saved_by_user' => function ($q) use ($viewerUserId) {
+                $q->where('user_id', $viewerUserId);
+            },
+        ];
+    }
 
-        $viewerProfile = $this->findAlumniByUserId($user_id);
-        $posts = $this->approvedPostsForViewer($user_id);
-        $announcements = $this->approvedAnnouncements();
+    protected function mapViewerPostState($posts)
+    {
+        return $posts->map(function ($post) {
+            $post->setAttribute('liked_by_user', (bool) $post->liked_by_user);
+            $post->setAttribute('saved_by_user', (bool) $post->saved_by_user);
 
-        return Inertia::render('alumni/saved-job', [
-            'announcements' => $announcements,
-            'viewerProfile' => $viewerProfile,
-            'feedSummary' => [
-                'profile_completion' => $this->calculateProfileCompletion($viewerProfile),
-                'approved_posts' => Post::query()->where('status', 'approved')->count(),
-                'approved_announcements' => Announcement::query()->where('status', 'approved')->count(),
-                'upcoming_events' => Announcement::query()
-                    ->where('status', 'approved')
-                    ->where('starts_at', '>=', now())
-                    ->count(),
-                'companies_hiring' => Post::query()
-                    ->where('status', 'approved')
-                    ->whereNotNull('company')
-                    ->distinct()
-                    ->count('company'),
-                'unread_notifications' => $request->user()->unreadNotifications()->count() ?? 0,
-            ],
-        ]);
+            return $post;
+        });
     }
 }

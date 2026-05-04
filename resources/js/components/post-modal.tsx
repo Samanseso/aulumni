@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { SetStateAction, useEffect, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogTitle, DialogDescription } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Trash, Link as LinkIcon, ChevronsUpDown, Check, Ban, Globe, Send, SendHorizonal, FileText, X } from "lucide-react";
@@ -22,11 +22,12 @@ import Comments from "./comments";
 interface PostModalProps {
     post_id: number;
     setViewPostId: (id: number | null) => void;
+    setCommentCount?: React.Dispatch<SetStateAction<number>>;
     admin?: boolean;
 }
 
 const getPost = async (post: number): Promise<CompletePost> => {
-    try {   
+    try {
         const response = await axios.get<CompletePost>(show(post).url);
         return response.data;
     } catch (err) {
@@ -45,7 +46,7 @@ const doComment = async (post_id: number, user_id: number, parent_comment_id: nu
     }
 };
 
-export default function PostModal({ post_id, setViewPostId, admin = false }: PostModalProps) {
+export default function PostModal({ post_id, setViewPostId, setCommentCount, admin = false }: PostModalProps) {
 
     const { auth } = usePage<{ auth: { user: User } }>().props;
 
@@ -53,12 +54,13 @@ export default function PostModal({ post_id, setViewPostId, admin = false }: Pos
     const [hovering, setHovering] = useState(true);
 
     const [comments, setComments] = useState<Comment[]>([])
+    const [commentCount, setLocalCommentCount] = useState(0);
     const [commentContent, setCommentContent] = useState("");
 
     const [returnedCommentId, setReturnedCommentId] = useState<number | null>(null);
+    const commentsTopRef = useRef<HTMLDivElement | null>(null);
 
     const { confirmActionContentCreateModal } = useConfirmAction();
-
 
     useEffect(() => {
         if (returnedCommentId) {
@@ -72,8 +74,12 @@ export default function PostModal({ post_id, setViewPostId, admin = false }: Pos
             setComments(prev => prev.map(item => item.comment_id === 0 ? updatedCommentId : item))
         }
 
-        
+
     }, [returnedCommentId]);
+
+    useEffect(() => {
+        setLocalCommentCount(comments.length);
+    }, [comments])
 
     const handleComment = async (post_id: number, user_id: number, parent_comment_id: number | null, content: string) => {
 
@@ -90,12 +96,19 @@ export default function PostModal({ post_id, setViewPostId, admin = false }: Pos
             updated_at: new Date().toISOString(),
         }
 
+        setLocalCommentCount(prev => prev + 1);
+        setCommentCount?.(prev => prev + 1);
+
         setComments(prev => [newComment, ...prev]);
+        requestAnimationFrame(() => {
+            commentsTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+
 
         doComment(post_id, user_id, parent_comment_id, content)
-        .then(res => {
-            setReturnedCommentId(res.comment_id);
-        })
+            .then(res => {
+                setReturnedCommentId(res.comment_id);
+            })
     }
 
     useEffect(() => {
@@ -103,6 +116,7 @@ export default function PostModal({ post_id, setViewPostId, admin = false }: Pos
             .then(res => {
                 setPost(res);
                 setComments(res.comments);
+                setLocalCommentCount(res.comments_count);
             })
             .catch(err => console.log(err))
     }, [post_id]);
@@ -112,7 +126,7 @@ export default function PostModal({ post_id, setViewPostId, admin = false }: Pos
 
     return (
         <Dialog open={true} onOpenChange={() => setViewPostId(null)}>
-            <DialogTitle className="hidden">Post</DialogTitle>  
+            <DialogTitle className="hidden">Post</DialogTitle>
             <DialogContent hasCloseButton={false} className="p-0 gap-0 bg-white lg:max-w-[45vw] h-fit">
                 <DialogDescription className="hidden" />
                 {
@@ -120,12 +134,14 @@ export default function PostModal({ post_id, setViewPostId, admin = false }: Pos
                         <>
                             <div className="px-5.5 py-4 flex items-center justify-between border-b" >
                                 <p className="text-lg font-bold">{post.author.name}'s Post</p>
-                                {admin && <StatusTag text={post.status} />}
-                                <Button variant="secondary" size="icon" className="rounded-full"
-                                    onClick={() => setViewPostId(null)}
-                                >
-                                    <X />   
-                                </Button>
+                                <div className="flex items-center gap-3">
+                                    {admin && <StatusTag text={post.status} />}
+                                    <Button variant="secondary" size="icon" className="rounded-full"
+                                        onClick={() => setViewPostId(null)}
+                                    >
+                                        <X />
+                                    </Button>
+                                </div>
                             </div>
                             <div className={cn(
                                 "ps-1.5 h-[72vh] overflow-auto scroll-area [&::-webkit-scrollbar]:w-1.5",
@@ -135,11 +151,12 @@ export default function PostModal({ post_id, setViewPostId, admin = false }: Pos
                                 onMouseEnter={() => setHovering(true)}
                                 onMouseLeave={() => setHovering(false)}
                             >
-                                <PostItem post={post} hasActions={false} />
+                                <PostItem post={post} commentCount={commentCount} />
+                                <div ref={commentsTopRef} />
 
                                 {
                                     comments.length > 0 ?
-                                        <Comments comment={comments} setComments={setComments} auth={auth} />
+                                        <Comments comment={comments} setComments={setComments} />
                                         :
                                         <div className="px-6 py-12 text-center">
                                             <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-slate-100 text-slate-500">

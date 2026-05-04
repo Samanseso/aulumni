@@ -1,29 +1,46 @@
-import { Link } from "@inertiajs/react";
+import { Link, usePage } from "@inertiajs/react";
 import { Briefcase, BriefcaseBusiness, Building2, CalendarDays, Ellipsis, Globe, Heart, Link as LinkIcon, MapPin, MessageCircle, PhilippinePeso, Pin } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { getRelativeTimeDifference } from "@/helper";
-import { CompletePost } from "@/types";
+import { CompletePost, User } from "@/types";
 
 import PostActionReaction from "./post-action-reaction";
 import PostActionComment from "./post-action-comment";
 import PostActionSave from "./post-action-save";
 import UserAvatar from "./user-avatar";
-import comment from '../routes/comment/index';
+import PostModal from "./post-modal";
 
 interface PostItemProps {
     post: CompletePost;
-    hasActions?: boolean;
+    commentCount?: number;
+    setCommentCount?: React.Dispatch<React.SetStateAction<number>>;
 }
 
-export default function PostItem({ post, hasActions = true }: PostItemProps) {
+export default function PostItem({ post, commentCount, setCommentCount }: PostItemProps) {
+
+    const { auth } = usePage<{ auth: { user: User } }>().props;
+
+    const [postViewId, setViewPostId] = useState<number | null>(null);
     const [reactionCount, setReactionCount] = useState<number>(post.reactions_count);
-    const [commentCount, setCommentCount] = useState<number>(post.comments_count);
+    const [internalCommentCount, setInternalCommentCount] = useState<number>(post.comments_count);
     const [likedByUser, setLikedByUser] = useState<boolean>(!!post.liked_by_user);
+    const [savedByUser, setSavedByUser] = useState<boolean>(!!post.saved_by_user);
     const authorProfileUrl = post.author?.user_name ? `/${post.author.user_name}` : undefined;
+    const displayedCommentCount = commentCount ?? internalCommentCount;
+    const updateCommentCount = setCommentCount ?? setInternalCommentCount;
+
+    useEffect(() => {
+        setReactionCount(post.reactions_count);
+        setInternalCommentCount(post.comments_count);
+        setLikedByUser(!!post.liked_by_user);
+        setSavedByUser(!!post.saved_by_user);
+    }, [post.comments_count, post.liked_by_user, post.reactions_count, post.saved_by_user]);
 
     return (
         <div className="flex flex-col bg-white rounded-md">
+            {postViewId && <PostModal post_id={post.post_id} setViewPostId={setViewPostId} setCommentCount={updateCommentCount} />}
+
             <div className="p-3 pb-0">
                 <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
@@ -113,7 +130,7 @@ export default function PostItem({ post, hasActions = true }: PostItemProps) {
 
                     <div className="mb-3 rounded-lg bg-muted p-3 text-sm italic">
                         {post.job_description}
-                    </div>
+                </div>
 
                     {post.attachments && post.attachments.length > 0 && (
                         <div className="grid grid-cols-1 gap-3">
@@ -147,7 +164,7 @@ export default function PostItem({ post, hasActions = true }: PostItemProps) {
                             </div>
                             <div className="flex items-center gap-1">
                                 <MessageCircle className="size-4" />
-                                <span>{commentCount}</span>
+                                <span>{displayedCommentCount}</span>
                             </div>
                         </div>
 
@@ -156,18 +173,22 @@ export default function PostItem({ post, hasActions = true }: PostItemProps) {
                         </div>
                     </div>
 
-                    {hasActions && (
+                    {!(auth.user.user_type === 'admin') && (
                         <div className="flex gap-2">
                             <PostActionReaction
                                 post_id={post.post_id}
-                                likedByUser={likedByUser}   
+                                likedByUser={likedByUser}
                                 setLikedByUser={setLikedByUser}
                                 setReactionCount={setReactionCount}
                             />
 
-                            <PostActionComment post_id={post.post_id} />
+                            <PostActionComment post_id={post.post_id} setViewPostId={setViewPostId} />
 
-                            <PostActionSave post_id={post.post_id} />
+                            <PostActionSave
+                                post_id={post.post_id}
+                                savedByUser={savedByUser}
+                                setSavedByUser={setSavedByUser}
+                            />
                         </div>
                     )}
                 </div>

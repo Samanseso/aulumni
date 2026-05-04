@@ -141,20 +141,20 @@ export function NavMain() {
                     </SidebarMenuButton>
                 </SidebarMenuItem>
 
-                <SidebarMenuItem>
+                    {/* <SidebarMenuItem>
 
-                    <SidebarMenuButton
-                        asChild
-                        isActive={urlIsActive("/user/employee")}
-                        tooltip={{ children: "Employee" }}
-                    >
-                        <Link href="/user/employee" prefetch>
-                            <IdCard />
-                            <span>Employee</span>
-                        </Link>
-                    </SidebarMenuButton>
+                        <SidebarMenuButton
+                            asChild
+                            isActive={urlIsActive("/user/employee")}
+                            tooltip={{ children: "Employee" }}
+                        >
+                            <Link href="/user/employee" prefetch>
+                                <IdCard />
+                                <span>Employee</span>
+                            </Link>
+                        </SidebarMenuButton>
 
-                </SidebarMenuItem>
+                    </SidebarMenuItem> */}
 
                 <SidebarMenuItem>
                     <SidebarMenuButton

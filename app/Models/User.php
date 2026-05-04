@@ -99,6 +99,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Reaction::class, 'user_id', 'user_id');
     }
 
+    public function savedPosts(): HasMany
+    {
+        return $this->hasMany(SavedPost::class, 'user_id', 'user_id');
+    }
+
     public function shares(): HasMany
     {
         return $this->hasMany(Share::class, 'user_id', 'user_id');

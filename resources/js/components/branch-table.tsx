@@ -13,9 +13,9 @@ interface BranchTableProps {
 
 const columns = [
     "Name",
+    "Address",
     "Departments",
     "Courses",
-    "Employees",
     "Alumni",
 ]
 export default function BranchTable({ branches, onEdit }: BranchTableProps) {
@@ -55,15 +55,15 @@ export default function BranchTable({ branches, onEdit }: BranchTableProps) {
                             </td>
                             <td className="px-4 py-2 text-sm">
                                 <span className="font-bold">{branch.name}</span> <br />
-                                <span className="text-xs text-gray-500">{branch.contact}</span> <br />
-                                <span className="text-xs text-gray-500">{branch.address}</span> <br />
+                                <span className="text-xs text-gray-500">{branch.contact}</span>
                             </td>
+                            <td className="px-4 py-3 text-sm">{branch.address}</td>
+
                             <td className="px-4 py-3 text-sm"><CountTag count={branch.departments_count ?? 0} label={branch.departments_count === 1 ? 'Department' : 'Departments'} /></td>
                             <td className="px-4 py-3 text-sm"><CountTag count={branch.courses_count ?? 0} label={branch.courses_count === 1 ? 'Course' : 'Courses'} /></td>
-                            <td className="px-4 py-3 text-sm"><CountTag count={branch.employees_count ?? 0} label={branch.employees_count === 1 ? 'Employee' : 'Employees'} /></td>
                             <td className="px-4 py-3 text-sm"><CountTag count={branch.alumni_count ?? 0} label={branch.alumni_count === 1 ? 'Alumnus' : 'Alumni'} /></td>
                             <td className="px-4 py-3 text-sm">
-                                <div className="flex justify-enter">
+                                <div className="flex justify-start">
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button size="sm" variant="ghost" className="text-xs">

@@ -24,7 +24,7 @@ export default function CourseTable({ courses, onEdit }: CourseTableProps) {
                 <thead>
                     <tr className="border-t">
                         <th className="rounded-l-md ps-7 pe-2">
-                            <Checkbox />
+                            <Checkbox className='size-5 mt-1.25' />
                         </th>
                         {columns.map((col) => (
                             <th key={col} className="px-4 py-2 text-left text-xs text-gray-500 font-semibold whitespace-nowrap uppercase">

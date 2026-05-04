@@ -1,5 +1,5 @@
 import { Head, Link, usePage } from '@inertiajs/react'
-import { Archive, Bell, BriefcaseBusiness, Building2, CalendarDays, Globe, GraduationCap, Image, Key, MapPin, Sparkles, UserCircle2 } from 'lucide-react'
+import { Archive, Bell, Briefcase, BriefcaseBusiness, Building2, CalendarDays, Globe, GraduationCap, Image, Key, MapPin, Sparkles, UserCircle2 } from 'lucide-react'
 import { useState } from 'react'
 import { Navigation, Pagination, Scrollbar, A11y } from 'swiper/modules';
 
@@ -16,33 +16,19 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { cn } from '../../lib/utils';
 import AnnouncementModal from '@/components/announcement-modal';
 import NewsFeedLayout from '@/layouts/news-feed-layout';
+import { Card, CardContent } from '@/components/ui/card';
 
 
 
 const NewsFeed = () => {
     const { props } = usePage<{
         posts: CompletePost[]
-        announcements: CompleteAnnouncement[]
         auth: { user: User }
-        viewerProfile: Alumni | null
-        feedSummary: {
-            profile_completion: number
-            approved_posts: number
-            approved_announcements: number
-            upcoming_events: number
-            companies_hiring: number
-            unread_notifications: number
-        }
     }>();
-    console.log(props);
 
-    const [viewAnnouncementId, setViewAnnouncementId] = useState<number | null>(null)
-
-    const [hoveringAnnouncement, setHoveringAnnouncement] = useState(false);
+    const [post, setPosts] = useState<CompletePost[]>(props.posts ?? []);
 
     const [createPostModal, setCreatePostModal] = useState(false)
-    const profileUrl = `/${props.auth.user.user_name}`
-
     return (
         <NewsFeedLayout>
             {createPostModal && <PostCreateModal setCreatePostModal={setCreatePostModal} />}
@@ -60,35 +46,27 @@ const NewsFeed = () => {
                                 className="rounded-full border-0 bg-muted"
                             />
                         </div>
-                        {/* <div className="flex items-center justify-between ps-12.5">
-                                    <div className="flex items-center gap-4 text-muted-foreground">
-                                        <Button variant="ghost" className="!px-0 text-sm"><Image />Image</Button>
-                                    </div>
-
-                                    <div className="flex items-center">
-                                        <Globe size={20} className="text-muted-foreground" />
-                                        <Select defaultValue="public">
-                                            <SelectTrigger className="border-0 px-1.5 shadow-none outline-0">
-                                                <SelectValue placeholder="privacy" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="public">Public</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                </div> */}
                     </div>
                 </div>
 
 
-                {props.posts.map((post) => (
-                    <div
-                        className="overflow-hidden border border-slate-200 bg-white shadow-sm md:rounded-xl"
-                        key={post.post_uuid}
-                    >
-                        <PostItem post={post} />
-                    </div>
-                ))}
+                {
+                    post.length > 0 ?
+                        post.map((p) => (
+                            <div
+                                className="overflow-hidden border border-slate-200 bg-white shadow-sm md:rounded-xl"
+                                key={p.post_uuid}
+                            >
+                                <PostItem post={p} />
+                            </div>
+                        ))
+                        :
+                        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-slate-200 bg-white py-16 text-center shadow-sm">
+                            <Briefcase size={40} className="text-slate-300" />
+                            <p className="text-sm font-medium text-slate-500">Nothing on the news-feed yet</p>
+                            <p className="text-xs text-slate-400">Come back later for updates</p>
+                        </div>
+                }
             </div>
         </NewsFeedLayout>
     )
